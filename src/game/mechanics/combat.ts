@@ -1,4 +1,4 @@
-import type { Obstacle } from './collisions';
+import type { Obstacle, Size } from './collisions';
 import type { PlayerState } from './simulation';
 
 export const combatConfig = { playerHealth: 5, enemyHealth: 3 } as const;
@@ -20,6 +20,23 @@ export interface EnemyState {
   bounds: Obstacle;
   health: number;
   maxHealth: number;
+}
+
+export interface MovingEnemyState extends EnemyState {
+  position: PlayerState;
+  shipSize: Size;
+}
+
+export function createMovingEnemyState(bounds: Obstacle): MovingEnemyState {
+  return {
+    ...createEnemyState({ ...bounds }),
+    position: {
+      x: bounds.x + bounds.width / 2,
+      y: bounds.y + bounds.height / 2,
+      heading: 0,
+    },
+    shipSize: { width: bounds.width, height: bounds.height },
+  };
 }
 
 export function createEnemyState(bounds: Obstacle): EnemyState {
