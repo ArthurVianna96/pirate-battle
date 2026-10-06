@@ -27,6 +27,29 @@ test('entering and leaving creates a single canvas without errors', async ({
   expect(errors).toEqual([]);
 });
 
+test('ship loading failure can be retried', async ({ page }, testInfo) => {
+  await page.route('**/ship_1.png*', (route) =>
+    route.request().resourceType() === 'script'
+      ? route.continue()
+      : route.abort(),
+  );
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Play', exact: true }).click();
+  await expect(page.getByRole('alert')).toContainText(
+    'Unable to load the ship',
+  );
+  await expect(page.locator('canvas')).toHaveCount(0);
+
+  await page.unroute('**/ship_1.png*');
+  await page.getByRole('button', { name: 'Retry' }).click();
+  await expect(page.getByRole('alert')).toHaveCount(0);
+  await expect(page.getByRole('status')).toHaveCount(0);
+  await expect(page.locator('canvas')).toHaveCount(1);
+  await page
+    .locator('canvas')
+    .screenshot({ path: testInfo.outputPath('ship.png') });
+});
+
 test('leaving soon after entry allows a fresh entry', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));

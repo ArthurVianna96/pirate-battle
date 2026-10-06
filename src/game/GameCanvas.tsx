@@ -1,5 +1,6 @@
-import { Application } from 'pixi.js';
+import { Application, Assets, Sprite, type Texture } from 'pixi.js';
 import { useEffect, useRef, useState } from 'react';
+import playerShipUrl from '../../assets/png/default/ships/ship_1.png?url';
 
 export function GameCanvas() {
   const hostRef = useRef<HTMLDivElement>(null);
@@ -24,6 +25,10 @@ export function GameCanvas() {
 
     async function initialize() {
       try {
+        if (cancelled) return;
+
+        const texture = await Assets.load<Texture>(playerShipUrl);
+
         await app.init({
           width: 960,
           height: 540,
@@ -36,11 +41,14 @@ export function GameCanvas() {
         });
         initialized = true;
 
-        // React may unmount this effect before asynchronous init finishes.
         if (cancelled) {
           destroy();
           return;
         }
+
+        const ship = new Sprite({ texture, anchor: 0.5 });
+        ship.position.set(app.screen.width / 2, app.screen.height / 2);
+        app.stage.addChild(ship);
 
         app.canvas.setAttribute('aria-label', 'Naval battle arena');
         app.canvas.setAttribute('role', 'img');
@@ -74,7 +82,7 @@ export function GameCanvas() {
       {status === 'loading' && <p role="status">Loading arena...</p>}
       {status === 'error' && (
         <div role="alert">
-          <p>Unable to start the arena. Try again.</p>
+          <p>Unable to load the ship or start the arena. Try again.</p>
           <button onClick={retry}>Retry</button>
         </div>
       )}
