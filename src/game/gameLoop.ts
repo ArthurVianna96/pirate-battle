@@ -5,6 +5,8 @@ import { movementConfig } from './simulation';
 import type { ArenaView } from './arena';
 import { createWeaponState, fireFront, updateWeapon } from './weapon';
 import { createProjectileRenderer } from './projectileRenderer';
+import { createTarget } from './target';
+import { createTargetRenderer } from './targetRenderer';
 
 export function startGameLoop(app: Application, arena: ArenaView): () => void {
   const { ship, obstacles } = arena;
@@ -14,6 +16,16 @@ export function startGameLoop(app: Application, arena: ArenaView): () => void {
   const arenaSize = { width: app.screen.width, height: app.screen.height };
   const world = { shipSize, arenaSize, obstacles };
   const weapon = createWeaponState();
+  const target = createTarget({
+    x: app.screen.width * 0.75 - shipSize.width / 2,
+    y: app.screen.height / 2 - shipSize.height / 2,
+    ...shipSize,
+  });
+  const targetRenderer = createTargetRenderer(
+    arena.container,
+    ship.texture,
+    target,
+  );
   const projectiles = createProjectileRenderer(
     arena.container,
     arena.projectileTexture,
@@ -25,7 +37,8 @@ export function startGameLoop(app: Application, arena: ArenaView): () => void {
     ship.position.set(player.x, player.y);
     ship.rotation = player.heading + Math.PI;
     if (keyboard.input.shootFront) fireFront(weapon, player);
-    updateWeapon(weapon, deltaSeconds, arenaSize, obstacles);
+    updateWeapon(weapon, deltaSeconds, arenaSize, obstacles, [target]);
+    targetRenderer.sync();
     projectiles.sync(weapon.projectiles);
   }
 
@@ -37,5 +50,6 @@ export function startGameLoop(app: Application, arena: ArenaView): () => void {
     app.ticker.remove(update);
     keyboard.destroy();
     projectiles.destroy();
+    targetRenderer.destroy();
   };
 }
