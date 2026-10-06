@@ -25,7 +25,7 @@ export function startGameLoop(app: Application, arena: ArenaView): () => void {
     ship.position.set(player.x, player.y);
     ship.rotation = player.heading + Math.PI;
     if (keyboard.input.shootFront) fireFront(weapon, player);
-    updateWeapon(weapon, deltaSeconds, arenaSize);
+    updateWeapon(weapon, deltaSeconds, arenaSize, obstacles);
     projectiles.sync(weapon.projectiles);
   }
 

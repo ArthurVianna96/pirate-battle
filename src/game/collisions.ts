@@ -1,9 +1,9 @@
+import type { MovementInput } from './input';
 import {
   updatePlayer,
-  type PlayerState,
   type MovementConfig,
+  type PlayerState,
 } from './simulation';
-import type { MovementInput } from './input';
 
 interface Size {
   width: number;
@@ -13,6 +13,84 @@ interface Size {
 export interface Obstacle extends Size {
   x: number;
   y: number;
+}
+
+/**
+ * Checks the projectile's entire straight path during one simulation update.
+ * Checking only its final position could miss an obstacle crossed between frames.
+ *
+ * A fraction t identifies a point along that path:
+ * position(t) = previousPosition + (nextPosition - previousPosition) * t.
+ * t = 0 is the previous position; t = 1 is the proposed position for this update.
+ * For each axis, the function finds the fractions inside the obstacle's bounds.
+ * A hit requires the X and Y intervals to overlap within [0, 1], so both
+ * coordinates are inside the bounds at the same point along the path.
+ *
+ * The bounds expand by projectileRadius to account for the projectile's size.
+ * This rectangular expansion is conservative near the obstacle's corners.
+ * Axis displacements smaller than 1e-9 are treated as zero to avoid division
+ * by tiny floating-point residues when the projectile moves parallel to a side.
+ *
+ * @param previousPosition - Projectile center before this update's movement.
+ * @param nextPosition - Proposed center after movement, before collision removal.
+ * @param obstacle - Axis-aligned rectangle; x and y locate its top-left corner.
+ * @param projectileRadius - Nonnegative radius, in the same units as positions.
+ * @returns Whether the path touches or enters the expanded obstacle bounds.
+ *
+ * @example
+ * // Both endpoints are outside, but the path crosses the obstacle.
+ * projectilePathHitsObstacle(
+ *   { x: 0, y: 5 }, { x: 10, y: 5 },
+ *   { x: 4, y: 4, width: 2, height: 2 }, 0,
+ * ); // true
+ */
+export function projectilePathHitsObstacle(
+  previousPosition: { x: number; y: number },
+  nextPosition: { x: number; y: number },
+  obstacle: Obstacle,
+  projectileRadius: number,
+): boolean {
+  let collisionStartFraction = 0;
+  let collisionEndFraction = 1;
+
+  const axisMovements = [
+    {
+      startCoordinate: previousPosition.x,
+      displacement: nextPosition.x - previousPosition.x,
+      obstacleMin: obstacle.x - projectileRadius,
+      obstacleMax: obstacle.x + obstacle.width + projectileRadius,
+    },
+    {
+      startCoordinate: previousPosition.y,
+      displacement: nextPosition.y - previousPosition.y,
+      obstacleMin: obstacle.y - projectileRadius,
+      obstacleMax: obstacle.y + obstacle.height + projectileRadius,
+    },
+  ];
+  for (const axis of axisMovements) {
+    if (Math.abs(axis.displacement) < 1e-9) {
+      if (
+        axis.startCoordinate < axis.obstacleMin ||
+        axis.startCoordinate > axis.obstacleMax
+      )
+        return false;
+      continue;
+    }
+    const minBoundaryFraction =
+      (axis.obstacleMin - axis.startCoordinate) / axis.displacement;
+    const maxBoundaryFraction =
+      (axis.obstacleMax - axis.startCoordinate) / axis.displacement;
+    collisionStartFraction = Math.max(
+      collisionStartFraction,
+      Math.min(minBoundaryFraction, maxBoundaryFraction),
+    );
+    collisionEndFraction = Math.min(
+      collisionEndFraction,
+      Math.max(minBoundaryFraction, maxBoundaryFraction),
+    );
+    if (collisionStartFraction > collisionEndFraction) return false;
+  }
+  return true;
 }
 
 function shipExtents(player: PlayerState, shipSize: Size) {

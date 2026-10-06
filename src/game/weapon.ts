@@ -1,3 +1,4 @@
+import { projectilePathHitsObstacle, type Obstacle } from './collisions';
 import type { PlayerState } from './simulation';
 
 export const frontWeaponConfig = {
@@ -5,6 +6,7 @@ export const frontWeaponConfig = {
   lifetime: 2,
   cooldown: 0.4,
   muzzleOffset: 64,
+  radius: 5,
 } as const;
 
 export interface ProjectileState {
@@ -41,12 +43,27 @@ export function updateWeapon(
   weapon: WeaponState,
   deltaSeconds: number,
   arenaSize: { width: number; height: number },
+  obstacles: readonly Obstacle[] = [],
 ) {
   weapon.cooldown = Math.max(0, weapon.cooldown - deltaSeconds);
   for (const projectile of weapon.projectiles) {
-    projectile.x += projectile.velocityX * deltaSeconds;
-    projectile.y += projectile.velocityY * deltaSeconds;
+    const previousPosition = { x: projectile.x, y: projectile.y };
+    const travelSeconds = Math.min(deltaSeconds, projectile.remainingLife);
+    projectile.x += projectile.velocityX * travelSeconds;
+    projectile.y += projectile.velocityY * travelSeconds;
     projectile.remainingLife -= deltaSeconds;
+    if (
+      obstacles.some((obstacle) =>
+        projectilePathHitsObstacle(
+          previousPosition,
+          projectile,
+          obstacle,
+          frontWeaponConfig.radius,
+        ),
+      )
+    ) {
+      projectile.remainingLife = 0;
+    }
   }
   weapon.projectiles = weapon.projectiles.filter(
     (projectile) =>

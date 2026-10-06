@@ -6,6 +6,53 @@ import {
   frontWeaponConfig,
 } from '../src/game/weapon';
 
+test('an island removes a projectile even when one frame crosses it entirely', () => {
+  const weapon = createWeaponState();
+  fireFront(weapon, { x: 480, y: 270, heading: -Math.PI / 2 });
+  updateWeapon(weapon, 1, { width: 960, height: 540 }, [
+    { x: 144, y: 174, width: 192, height: 192 },
+  ]);
+  expect(weapon.projectiles).toHaveLength(0);
+});
+
+test('projectiles grazing the island collide, while nearby misses survive', () => {
+  const obstacle = { x: 144, y: 174, width: 192, height: 192 };
+  for (const { y, count } of [
+    { y: 169, count: 0 },
+    { y: 168, count: 1 },
+  ]) {
+    const weapon = createWeaponState();
+    fireFront(weapon, { x: 480, y, heading: -Math.PI / 2 });
+    updateWeapon(weapon, 1, { width: 960, height: 540 }, [obstacle]);
+    expect(weapon.projectiles).toHaveLength(count);
+  }
+});
+
+test('keyboard fire disappears on impact with the island before expiring', async ({
+  page,
+}) => {
+  await page.clock.install({ time: new Date('2026-01-01T00:00:00Z') });
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Play', exact: true }).click();
+  await expect(page.locator('canvas')).toHaveCount(1);
+  await expect(page.getByRole('status')).toHaveCount(0);
+  await page.clock.pauseAt(new Date('2026-01-01T00:00:10Z'));
+  await page.keyboard.down('a');
+  await page.clock.runFor(500);
+  await page.keyboard.up('a');
+  const initial = await page.locator('canvas').screenshot();
+  await page.keyboard.down('Space');
+  await page.clock.runFor(32);
+  await page.keyboard.up('Space');
+  expect((await page.locator('canvas').screenshot()).equals(initial)).toBe(
+    false,
+  );
+  await page.clock.runFor(500);
+  expect((await page.locator('canvas').screenshot()).equals(initial)).toBe(
+    true,
+  );
+});
+
 test('the cooldown blocks repeated calls and permits the next shot', () => {
   const weapon = createWeaponState();
   const player = { x: 400, y: 400, heading: 0 };
