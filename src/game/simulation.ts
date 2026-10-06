@@ -2,6 +2,11 @@ import type { MovementInput } from './input';
 
 export const movementConfig = { speed: 120, rotationSpeed: Math.PI } as const;
 
+export interface MovementConfig {
+  readonly speed: number;
+  readonly rotationSpeed: number;
+}
+
 export interface PlayerState {
   x: number;
   y: number;
@@ -12,7 +17,7 @@ export function updatePlayer(
   player: PlayerState,
   input: MovementInput,
   deltaSeconds: number,
-  config: { readonly speed: number; readonly rotationSpeed: number },
+  config: MovementConfig,
 ) {
   const turn = Number(input.turnRight) - Number(input.turnLeft);
   const angularVelocity = turn * config.rotationSpeed;

@@ -10,6 +10,9 @@ import islandRightUrl from '../../assets/png/default/tiles/tile_19.png';
 import islandBottomLeftUrl from '../../assets/png/default/tiles/tile_33.png';
 import islandBottomUrl from '../../assets/png/default/tiles/tile_34.png';
 import islandBottomRightUrl from '../../assets/png/default/tiles/tile_35.png';
+import type { Obstacle } from './collisions';
+
+const islandLayout = { tileSize: 64, columns: 3, rows: 3 } as const;
 
 const islandTileUrls = [
   islandTopLeftUrl,
@@ -41,8 +44,7 @@ export async function loadArenaAssets(): Promise<ArenaAssets> {
 
 function createIsland(textures: Texture[]): Container {
   const island = new Container();
-  const tileSize = 64;
-  const columns = 3;
+  const { tileSize, columns, rows } = islandLayout;
 
   textures.forEach((texture, index) => {
     const tile = new Sprite(texture);
@@ -53,24 +55,44 @@ function createIsland(textures: Texture[]): Container {
     island.addChild(tile);
   });
 
-  island.pivot.set((columns * tileSize) / 2);
+  island.pivot.set((columns * tileSize) / 2, (rows * tileSize) / 2);
   return island;
+}
+
+export interface ArenaView {
+  container: Container;
+  ship: Sprite;
+  obstacles: Obstacle[];
 }
 
 export function createArena(
   textures: ArenaAssets,
   width: number,
   height: number,
-): { container: Container; ship: Sprite } {
+): ArenaView {
   const arena = new Container();
   const water = new TilingSprite({ texture: textures.water, width, height });
   const island = createIsland(textures.island);
   island.position.set(width / 4, height / 2);
+  const islandWidth = islandLayout.columns * islandLayout.tileSize;
+  const islandHeight = islandLayout.rows * islandLayout.tileSize;
+  const obstacles: Obstacle[] = [
+    {
+      x: island.x - islandWidth / 2,
+      y: island.y - islandHeight / 2,
+      width: islandWidth,
+      height: islandHeight,
+    },
+  ];
   const ship = new Sprite({ texture: textures.playerShip, anchor: 0.5 });
   ship.position.set(width / 2, height / 2);
   // The supplied artwork points down; turn its bow toward the top.
   ship.rotation = Math.PI;
 
   arena.addChild(water, island, ship);
-  return { container: arena, ship };
+  return {
+    container: arena,
+    ship,
+    obstacles,
+  };
 }

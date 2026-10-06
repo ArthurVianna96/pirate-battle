@@ -60,7 +60,7 @@ export function GameCanvas() {
         app.canvas.setAttribute('role', 'img');
         host!.appendChild(app.canvas);
         app.render();
-        stopMovement = startMovement(app, arena.ship);
+        stopMovement = startMovement(app, arena.ship, arena.obstacles);
         setStatus('ready');
       } catch (error) {
         if (initialized) destroy();
