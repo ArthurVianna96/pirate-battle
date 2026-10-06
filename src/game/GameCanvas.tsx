@@ -2,12 +2,14 @@ import { Application } from 'pixi.js';
 import { useEffect, useRef, useState } from 'react';
 import { createArena, loadArenaAssets } from './arena/index';
 import { startGameLoop } from './gameLoop';
+import { combatConfig } from './mechanics/combat';
 
 function mountArena(
   app: Application,
   host: HTMLDivElement,
   textures: Awaited<ReturnType<typeof loadArenaAssets>>,
   onScoreChange: (score: number) => void,
+  onHealthChange: (health: number) => void,
 ) {
   const arena = createArena(textures, app.screen.width, app.screen.height);
   app.stage.addChild(arena.container);
@@ -15,7 +17,7 @@ function mountArena(
   app.canvas.setAttribute('role', 'img');
   host.appendChild(app.canvas);
   app.render();
-  return startGameLoop(app, arena, onScoreChange);
+  return startGameLoop(app, arena, onScoreChange, onHealthChange);
 }
 
 export function GameCanvas() {
@@ -25,6 +27,7 @@ export function GameCanvas() {
   );
   const [attempt, setAttempt] = useState(0);
   const [score, setScore] = useState(0);
+  const [health, setHealth] = useState<number>(combatConfig.playerHealth);
 
   useEffect(() => {
     const host = hostRef.current;
@@ -65,7 +68,7 @@ export function GameCanvas() {
           return;
         }
 
-        stopGameLoop = mountArena(app, host, textures, setScore);
+        stopGameLoop = mountArena(app, host, textures, setScore, setHealth);
         setStatus('ready');
       } catch (error) {
         if (initialized) destroy();
@@ -91,6 +94,9 @@ export function GameCanvas() {
   return (
     <>
       <p aria-live="polite">Score: {score}</p>
+      <p aria-live="polite">
+        Health: {health}/{combatConfig.playerHealth}
+      </p>
       <div ref={hostRef} className="arena" />
       <p>
         Hold W or ↑ to move forward. A/D or ←/→ to turn. Space to fire forward.

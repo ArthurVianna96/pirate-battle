@@ -3,7 +3,9 @@ import type { ArenaView } from './arena/types';
 import { createKeyboardInput } from './mechanics/input';
 import { createProjectile } from './arena/projectiles';
 import { movementConfig, updatePlayer } from './mechanics/simulation';
-import { updateChaser } from './mechanics/chaser';
+import { updateChaser, resolveChaserImpact } from './mechanics/chaser';
+import { createPlayerState } from './mechanics/combat';
+import { createHealthBar } from './arena/healthBar';
 import {
   createWeaponState,
   fireFront,
@@ -15,6 +17,7 @@ export function startGameLoop(
   app: Application,
   arena: ArenaView,
   onScoreChange: (score: number) => void,
+  onHealthChange: (health: number) => void,
 ): () => void {
   const { ship, obstacles, chaser, chaserRenderer } = arena;
   const keyboard = createKeyboardInput();
@@ -23,8 +26,13 @@ export function startGameLoop(
     arena.container,
     arena.projectileTexture,
   );
+  const playerHealth = createHealthBar(arena.container, ship.height);
 
-  const player = { x: ship.x, y: ship.y, heading: ship.rotation - Math.PI };
+  const player = createPlayerState({
+    x: ship.x,
+    y: ship.y,
+    heading: ship.rotation - Math.PI,
+  });
   const shipSize = { width: ship.width, height: ship.height };
   const arenaSize = { width: app.screen.width, height: app.screen.height };
   const world = { shipSize, arenaSize, obstacles };
@@ -62,11 +70,30 @@ export function startGameLoop(
     }
   }
 
-  function syncViews() {
+  function syncPlayer() {
     ship.position.set(player.x, player.y);
     ship.rotation = player.heading + Math.PI;
+    const halfHeight =
+      (Math.abs(Math.cos(player.heading)) * shipSize.height +
+        Math.abs(Math.sin(player.heading)) * shipSize.width) /
+      2;
+    playerHealth.bar.position.set(
+      player.x - 24,
+      Math.max(4, player.y - halfHeight - 12),
+    );
+    playerHealth.health.scale.x = player.health / player.maxHealth;
+  }
+
+  function syncViews() {
+    syncPlayer();
     chaserRenderer.sync();
     projectiles.sync(weapon.projectiles);
+  }
+
+  function updateContacts() {
+    if (resolveChaserImpact(chaser, player, shipSize)) {
+      onHealthChange(player.health);
+    }
   }
 
   function update(ticker: Ticker) {
@@ -74,6 +101,7 @@ export function startGameLoop(
     updatePlayer(player, keyboard.input, deltaSeconds, movementConfig, world);
     updateChaser(chaser, player, deltaSeconds, world);
     updateAttacks(deltaSeconds);
+    updateContacts();
     syncViews();
   }
 
@@ -86,5 +114,6 @@ export function startGameLoop(
     keyboard.destroy();
     projectiles.destroy();
     chaserRenderer.destroy();
+    playerHealth.bar.destroy({ children: true });
   };
 }

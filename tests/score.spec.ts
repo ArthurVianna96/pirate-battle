@@ -96,7 +96,7 @@ for (const attack of ['front', 'side'] as const) {
       await page.keyboard.down(key);
       await page.clock.runFor(32);
       await page.keyboard.up(key);
-      await page.clock.runFor(800);
+      await page.clock.runFor(attack === 'front' ? 420 : 800);
       await expect(
         page.getByText(`Score: ${shot === shots - 1 ? 1 : 0}`, { exact: true }),
       ).toBeVisible();

@@ -1,16 +1,7 @@
-import { Container, Graphics, Sprite, type Texture } from 'pixi.js';
+import { Container, Sprite, type Texture } from 'pixi.js';
 import type { EnemyState } from '../mechanics/combat';
 import type { PlayerState } from '../mechanics/simulation';
-
-const renderHealthBar = (group: Container, bounds: EnemyState['bounds']) => {
-  const bar = new Container();
-  const background = new Graphics().rect(0, 0, 48, 6).fill(0x263238);
-  const health = new Graphics().rect(0, 0, 48, 6).fill(0x66dd88);
-  bar.position.set(-24, -bounds.height / 2 - 12);
-  bar.addChild(background, health);
-  group.addChild(bar);
-  return { bar, health };
-};
+import { createHealthBar } from './healthBar';
 
 export function createEnemy(
   parent: Container,
@@ -29,7 +20,7 @@ export function createEnemy(
   group.position.set(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
   group.addChild(ship);
 
-  const { bar, health } = renderHealthBar(group, bounds);
+  const { bar, health } = createHealthBar(group, bounds.height);
   parent.addChild(group);
 
   function syncPosition() {

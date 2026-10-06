@@ -57,7 +57,7 @@ test('the Chaser cannot cross an island even during a long update', () => {
   expect(chaser.bounds.x).toBeCloseTo(island.x + island.width);
 });
 
-test('pursuit stops nearby and destroyed Chasers do not move', () => {
+test('pursuit reaches the player and destroyed Chasers do not move', () => {
   const chaser = createChaserState({
     x: 447,
     y: 373.5,
@@ -66,7 +66,7 @@ test('pursuit stops nearby and destroyed Chasers do not move', () => {
   });
   updateChaser(chaser, { x: 480, y: 270 }, 5, world);
   expect(chaser.position.x).toBeCloseTo(480);
-  expect(chaser.position.y).toBeCloseTo(380);
+  expect(chaser.position.y).toBeCloseTo(270);
   chaser.health = 0;
   const previous = { ...chaser.position };
   updateChaser(chaser, { x: 800, y: 100 }, 1, world);

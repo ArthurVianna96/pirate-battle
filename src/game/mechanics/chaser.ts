@@ -1,5 +1,9 @@
-import type { Obstacle, Size } from './collisions';
-import { createEnemyState, type EnemyState } from './combat';
+import { overlapsObstacle, type Obstacle, type Size } from './collisions';
+import {
+  createEnemyState,
+  type EnemyState,
+  type PlayerCombatState,
+} from './combat';
 import {
   updatePlayer,
   type PlayerState,
@@ -10,11 +14,11 @@ import {
 export const chaserConfig = {
   speed: 60,
   rotationSpeed: Math.PI / 2,
-  stopDistance: 110,
+  impactDamage: 1,
 } as const;
 
 export interface ChaserConfig extends MovementConfig {
-  stopDistance: number;
+  impactDamage: number;
 }
 
 interface ChaserWorld {
@@ -68,7 +72,7 @@ function moveTowardPlayer(
   const distanceX = player.x - chaser.position.x;
   const distanceY = player.y - chaser.position.y;
   const distance = Math.hypot(distanceX, distanceY);
-  if (distance <= config.stopDistance) return;
+  if (distance === 0) return;
 
   // Heading zero points up. Normalize the turn to take the shortest route.
   const desiredHeading = Math.atan2(distanceX, -distanceY);
@@ -82,10 +86,7 @@ function moveTowardPlayer(
     { forward: true, turnLeft: turn < 0, turnRight: turn > 0 },
     deltaSeconds,
     {
-      speed: Math.min(
-        config.speed,
-        (distance - config.stopDistance) / deltaSeconds,
-      ),
+      speed: Math.min(config.speed, distance / deltaSeconds),
       rotationSpeed: Math.min(
         config.rotationSpeed,
         Math.abs(turn) / deltaSeconds,
@@ -93,6 +94,20 @@ function moveTowardPlayer(
     },
     world,
   );
+}
+
+export function resolveChaserImpact(
+  chaser: ChaserState,
+  player: PlayerCombatState,
+  shipSize: Size,
+  config: ChaserConfig = chaserConfig,
+): boolean {
+  if (chaser.health === 0 || player.health === 0) return false;
+  if (!overlapsObstacle(player, shipSize, chaser.bounds)) return false;
+
+  player.health = Math.max(0, player.health - config.impactDamage);
+  chaser.health = 0;
+  return true;
 }
 
 function syncChaserBounds(chaser: ChaserState) {
