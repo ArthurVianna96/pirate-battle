@@ -31,7 +31,7 @@ export function startGameLoop(
   const enemies = [chaser];
   let score = 0;
 
-  function updateAttacks(deltaSeconds: number) {
+  function fireWeapons() {
     if (keyboard.input.shootFront) {
       fireFront(weapon, player);
     }
@@ -41,6 +41,10 @@ export function startGameLoop(
     if (keyboard.input.shootRight) {
       fireSide(weapon, player, 'right');
     }
+  }
+
+  function updateAttacks(deltaSeconds: number) {
+    fireWeapons();
     const destroyedEnemies = updateWeapon(
       weapon,
       deltaSeconds,
@@ -48,6 +52,10 @@ export function startGameLoop(
       obstacles,
       enemies,
     );
+    updateScore(destroyedEnemies);
+  }
+
+  function updateScore(destroyedEnemies: number) {
     if (destroyedEnemies > 0) {
       score += destroyedEnemies;
       onScoreChange(score);

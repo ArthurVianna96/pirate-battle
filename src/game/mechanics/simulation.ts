@@ -19,6 +19,12 @@ export interface PlayerState {
   heading: number;
 }
 
+export interface MovementWorld {
+  shipSize: Size;
+  arenaSize: Size;
+  obstacles: readonly Obstacle[];
+}
+
 export function applyPlayerMovement(
   player: PlayerState,
   input: MovementInput,
@@ -47,7 +53,7 @@ export function updatePlayer(
   input: MovementInput,
   deltaSeconds: number,
   config: MovementConfig,
-  world: { shipSize: Size; arenaSize: Size; obstacles: readonly Obstacle[] },
+  world: MovementWorld,
 ) {
   // Small steps prevent a slow frame from jumping through an island.
   const steps = Math.max(1, Math.ceil(deltaSeconds / (1 / 60)));

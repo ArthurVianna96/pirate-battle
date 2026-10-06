@@ -32,6 +32,19 @@ export function createEnemy(
   const { bar, health } = renderHealthBar(group, bounds);
   parent.addChild(group);
 
+  function syncPosition() {
+    group.position.set(
+      bounds.x + bounds.width / 2,
+      bounds.y + bounds.height / 2,
+    );
+    if (options.position) ship.rotation = options.position.heading + Math.PI;
+  }
+
+  function syncHealth() {
+    health.scale.x = enemy.health / enemy.maxHealth;
+    bar.y = -bounds.height / 2 - 12;
+  }
+
   return {
     sync() {
       if (group.destroyed) return;
@@ -39,13 +52,8 @@ export function createEnemy(
         group.destroy({ children: true });
         return;
       }
-      health.scale.x = enemy.health / enemy.maxHealth;
-      bar.y = -bounds.height / 2 - 12;
-      group.position.set(
-        bounds.x + bounds.width / 2,
-        bounds.y + bounds.height / 2,
-      );
-      if (options.position) ship.rotation = options.position.heading + Math.PI;
+      syncPosition();
+      syncHealth();
     },
     destroy() {
       if (!group.destroyed) group.destroy({ children: true });

@@ -1,12 +1,26 @@
-import { type Obstacle, type Size } from './collisions';
+import type { Obstacle, Size } from './collisions';
 import { createEnemyState, type EnemyState } from './combat';
-import { updatePlayer, type PlayerState } from './simulation';
+import {
+  updatePlayer,
+  type PlayerState,
+  type MovementConfig,
+  type MovementWorld,
+} from './simulation';
 
 export const chaserConfig = {
   speed: 60,
   rotationSpeed: Math.PI / 2,
   stopDistance: 110,
 } as const;
+
+export interface ChaserConfig extends MovementConfig {
+  stopDistance: number;
+}
+
+interface ChaserWorld {
+  arenaSize: Size;
+  obstacles: readonly Obstacle[];
+}
 
 export interface ChaserState extends EnemyState {
   position: PlayerState;
@@ -29,49 +43,56 @@ export function updateChaser(
   chaser: ChaserState,
   player: Pick<PlayerState, 'x' | 'y'>,
   deltaSeconds: number,
-  world: { arenaSize: Size; obstacles: readonly Obstacle[] },
-  config: {
-    speed: number;
-    rotationSpeed: number;
-    stopDistance: number;
-  } = chaserConfig,
+  world: ChaserWorld,
+  config: ChaserConfig = chaserConfig,
 ) {
   if (chaser.health === 0 || deltaSeconds <= 0) return;
 
+  const movementWorld = { ...world, shipSize: chaser.shipSize };
   const steps = Math.max(1, Math.ceil(deltaSeconds / (1 / 60)));
   const stepSeconds = deltaSeconds / steps;
   for (let step = 0; step < steps; step++) {
-    const distanceX = player.x - chaser.position.x;
-    const distanceY = player.y - chaser.position.y;
-    const distance = Math.hypot(distanceX, distanceY);
-    if (distance <= config.stopDistance) break;
-
-    // Heading zero points up. Normalize the turn to take the shortest route.
-    const desiredHeading = Math.atan2(distanceX, -distanceY);
-    const headingDifference = desiredHeading - chaser.position.heading;
-    const turn = Math.atan2(
-      Math.sin(headingDifference),
-      Math.cos(headingDifference),
-    );
-    updatePlayer(
-      chaser.position,
-      { forward: true, turnLeft: turn < 0, turnRight: turn > 0 },
-      stepSeconds,
-      {
-        speed: Math.min(
-          config.speed,
-          (distance - config.stopDistance) / stepSeconds,
-        ),
-        rotationSpeed: Math.min(
-          config.rotationSpeed,
-          Math.abs(turn) / stepSeconds,
-        ),
-      },
-      { ...world, shipSize: chaser.shipSize },
-    );
+    moveTowardPlayer(chaser, player, stepSeconds, movementWorld, config);
   }
 
   syncChaserBounds(chaser);
+}
+
+function moveTowardPlayer(
+  chaser: ChaserState,
+  player: Pick<PlayerState, 'x' | 'y'>,
+  deltaSeconds: number,
+  world: MovementWorld,
+  config: ChaserConfig,
+) {
+  const distanceX = player.x - chaser.position.x;
+  const distanceY = player.y - chaser.position.y;
+  const distance = Math.hypot(distanceX, distanceY);
+  if (distance <= config.stopDistance) return;
+
+  // Heading zero points up. Normalize the turn to take the shortest route.
+  const desiredHeading = Math.atan2(distanceX, -distanceY);
+  const headingDifference = desiredHeading - chaser.position.heading;
+  const turn = Math.atan2(
+    Math.sin(headingDifference),
+    Math.cos(headingDifference),
+  );
+  updatePlayer(
+    chaser.position,
+    { forward: true, turnLeft: turn < 0, turnRight: turn > 0 },
+    deltaSeconds,
+    {
+      speed: Math.min(
+        config.speed,
+        (distance - config.stopDistance) / deltaSeconds,
+      ),
+      rotationSpeed: Math.min(
+        config.rotationSpeed,
+        Math.abs(turn) / deltaSeconds,
+      ),
+    },
+    world,
+  );
 }
 
 function syncChaserBounds(chaser: ChaserState) {
