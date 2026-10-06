@@ -1,6 +1,8 @@
 import { expect, test } from '@playwright/test';
 
-test('entering and leaving creates a single canvas without errors', async ({ page }) => {
+test('entering and leaving creates a single canvas without errors', async ({
+  page,
+}) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   page.on('console', (message) => {
@@ -17,7 +19,9 @@ test('entering and leaving creates a single canvas without errors', async ({ pag
     expect(bounds?.height).toBeGreaterThan(0);
     await page.getByRole('button', { name: 'Main Menu' }).click();
     await expect(page.locator('canvas')).toHaveCount(0);
-    await expect(page.getByRole('button', { name: 'Play', exact: true })).toBeFocused();
+    await expect(
+      page.getByRole('button', { name: 'Play', exact: true }),
+    ).toBeFocused();
   }
 
   expect(errors).toEqual([]);

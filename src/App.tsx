@@ -12,19 +12,26 @@ export function App() {
 
   return (
     <main>
-      <header><p className="eyebrow">Pirate Battle</p><h1>Set sail</h1></header>
+      <header>
+        <p className="eyebrow">Pirate Battle</p>
+        <h1>Set sail</h1>
+      </header>
       {playing ? (
         <section aria-label="Game">
           <div className="toolbar">
             <h2>Arena</h2>
-            <button autoFocus onClick={leaveGame}>Main Menu</button>
+            <button autoFocus onClick={leaveGame}>
+              Main Menu
+            </button>
           </div>
           <GameCanvas />
         </section>
       ) : (
         <section aria-label="Main menu" className="menu">
           <p>Your voyage starts here.</p>
-          <button ref={playButton} onClick={() => setPlaying(true)}>Play</button>
+          <button ref={playButton} onClick={() => setPlaying(true)}>
+            Play
+          </button>
         </section>
       )}
     </main>

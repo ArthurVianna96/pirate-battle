@@ -14,3 +14,12 @@ dist/
 
 # Logs
 *.log
+
+.agents/*
+skills-lock.json
+
+*.md
+
+# Playwright artifacts
+/playwright-report/
+/test-results/
