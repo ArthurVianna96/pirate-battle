@@ -97,6 +97,16 @@ function shipExtents(player: PlayerState, shipSize: Size) {
   };
 }
 
+export function getShipBounds(position: PlayerState, shipSize: Size): Obstacle {
+  const { halfWidth, halfHeight } = shipExtents(position, shipSize);
+  return {
+    x: position.x - halfWidth,
+    y: position.y - halfHeight,
+    width: halfWidth * 2,
+    height: halfHeight * 2,
+  };
+}
+
 export function overlapsObstacle(
   player: PlayerState,
   shipSize: Size,

@@ -27,7 +27,7 @@ export function updateSpawner(
   return spawnCount;
 }
 
-export function findChaserSpawn(
+export function findEnemySpawn(
   player: Pick<PlayerState, 'x' | 'y'>,
   { shipSize, arenaSize, obstacles }: MovementWorld,
   enemies: readonly EnemyState[],

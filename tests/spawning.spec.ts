@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import {
   createSpawnerState,
   updateSpawner,
-  findChaserSpawn,
+  findEnemySpawn,
 } from '../src/game/mechanics/spawning';
 import { createEnemyState } from '../src/game/mechanics/combat';
 import { overlapsObstacle } from '../src/game/mechanics/collisions';
@@ -35,7 +35,7 @@ test('spawn counts agree at 30 and 60 FPS', () => {
 test('spawn positions avoid the player, islands and living enemies', () => {
   const obstacle = { x: 650, y: 200, width: 140, height: 140 };
   const enemy = createEnemyState({ x: 760, y: 80, width: 130, height: 110 });
-  const position = findChaserSpawn(
+  const position = findEnemySpawn(
     player,
     { shipSize, arenaSize, obstacles: [obstacle] },
     [enemy],
@@ -50,14 +50,14 @@ test('spawn positions avoid the player, islands and living enemies', () => {
 
 test('blocked arenas skip spawning', () => {
   expect(
-    findChaserSpawn(
+    findEnemySpawn(
       player,
       { shipSize, arenaSize, obstacles: [{ x: 0, y: 0, ...arenaSize }] },
       [],
     ),
   ).toBeUndefined();
   expect(
-    findChaserSpawn(
+    findEnemySpawn(
       player,
       { shipSize, arenaSize: { width: 100, height: 100 }, obstacles: [] },
       [],
@@ -88,5 +88,4 @@ test('a destroyed Chaser is replaced after four seconds and can be scored again'
   await page.keyboard.up('e');
   await page.clock.runFor(600);
   await expect(page.getByText('Score: 2', { exact: true })).toBeVisible();
-  await expect(page.getByText('Health: 5/5', { exact: true })).toBeVisible();
 });

@@ -1,6 +1,6 @@
 import { createChaserState } from '../mechanics/chaser';
 import { createEnemy } from './enemies';
-import type { EnemyOptions } from './types';
+import type { EnemyOptions, EnemyView } from './types';
 import type { PlayerState } from '../mechanics/simulation';
 
 export function renderChaser(
@@ -10,7 +10,7 @@ export function renderChaser(
     y: height / 2,
     heading: -Math.PI / 2,
   },
-) {
+): EnemyView {
   const chaser = createChaserState({
     x: position.x - ship.width / 2,
     y: position.y - ship.height / 2,
@@ -22,5 +22,5 @@ export function renderChaser(
     position: chaser.position,
     tint: 0xffcc66,
   });
-  return { chaser, renderer: chaserRenderer };
+  return { kind: 'chaser', state: chaser, renderer: chaserRenderer };
 }

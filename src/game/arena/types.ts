@@ -1,7 +1,8 @@
 import type { Container, Sprite, Texture } from 'pixi.js';
 import type { Obstacle } from '../mechanics/collisions';
 import type { createEnemy } from './enemies';
-import type { ChaserState } from '../mechanics/chaser';
+import type { MovingEnemyState } from '../mechanics/combat';
+import type { ShooterState } from '../mechanics/shooter';
 import type { PlayerState } from '../mechanics/simulation';
 
 export interface ArenaAssets {
@@ -18,14 +19,16 @@ export interface ArenaView {
   obstacles: Obstacle[];
   projectileTexture: Texture;
   explosionTextures: Texture[];
-  chasers: ChaserView[];
+  enemies: EnemyView[];
   spawnChaser: (position: PlayerState) => void;
 }
 
-export interface ChaserView {
-  chaser: ChaserState;
+export type EnemyView = {
   renderer: ReturnType<typeof createEnemy>;
-}
+} & (
+  | { kind: 'chaser'; state: MovingEnemyState }
+  | { kind: 'shooter'; state: ShooterState }
+);
 
 export interface ArenaSize {
   width: number;

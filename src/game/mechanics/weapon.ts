@@ -1,4 +1,8 @@
-import { projectilePathHitsObstacle, type Obstacle } from './collisions';
+import {
+  projectilePathHitsObstacle,
+  type Obstacle,
+  type Size,
+} from './collisions';
 import { damageEnemy, type EnemyState } from './combat';
 import type { PlayerState } from './simulation';
 
@@ -43,19 +47,38 @@ type WeaponState = ReturnType<typeof createWeaponState>;
 
 export function fireFront(weapon: WeaponState, player: PlayerState) {
   if (weapon.cooldown > 1e-9) return;
+  weapon.projectiles.push(
+    createFrontProjectile(weapon.nextId++, player, frontWeaponConfig),
+  );
+  weapon.cooldown = frontWeaponConfig.cooldown;
+}
+
+export interface FrontWeaponConfig {
+  speed: number;
+  lifetime: number;
+  cooldown: number;
+  muzzleOffset: number;
+  radius: number;
+  damage: number;
+}
+
+export function createFrontProjectile(
+  id: number,
+  player: PlayerState,
+  config: FrontWeaponConfig,
+): ProjectileState {
   const directionX = Math.sin(player.heading);
   const directionY = -Math.cos(player.heading);
-  weapon.projectiles.push({
-    id: weapon.nextId++,
-    x: player.x + directionX * frontWeaponConfig.muzzleOffset,
-    y: player.y + directionY * frontWeaponConfig.muzzleOffset,
-    velocityX: directionX * frontWeaponConfig.speed,
-    velocityY: directionY * frontWeaponConfig.speed,
-    remainingLife: frontWeaponConfig.lifetime,
-    damage: frontWeaponConfig.damage,
-    radius: frontWeaponConfig.radius,
-  });
-  weapon.cooldown = frontWeaponConfig.cooldown;
+  return {
+    id,
+    x: player.x + directionX * config.muzzleOffset,
+    y: player.y + directionY * config.muzzleOffset,
+    velocityX: directionX * config.speed,
+    velocityY: directionY * config.speed,
+    remainingLife: config.lifetime,
+    damage: config.damage,
+    radius: config.radius,
+  };
 }
 
 export function fireSide(
@@ -121,13 +144,8 @@ export function updateWeapon(
       destroyedEnemies++;
     }
   }
-  weapon.projectiles = weapon.projectiles.filter(
-    (projectile) =>
-      projectile.remainingLife > 1e-9 &&
-      projectile.x >= 0 &&
-      projectile.x <= arenaSize.width &&
-      projectile.y >= 0 &&
-      projectile.y <= arenaSize.height,
+  weapon.projectiles = weapon.projectiles.filter((projectile) =>
+    isProjectileActive(projectile, arenaSize),
   );
   return destroyedEnemies;
 }
@@ -138,24 +156,12 @@ function updateProjectile(
   obstacles: readonly Obstacle[],
   enemies: readonly EnemyState[],
 ): { isDestroyed: boolean } {
-  const previousPosition = { x: projectile.x, y: projectile.y };
-  const travelSeconds = Math.min(deltaSeconds, projectile.remainingLife);
-  projectile.x += projectile.velocityX * travelSeconds;
-  projectile.y += projectile.velocityY * travelSeconds;
-  projectile.remainingLife -= deltaSeconds;
-  if (
-    obstacles.some((obstacle) =>
-      projectilePathHitsObstacle(
-        previousPosition,
-        projectile,
-        obstacle,
-        projectile.radius,
-      ),
-    )
-  ) {
-    projectile.remainingLife = 0;
-    return { isDestroyed: false };
-  }
+  const previousPosition = advanceProjectile(
+    projectile,
+    deltaSeconds,
+    obstacles,
+  );
+  if (!previousPosition) return { isDestroyed: false };
   for (const enemy of enemies) {
     if (
       enemy.health > 0 &&
@@ -172,4 +178,44 @@ function updateProjectile(
     }
   }
   return { isDestroyed: false };
+}
+
+export function advanceProjectile(
+  projectile: ProjectileState,
+  deltaSeconds: number,
+  obstacles: readonly Obstacle[],
+) {
+  if (projectile.remainingLife <= 0) return undefined;
+  const previousPosition = { x: projectile.x, y: projectile.y };
+  const travelSeconds = Math.min(deltaSeconds, projectile.remainingLife);
+  projectile.x += projectile.velocityX * travelSeconds;
+  projectile.y += projectile.velocityY * travelSeconds;
+  projectile.remainingLife -= deltaSeconds;
+  if (
+    obstacles.some((obstacle) =>
+      projectilePathHitsObstacle(
+        previousPosition,
+        projectile,
+        obstacle,
+        projectile.radius,
+      ),
+    )
+  ) {
+    projectile.remainingLife = 0;
+    return undefined;
+  }
+  return previousPosition;
+}
+
+export function isProjectileActive(
+  projectile: ProjectileState,
+  arenaSize: Size,
+) {
+  return (
+    projectile.remainingLife > 1e-9 &&
+    projectile.x >= 0 &&
+    projectile.x <= arenaSize.width &&
+    projectile.y >= 0 &&
+    projectile.y <= arenaSize.height
+  );
 }

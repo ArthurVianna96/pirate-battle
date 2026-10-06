@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { arenaScreenshot } from './helpers/arenaScreenshot';
 import { createEnemyState } from '../src/game/mechanics/combat';
 import {
   createWeaponState,
@@ -52,17 +53,16 @@ test('destroying the Chaser removes its rendering and stops its movement', async
   await page.getByRole('button', { name: 'Play', exact: true }).click();
   await expect(page.getByRole('status')).toHaveCount(0);
   await page.clock.pauseAt(new Date('2026-01-01T00:00:10Z'));
-  const initial = await page.locator('canvas').screenshot();
+  const region = { x: 600, y: 200, width: 200, height: 115 };
+  const initial = await arenaScreenshot(page, region);
   await page.keyboard.down('e');
   await page.clock.runFor(32);
   await page.keyboard.up('e');
   await page.clock.runFor(800);
   await expect(page.getByText('Score: 1', { exact: true })).toBeVisible();
   await page.clock.runFor(650);
-  const destroyed = await page.locator('canvas').screenshot();
+  const destroyed = await arenaScreenshot(page, region);
   expect(destroyed.equals(initial)).toBe(false);
   await page.clock.runFor(500);
-  expect((await page.locator('canvas').screenshot()).equals(destroyed)).toBe(
-    true,
-  );
+  expect((await arenaScreenshot(page, region)).equals(destroyed)).toBe(true);
 });

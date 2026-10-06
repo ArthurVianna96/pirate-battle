@@ -3,6 +3,7 @@ import { renderIsland } from './island';
 import { renderShip } from './ship';
 import type { ArenaAssets, ArenaView } from './types';
 import { renderChaser } from './chaser';
+import { renderShooter } from './shooter';
 import type { PlayerState } from '../mechanics/simulation';
 
 export { loadArenaAssets } from './assets';
@@ -25,7 +26,7 @@ export function createArena(
   const enemyOptions = { ship, width, height, arena };
 
   function spawnChaser(position: PlayerState) {
-    view.chasers.push(renderChaser(enemyOptions, position));
+    view.enemies.push(renderChaser(enemyOptions, position));
   }
 
   const view: ArenaView = {
@@ -34,7 +35,7 @@ export function createArena(
     obstacles,
     projectileTexture: textures.projectile,
     explosionTextures: textures.explosion,
-    chasers: [renderChaser(enemyOptions)],
+    enemies: [renderChaser(enemyOptions), renderShooter(enemyOptions)],
     spawnChaser,
   };
   return view;

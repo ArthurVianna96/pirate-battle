@@ -4,12 +4,17 @@ import { createHealthBar } from './arena/healthBar';
 import { createProjectile } from './arena/projectiles';
 import type { ArenaView } from './arena/types';
 import { resolveChaserImpact, updateChaser } from './mechanics/chaser';
+import { updateShooter, updateShooterAttack } from './mechanics/shooter';
+import {
+  createEnemyWeaponState,
+  updateEnemyProjectiles,
+} from './mechanics/enemyWeapon';
 import { createPlayerState } from './mechanics/combat';
 import { createKeyboardInput } from './mechanics/input';
 import { movementConfig, updatePlayer } from './mechanics/simulation';
 import {
   createSpawnerState,
-  findChaserSpawn,
+  findEnemySpawn,
   updateSpawner,
 } from './mechanics/spawning';
 import {
@@ -28,8 +33,13 @@ export function startGameLoop(
   const { ship, obstacles } = arena;
   const keyboard = createKeyboardInput();
   const weapon = createWeaponState();
+  const enemyWeapon = createEnemyWeaponState();
   const spawner = createSpawnerState();
   const projectiles = createProjectile(
+    arena.container,
+    arena.projectileTexture,
+  );
+  const enemyProjectiles = createProjectile(
     arena.container,
     arena.projectileTexture,
   );
@@ -56,18 +66,19 @@ export function startGameLoop(
     updateSpawns(deltaSeconds);
     updateMovement(deltaSeconds);
     updateAttacks(deltaSeconds);
+    updateEnemyAttacks(deltaSeconds);
     updateContacts();
-    removeDestroyedChasers();
+    removeDestroyedEnemies();
     syncViews();
   }
 
   function updateSpawns(deltaSeconds: number) {
     const spawnCount = updateSpawner(spawner, deltaSeconds);
     for (let attempt = 0; attempt < spawnCount; attempt++) {
-      const position = findChaserSpawn(
+      const position = findEnemySpawn(
         player,
         world,
-        arena.chasers.map(({ chaser }) => chaser),
+        arena.enemies.map(({ state }) => state),
       );
       if (position) {
         arena.spawnChaser(position);
@@ -77,8 +88,12 @@ export function startGameLoop(
 
   function updateMovement(deltaSeconds: number) {
     updatePlayer(player, keyboard.input, deltaSeconds, movementConfig, world);
-    for (const { chaser } of arena.chasers) {
-      updateChaser(chaser, player, deltaSeconds, world);
+    for (const { kind, state } of arena.enemies) {
+      if (kind === 'chaser') {
+        updateChaser(state, player, deltaSeconds, world);
+      } else {
+        updateShooter(state, player, deltaSeconds, world);
+      }
     }
   }
 
@@ -89,9 +104,20 @@ export function startGameLoop(
       deltaSeconds,
       arenaSize,
       obstacles,
-      arena.chasers.map(({ chaser }) => chaser),
+      arena.enemies.map(({ state }) => state),
     );
     updateScore(destroyedEnemies);
+  }
+
+  function updateEnemyAttacks(deltaSeconds: number) {
+    const previousHealth = player.health;
+    for (const enemy of arena.enemies) {
+      if (enemy.kind === 'shooter') {
+        updateShooterAttack(enemy.state, player, deltaSeconds, enemyWeapon);
+      }
+    }
+    updateEnemyProjectiles(enemyWeapon, deltaSeconds, player, world);
+    if (player.health !== previousHealth) onHealthChange(player.health);
   }
 
   function fireWeapons() {
@@ -115,16 +141,16 @@ export function startGameLoop(
 
   function updateContacts() {
     const previousHealth = player.health;
-    for (const { chaser } of arena.chasers) {
-      resolveChaserImpact(chaser, player, shipSize);
+    for (const { kind, state } of arena.enemies) {
+      if (kind === 'chaser') resolveChaserImpact(state, player, shipSize);
     }
     if (player.health !== previousHealth) onHealthChange(player.health);
   }
 
-  function removeDestroyedChasers() {
-    arena.chasers = arena.chasers.filter(({ chaser, renderer }) => {
-      if (chaser.health > 0) return true;
-      explosions.play(chaser.position);
+  function removeDestroyedEnemies() {
+    arena.enemies = arena.enemies.filter(({ state, renderer }) => {
+      if (state.health > 0) return true;
+      explosions.play(state.position);
       renderer.destroy();
       return false;
     });
@@ -132,8 +158,9 @@ export function startGameLoop(
 
   function syncViews() {
     syncPlayer();
-    for (const { renderer } of arena.chasers) renderer.sync();
+    for (const { renderer } of arena.enemies) renderer.sync();
     projectiles.sync(weapon.projectiles);
+    enemyProjectiles.sync(enemyWeapon.projectiles);
   }
 
   function syncPlayer() {
@@ -158,7 +185,8 @@ export function startGameLoop(
     app.ticker.remove(update);
     keyboard.destroy();
     projectiles.destroy();
-    arena.chasers.forEach(({ renderer }) => renderer.destroy());
+    enemyProjectiles.destroy();
+    arena.enemies.forEach(({ renderer }) => renderer.destroy());
     playerHealth.bar.destroy({ children: true });
     explosions.destroy();
   };
