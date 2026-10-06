@@ -97,6 +97,7 @@ export function GameCanvas() {
       <p aria-live="polite">
         Health: {health}/{combatConfig.playerHealth}
       </p>
+      {health === 0 && <p role="status">Ship destroyed.</p>}
       <div ref={hostRef} className="arena" />
       <p>
         Hold W or ↑ to move forward. A/D or ←/→ to turn. Space to fire forward.

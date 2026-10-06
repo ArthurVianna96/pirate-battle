@@ -1,6 +1,9 @@
 import { expect, test } from '@playwright/test';
 import { Container, Sprite, Texture } from 'pixi.js';
-import { createExplosion, explosionConfig } from '../src/game/arena/explosions';
+import {
+  createExplosion,
+  EXPLOSION_CONFIG,
+} from '../src/game/arena/explosions';
 import { arenaScreenshot } from './helpers/arenaScreenshot';
 
 test('explosions advance frames, fade, and preserve shared textures on cleanup', () => {
@@ -18,7 +21,7 @@ test('explosions advance frames, fade, and preserve shared textures on cleanup',
   expect(sprite.texture).toBe(textures[0]);
   explosions.update(0.25);
   expect(sprite.texture).toBe(textures[1]);
-  expect(sprite.alpha).toBeCloseTo(1 - 0.25 / explosionConfig.duration);
+  expect(sprite.alpha).toBeCloseTo(1 - 0.25 / EXPLOSION_CONFIG.duration);
   explosions.update(0.2);
   expect(sprite.texture).toBe(textures[2]);
   explosions.update(1);
@@ -38,7 +41,7 @@ test('explosion duration is the same at 30 and 60 FPS', () => {
     explosions.play({ x: 0, y: 0 });
     for (
       let frame = 0;
-      frame < Math.round(fps * explosionConfig.duration);
+      frame < Math.round(fps * EXPLOSION_CONFIG.duration);
       frame++
     ) {
       explosions.update(1 / fps);

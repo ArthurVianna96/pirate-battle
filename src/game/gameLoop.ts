@@ -1,12 +1,17 @@
 import type { Application, Ticker } from 'pixi.js';
-import type { ArenaView } from './arena/types';
-import { createKeyboardInput } from './mechanics/input';
-import { createProjectile } from './arena/projectiles';
-import { movementConfig, updatePlayer } from './mechanics/simulation';
-import { updateChaser, resolveChaserImpact } from './mechanics/chaser';
-import { createPlayerState } from './mechanics/combat';
-import { createHealthBar } from './arena/healthBar';
 import { createExplosion } from './arena/explosions';
+import { createHealthBar } from './arena/healthBar';
+import { createProjectile } from './arena/projectiles';
+import type { ArenaView } from './arena/types';
+import { resolveChaserImpact, updateChaser } from './mechanics/chaser';
+import { createPlayerState } from './mechanics/combat';
+import { createKeyboardInput } from './mechanics/input';
+import { movementConfig, updatePlayer } from './mechanics/simulation';
+import {
+  createSpawnerState,
+  findChaserSpawn,
+  updateSpawner,
+} from './mechanics/spawning';
 import {
   createWeaponState,
   fireFront,
@@ -20,9 +25,10 @@ export function startGameLoop(
   onScoreChange: (score: number) => void,
   onHealthChange: (health: number) => void,
 ): () => void {
-  const { ship, obstacles, chaser, chaserRenderer } = arena;
+  const { ship, obstacles } = arena;
   const keyboard = createKeyboardInput();
   const weapon = createWeaponState();
+  const spawner = createSpawnerState();
   const projectiles = createProjectile(
     arena.container,
     arena.projectileTexture,
@@ -38,8 +44,55 @@ export function startGameLoop(
   const shipSize = { width: ship.width, height: ship.height };
   const arenaSize = { width: app.screen.width, height: app.screen.height };
   const world = { shipSize, arenaSize, obstacles };
-  const enemies = [chaser];
   let score = 0;
+
+  function update(ticker: Ticker) {
+    const deltaSeconds = ticker.deltaMS / 1000;
+    explosions.update(deltaSeconds);
+    if (player.health === 0) {
+      return;
+    }
+
+    updateSpawns(deltaSeconds);
+    updateMovement(deltaSeconds);
+    updateAttacks(deltaSeconds);
+    updateContacts();
+    removeDestroyedChasers();
+    syncViews();
+  }
+
+  function updateSpawns(deltaSeconds: number) {
+    const spawnCount = updateSpawner(spawner, deltaSeconds);
+    for (let attempt = 0; attempt < spawnCount; attempt++) {
+      const position = findChaserSpawn(
+        player,
+        world,
+        arena.chasers.map(({ chaser }) => chaser),
+      );
+      if (position) {
+        arena.spawnChaser(position);
+      }
+    }
+  }
+
+  function updateMovement(deltaSeconds: number) {
+    updatePlayer(player, keyboard.input, deltaSeconds, movementConfig, world);
+    for (const { chaser } of arena.chasers) {
+      updateChaser(chaser, player, deltaSeconds, world);
+    }
+  }
+
+  function updateAttacks(deltaSeconds: number) {
+    fireWeapons();
+    const destroyedEnemies = updateWeapon(
+      weapon,
+      deltaSeconds,
+      arenaSize,
+      obstacles,
+      arena.chasers.map(({ chaser }) => chaser),
+    );
+    updateScore(destroyedEnemies);
+  }
 
   function fireWeapons() {
     if (keyboard.input.shootFront) {
@@ -53,23 +106,34 @@ export function startGameLoop(
     }
   }
 
-  function updateAttacks(deltaSeconds: number) {
-    fireWeapons();
-    const destroyedEnemies = updateWeapon(
-      weapon,
-      deltaSeconds,
-      arenaSize,
-      obstacles,
-      enemies,
-    );
-    updateScore(destroyedEnemies);
-  }
-
   function updateScore(destroyedEnemies: number) {
     if (destroyedEnemies > 0) {
       score += destroyedEnemies;
       onScoreChange(score);
     }
+  }
+
+  function updateContacts() {
+    const previousHealth = player.health;
+    for (const { chaser } of arena.chasers) {
+      resolveChaserImpact(chaser, player, shipSize);
+    }
+    if (player.health !== previousHealth) onHealthChange(player.health);
+  }
+
+  function removeDestroyedChasers() {
+    arena.chasers = arena.chasers.filter(({ chaser, renderer }) => {
+      if (chaser.health > 0) return true;
+      explosions.play(chaser.position);
+      renderer.destroy();
+      return false;
+    });
+  }
+
+  function syncViews() {
+    syncPlayer();
+    for (const { renderer } of arena.chasers) renderer.sync();
+    projectiles.sync(weapon.projectiles);
   }
 
   function syncPlayer() {
@@ -86,36 +150,6 @@ export function startGameLoop(
     playerHealth.health.scale.x = player.health / player.maxHealth;
   }
 
-  function syncViews() {
-    syncPlayer();
-    chaserRenderer.sync();
-    projectiles.sync(weapon.projectiles);
-  }
-
-  function updateContacts() {
-    if (resolveChaserImpact(chaser, player, shipSize)) {
-      onHealthChange(player.health);
-    }
-  }
-
-  function update(ticker: Ticker) {
-    const deltaSeconds = ticker.deltaMS / 1000;
-    const chaserWasAlive = chaser.health > 0;
-    updatePlayer(player, keyboard.input, deltaSeconds, movementConfig, world);
-    updateChaser(chaser, player, deltaSeconds, world);
-    updateAttacks(deltaSeconds);
-    updateContacts();
-    updateEffects(deltaSeconds, chaserWasAlive);
-    syncViews();
-  }
-
-  function updateEffects(deltaSeconds: number, chaserWasAlive: boolean) {
-    explosions.update(deltaSeconds);
-    if (chaserWasAlive && chaser.health === 0) {
-      explosions.play(chaser.position);
-    }
-  }
-
   app.ticker.add(update);
   app.start();
 
@@ -124,7 +158,7 @@ export function startGameLoop(
     app.ticker.remove(update);
     keyboard.destroy();
     projectiles.destroy();
-    chaserRenderer.destroy();
+    arena.chasers.forEach(({ renderer }) => renderer.destroy());
     playerHealth.bar.destroy({ children: true });
     explosions.destroy();
   };
