@@ -1,6 +1,9 @@
 import { expect, test } from '@playwright/test';
 import { constrainPlayerToArena } from '../src/game/mechanics/collisions';
-import { movementConfig, updatePlayer } from '../src/game/mechanics/simulation';
+import {
+  movementConfig,
+  applyPlayerMovement,
+} from '../src/game/mechanics/simulation';
 
 test('movement cannot take the ship through any arena edge', () => {
   const arena = { width: 960, height: 540 };
@@ -14,7 +17,7 @@ test('movement cannot take the ship through any arena edge', () => {
 
   for (const expected of cases) {
     const player = { x: 480, y: 270, heading: expected.heading };
-    updatePlayer(
+    applyPlayerMovement(
       player,
       { forward: true, turnLeft: false, turnRight: false },
       10,

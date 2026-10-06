@@ -1,11 +1,14 @@
 import { expect, test } from '@playwright/test';
-import { movementConfig, updatePlayer } from '../src/game/mechanics/simulation';
+import {
+  movementConfig,
+  applyPlayerMovement,
+} from '../src/game/mechanics/simulation';
 
 test('turning while advancing follows the same arc at 30 and 60 FPS', () => {
   function advance(frames: number) {
     const player = { x: 480, y: 270, heading: 0 };
     for (let frame = 0; frame < frames; frame++) {
-      updatePlayer(
+      applyPlayerMovement(
         player,
         { forward: true, turnLeft: false, turnRight: true },
         0.5 / frames,
@@ -28,19 +31,19 @@ test('left and right turn in opposite directions and cancel together', () => {
   const left = { x: 480, y: 270, heading: 0 };
   const right = { ...left };
   const both = { ...left };
-  updatePlayer(
+  applyPlayerMovement(
     left,
     { forward: false, turnLeft: true, turnRight: false },
     0.5,
     movementConfig,
   );
-  updatePlayer(
+  applyPlayerMovement(
     right,
     { forward: false, turnLeft: false, turnRight: true },
     0.5,
     movementConfig,
   );
-  updatePlayer(
+  applyPlayerMovement(
     both,
     { forward: false, turnLeft: true, turnRight: true },
     0.5,
@@ -82,7 +85,7 @@ test('one second of movement covers the same distance at 30 and 60 FPS', () => {
   function advance(frames: number) {
     const player = { x: 480, y: 270, heading: 0 };
     for (let frame = 0; frame < frames; frame++) {
-      updatePlayer(
+      applyPlayerMovement(
         player,
         { forward: true, turnLeft: false, turnRight: false },
         1 / frames,

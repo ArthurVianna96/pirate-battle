@@ -1,11 +1,6 @@
-import type { MovementInput } from './input';
-import {
-  updatePlayer,
-  type MovementConfig,
-  type PlayerState,
-} from './simulation';
+import type { PlayerState } from './simulation';
 
-interface Size {
+export interface Size {
   width: number;
   height: number;
 }
@@ -116,7 +111,7 @@ export function overlapsObstacle(
   );
 }
 
-function resolveObstacle(
+export function resolveObstacle(
   player: PlayerState,
   shipSize: Size,
   obstacle: Obstacle,
@@ -137,25 +132,6 @@ function resolveObstacle(
   );
   player.x += correction.x;
   player.y += correction.y;
-}
-
-export function advancePlayer(
-  player: PlayerState,
-  input: MovementInput,
-  deltaSeconds: number,
-  config: MovementConfig,
-  world: { shipSize: Size; arenaSize: Size; obstacles: readonly Obstacle[] },
-) {
-  // Small steps prevent a slow frame from jumping through an island.
-  const steps = Math.max(1, Math.ceil(deltaSeconds / (1 / 60)));
-  const stepSeconds = deltaSeconds / steps;
-  for (let step = 0; step < steps; step++) {
-    updatePlayer(player, input, stepSeconds, config);
-    constrainPlayerToArena(player, world.shipSize, world.arenaSize);
-    world.obstacles.forEach((obstacle) =>
-      resolveObstacle(player, world.shipSize, obstacle),
-    );
-  }
 }
 
 export function constrainPlayerToArena(

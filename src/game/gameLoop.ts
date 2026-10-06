@@ -1,9 +1,8 @@
 import type { Application, Ticker } from 'pixi.js';
 import type { ArenaView } from './arena/types';
-import { advancePlayer } from './mechanics/collisions';
 import { createKeyboardInput } from './mechanics/input';
 import { createProjectile } from './arena/projectiles';
-import { movementConfig } from './mechanics/simulation';
+import { movementConfig, updatePlayer } from './mechanics/simulation';
 import {
   createWeaponState,
   fireFront,
@@ -48,7 +47,7 @@ export function startGameLoop(app: Application, arena: ArenaView): () => void {
 
   function update(ticker: Ticker) {
     const deltaSeconds = ticker.deltaMS / 1000;
-    advancePlayer(player, keyboard.input, deltaSeconds, movementConfig, world);
+    updatePlayer(player, keyboard.input, deltaSeconds, movementConfig, world);
     updateAttacks(deltaSeconds);
     syncViews();
   }

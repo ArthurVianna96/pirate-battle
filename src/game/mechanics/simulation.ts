@@ -1,3 +1,9 @@
+import {
+  constrainPlayerToArena,
+  resolveObstacle,
+  type Obstacle,
+  type Size,
+} from './collisions';
 import type { MovementInput } from './input';
 
 export const movementConfig = { speed: 120, rotationSpeed: Math.PI } as const;
@@ -13,7 +19,7 @@ export interface PlayerState {
   heading: number;
 }
 
-export function updatePlayer(
+export function applyPlayerMovement(
   player: PlayerState,
   input: MovementInput,
   deltaSeconds: number,
@@ -33,5 +39,24 @@ export function updatePlayer(
     const radius = config.speed / angularVelocity;
     player.x += radius * (Math.cos(previousHeading) - Math.cos(player.heading));
     player.y -= radius * (Math.sin(player.heading) - Math.sin(previousHeading));
+  }
+}
+
+export function updatePlayer(
+  player: PlayerState,
+  input: MovementInput,
+  deltaSeconds: number,
+  config: MovementConfig,
+  world: { shipSize: Size; arenaSize: Size; obstacles: readonly Obstacle[] },
+) {
+  // Small steps prevent a slow frame from jumping through an island.
+  const steps = Math.max(1, Math.ceil(deltaSeconds / (1 / 60)));
+  const stepSeconds = deltaSeconds / steps;
+  for (let step = 0; step < steps; step++) {
+    applyPlayerMovement(player, input, stepSeconds, config);
+    constrainPlayerToArena(player, world.shipSize, world.arenaSize);
+    world.obstacles.forEach((obstacle) =>
+      resolveObstacle(player, world.shipSize, obstacle),
+    );
   }
 }
