@@ -61,14 +61,16 @@ export function createArena(
   textures: ArenaAssets,
   width: number,
   height: number,
-): Container {
+): { container: Container; ship: Sprite } {
   const arena = new Container();
   const water = new TilingSprite({ texture: textures.water, width, height });
   const island = createIsland(textures.island);
   island.position.set(width / 4, height / 2);
   const ship = new Sprite({ texture: textures.playerShip, anchor: 0.5 });
   ship.position.set(width / 2, height / 2);
+  // The supplied artwork points down; turn its bow toward the top.
+  ship.rotation = Math.PI;
 
   arena.addChild(water, island, ship);
-  return arena;
+  return { container: arena, ship };
 }

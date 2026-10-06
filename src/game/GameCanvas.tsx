@@ -1,6 +1,7 @@
 import { Application } from 'pixi.js';
 import { useEffect, useRef, useState } from 'react';
 import { createArena, loadArenaAssets } from './arena';
+import { startMovement } from './movement';
 
 export function GameCanvas() {
   const hostRef = useRef<HTMLDivElement>(null);
@@ -16,8 +17,11 @@ export function GameCanvas() {
     const app = new Application();
     let cancelled = false;
     let initialized = false;
+    let stopMovement: (() => void) | undefined;
 
     function destroy() {
+      stopMovement?.();
+      stopMovement = undefined;
       if (!initialized) return;
       initialized = false;
       app.destroy({ removeView: true }, { children: true });
@@ -45,14 +49,18 @@ export function GameCanvas() {
           return;
         }
 
-        app.stage.addChild(
-          createArena(textures, app.screen.width, app.screen.height),
+        const arena = createArena(
+          textures,
+          app.screen.width,
+          app.screen.height,
         );
+        app.stage.addChild(arena.container);
 
         app.canvas.setAttribute('aria-label', 'Naval battle arena');
         app.canvas.setAttribute('role', 'img');
         host!.appendChild(app.canvas);
         app.render();
+        stopMovement = startMovement(app, arena.ship);
         setStatus('ready');
       } catch (error) {
         if (initialized) destroy();
@@ -78,6 +86,7 @@ export function GameCanvas() {
   return (
     <>
       <div ref={hostRef} className="arena" />
+      <p>Hold W or ↑ to move forward.</p>
       {status === 'loading' && <p role="status">Loading arena...</p>}
       {status === 'error' && (
         <div role="alert">
