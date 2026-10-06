@@ -1,5 +1,5 @@
 import { Container, Sprite, type Texture } from 'pixi.js';
-import type { ProjectileState } from './weapon';
+import type { ProjectileState } from './mechanics/weapon';
 
 export function createProjectileRenderer(parent: Container, texture: Texture) {
   const layer = new Container();

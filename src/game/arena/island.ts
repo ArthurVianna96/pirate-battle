@@ -1,5 +1,5 @@
 import { Container, Sprite, type Texture } from 'pixi.js';
-import type { Obstacle } from '../collisions';
+import type { Obstacle } from '../mechanics/collisions';
 import type { IslandOptions } from './types';
 
 const ISLAND_LAYOUT = { tileSize: 64, columns: 3, rows: 3 } as const;

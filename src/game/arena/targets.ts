@@ -1,21 +1,29 @@
 import { Container, Graphics, Sprite, type Texture } from 'pixi.js';
-import type { Obstacle } from '../collisions';
+import { createTargetState, type TargetState } from '../mechanics/combat';
 import type { TargetOptions } from './types';
 
-export function createTargetRenderer(
-  parent: Container,
-  texture: Texture,
-  target: TargetState,
-) {
-  const group = new Container();
-  const ship = new Sprite({ texture, anchor: 0.5, tint: 0xff8888 });
-  const { bounds } = target;
-  group.position.set(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
+const renderHealthBar = (group: Container, bounds: TargetState['bounds']) => {
   const background = new Graphics().rect(0, 0, 48, 6).fill(0x263238);
   const health = new Graphics().rect(0, 0, 48, 6).fill(0x66dd88);
   background.position.set(-24, -bounds.height / 2 - 12);
   health.position.copyFrom(background.position);
-  group.addChild(ship, background, health);
+  group.addChild(background, health);
+  return health;
+};
+
+export function createTarget(
+  parent: Container,
+  texture: Texture,
+  target: TargetState,
+) {
+  const ship = new Sprite({ texture, anchor: 0.5, tint: 0xff8888 });
+  const { bounds } = target;
+
+  const group = new Container();
+  group.position.set(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
+  group.addChild(ship);
+
+  const health = renderHealthBar(group, bounds);
   parent.addChild(group);
 
   return {
@@ -33,28 +41,14 @@ export function createTargetRenderer(
   };
 }
 
-export interface TargetState {
-  bounds: Obstacle;
-  health: number;
-  maxHealth: number;
-}
-
-export function createTarget(bounds: Obstacle): TargetState {
-  return { bounds, health: 3, maxHealth: 3 };
-}
-
-export function damageTarget(target: TargetState, damage: number) {
-  target.health = Math.max(0, target.health - damage);
-}
-
 export const renderTarget = ({ ship, width, height, arena }: TargetOptions) => {
-  const target = createTarget({
+  const target = createTargetState({
     x: width * 0.75 - ship.width / 2,
     y: height / 2 - ship.height / 2,
     width: ship.width,
     height: ship.height,
   });
 
-  const targetRenderer = createTargetRenderer(arena, ship.texture, target);
+  const targetRenderer = createTarget(arena, ship.texture, target);
   return { target, targetRenderer };
 };

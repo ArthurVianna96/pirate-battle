@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
-import { constrainPlayerToArena } from '../src/game/collisions';
-import { movementConfig, updatePlayer } from '../src/game/simulation';
+import { constrainPlayerToArena } from '../src/game/mechanics/collisions';
+import { movementConfig, updatePlayer } from '../src/game/mechanics/simulation';
 
 test('movement cannot take the ship through any arena edge', () => {
   const arena = { width: 960, height: 540 };

@@ -1,12 +1,12 @@
 import { expect, test } from '@playwright/test';
-import { createTarget } from '../src/game/target';
+import { createTargetState } from '../src/game/mechanics/combat';
 import {
   createWeaponState,
   fireFront,
   fireSide,
   sideWeaponConfig,
   updateWeapon,
-} from '../src/game/weapon';
+} from '../src/game/mechanics/weapon';
 
 test('side shots remain parallel and rotate with the ship', () => {
   for (const heading of [0, Math.PI / 2, Math.PI / 4]) {
@@ -58,7 +58,12 @@ test('front, left and right weapons have independent cooldowns', () => {
 
 test('one broadside destroys the target and islands block all three shots', () => {
   const weapon = createWeaponState();
-  const target = createTarget({ x: 687, y: 213.5, width: 66, height: 113 });
+  const target = createTargetState({
+    x: 687,
+    y: 213.5,
+    width: 66,
+    height: 113,
+  });
   fireSide(weapon, { x: 480, y: 270, heading: 0 }, 'right');
   updateWeapon(weapon, 0.6, { width: 960, height: 540 }, [], [target]);
   expect(target.health).toBe(0);

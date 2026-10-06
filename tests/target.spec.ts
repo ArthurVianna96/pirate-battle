@@ -1,9 +1,18 @@
 import { expect, test } from '@playwright/test';
-import { createTarget } from '../src/game/target';
-import { createWeaponState, fireFront, updateWeapon } from '../src/game/weapon';
+import { createTargetState } from '../src/game/mechanics/combat';
+import {
+  createWeaponState,
+  fireFront,
+  updateWeapon,
+} from '../src/game/mechanics/weapon';
 
 test('three hits destroy the target and each projectile deals damage once', () => {
-  const target = createTarget({ x: 687, y: 213.5, width: 66, height: 113 });
+  const target = createTargetState({
+    x: 687,
+    y: 213.5,
+    width: 66,
+    height: 113,
+  });
   const weapon = createWeaponState();
   const player = { x: 480, y: 270, heading: Math.PI / 2 };
   for (let hit = 1; hit <= 3; hit++) {
@@ -21,7 +30,7 @@ test('three hits destroy the target and each projectile deals damage once', () =
 });
 
 test('an island protects the target behind it', () => {
-  const target = createTarget({ x: 750, y: 230, width: 66, height: 113 });
+  const target = createTargetState({ x: 750, y: 230, width: 66, height: 113 });
   const weapon = createWeaponState();
   fireFront(weapon, { x: 480, y: 270, heading: Math.PI / 2 });
   updateWeapon(

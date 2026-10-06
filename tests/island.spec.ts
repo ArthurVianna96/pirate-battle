@@ -1,6 +1,9 @@
 import { expect, test } from '@playwright/test';
-import { advancePlayer, overlapsObstacle } from '../src/game/collisions';
-import { movementConfig } from '../src/game/simulation';
+import {
+  advancePlayer,
+  overlapsObstacle,
+} from '../src/game/mechanics/collisions';
+import { movementConfig } from '../src/game/mechanics/simulation';
 
 const obstacle = { x: 144, y: 174, width: 192, height: 192 };
 const world = {

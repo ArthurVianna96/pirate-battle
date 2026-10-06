@@ -1,4 +1,4 @@
-import { damageTarget, type TargetState } from './arena/targets';
+import { damageTarget, type TargetState } from './combat';
 import { projectilePathHitsObstacle, type Obstacle } from './collisions';
 import type { PlayerState } from './simulation';
 

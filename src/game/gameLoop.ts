@@ -1,10 +1,15 @@
 import type { Application, Ticker } from 'pixi.js';
 import type { ArenaView } from './arena/types';
-import { advancePlayer } from './collisions';
-import { createKeyboardInput } from './input';
+import { advancePlayer } from './mechanics/collisions';
+import { createKeyboardInput } from './mechanics/input';
 import { createProjectileRenderer } from './projectileRenderer';
-import { movementConfig } from './simulation';
-import { createWeaponState, fireFront, fireSide, updateWeapon } from './weapon';
+import { movementConfig } from './mechanics/simulation';
+import {
+  createWeaponState,
+  fireFront,
+  fireSide,
+  updateWeapon,
+} from './mechanics/weapon';
 
 export function startGameLoop(app: Application, arena: ArenaView): () => void {
   const { ship, obstacles, target, targetRenderer } = arena;

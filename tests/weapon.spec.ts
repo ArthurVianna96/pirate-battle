@@ -4,7 +4,7 @@ import {
   fireFront,
   updateWeapon,
   frontWeaponConfig,
-} from '../src/game/weapon';
+} from '../src/game/mechanics/weapon';
 
 test('an island removes a projectile even when one frame crosses it entirely', () => {
   const weapon = createWeaponState();

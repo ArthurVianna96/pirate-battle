@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { movementConfig, updatePlayer } from '../src/game/simulation';
+import { movementConfig, updatePlayer } from '../src/game/mechanics/simulation';
 
 test('turning while advancing follows the same arc at 30 and 60 FPS', () => {
   function advance(frames: number) {

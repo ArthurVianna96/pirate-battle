@@ -1,7 +1,7 @@
 import type { Container, Sprite, Texture } from 'pixi.js';
-import type { Obstacle } from '../collisions';
-import type { TargetState } from '../target';
-import type { createTargetRenderer } from '../targetRenderer';
+import type { Obstacle } from '../mechanics/collisions';
+import type { TargetState } from '../mechanics/combat';
+import type { createTarget } from './targets';
 
 export interface ArenaAssets {
   playerShip: Texture;
@@ -16,7 +16,7 @@ export interface ArenaView {
   obstacles: Obstacle[];
   projectileTexture: Texture;
   target: TargetState;
-  targetRenderer: ReturnType<typeof createTargetRenderer>;
+  targetRenderer: ReturnType<typeof createTarget>;
 }
 
 export interface ArenaSize {
