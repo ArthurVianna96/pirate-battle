@@ -1,5 +1,5 @@
-import { damageTarget, type TargetState } from './combat';
 import { projectilePathHitsObstacle, type Obstacle } from './collisions';
+import { damageTarget, type TargetState } from './combat';
 import type { PlayerState } from './simulation';
 
 export const frontWeaponConfig = {
@@ -109,8 +109,17 @@ export function updateWeapon(
   weapon.cooldown = Math.max(0, weapon.cooldown - deltaSeconds);
   weapon.leftCooldown = Math.max(0, weapon.leftCooldown - deltaSeconds);
   weapon.rightCooldown = Math.max(0, weapon.rightCooldown - deltaSeconds);
+  let destroyedTargets = 0;
   for (const projectile of weapon.projectiles) {
-    updateProjectile(projectile, deltaSeconds, obstacles, targets);
+    const { isDestroyed } = updateProjectile(
+      projectile,
+      deltaSeconds,
+      obstacles,
+      targets,
+    );
+    if (isDestroyed) {
+      destroyedTargets++;
+    }
   }
   weapon.projectiles = weapon.projectiles.filter(
     (projectile) =>
@@ -120,6 +129,7 @@ export function updateWeapon(
       projectile.y >= 0 &&
       projectile.y <= arenaSize.height,
   );
+  return destroyedTargets;
 }
 
 function updateProjectile(
@@ -127,7 +137,7 @@ function updateProjectile(
   deltaSeconds: number,
   obstacles: readonly Obstacle[],
   targets: readonly TargetState[],
-) {
+): { isDestroyed: boolean } {
   const previousPosition = { x: projectile.x, y: projectile.y };
   const travelSeconds = Math.min(deltaSeconds, projectile.remainingLife);
   projectile.x += projectile.velocityX * travelSeconds;
@@ -144,7 +154,7 @@ function updateProjectile(
     )
   ) {
     projectile.remainingLife = 0;
-    return;
+    return { isDestroyed: false };
   }
   for (const target of targets) {
     if (
@@ -156,9 +166,10 @@ function updateProjectile(
         projectile.radius,
       )
     ) {
-      damageTarget(target, projectile.damage);
+      const { isDestroyed } = damageTarget(target, projectile.damage);
       projectile.remainingLife = 0;
-      break;
+      return { isDestroyed };
     }
   }
+  return { isDestroyed: false };
 }

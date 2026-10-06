@@ -10,7 +10,11 @@ import {
   updateWeapon,
 } from './mechanics/weapon';
 
-export function startGameLoop(app: Application, arena: ArenaView): () => void {
+export function startGameLoop(
+  app: Application,
+  arena: ArenaView,
+  onScoreChange: (score: number) => void,
+): () => void {
   const { ship, obstacles, target, targetRenderer } = arena;
   const keyboard = createKeyboardInput();
   const weapon = createWeaponState();
@@ -24,6 +28,7 @@ export function startGameLoop(app: Application, arena: ArenaView): () => void {
   const arenaSize = { width: app.screen.width, height: app.screen.height };
   const world = { shipSize, arenaSize, obstacles };
   const targets = [target];
+  let score = 0;
 
   function updateAttacks(deltaSeconds: number) {
     if (keyboard.input.shootFront) {
@@ -35,7 +40,17 @@ export function startGameLoop(app: Application, arena: ArenaView): () => void {
     if (keyboard.input.shootRight) {
       fireSide(weapon, player, 'right');
     }
-    updateWeapon(weapon, deltaSeconds, arenaSize, obstacles, targets);
+    const destroyedTargets = updateWeapon(
+      weapon,
+      deltaSeconds,
+      arenaSize,
+      obstacles,
+      targets,
+    );
+    if (destroyedTargets > 0) {
+      score += destroyedTargets;
+      onScoreChange(score);
+    }
   }
 
   function syncViews() {

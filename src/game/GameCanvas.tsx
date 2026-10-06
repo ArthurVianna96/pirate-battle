@@ -7,6 +7,7 @@ function mountArena(
   app: Application,
   host: HTMLDivElement,
   textures: Awaited<ReturnType<typeof loadArenaAssets>>,
+  onScoreChange: (score: number) => void,
 ) {
   const arena = createArena(textures, app.screen.width, app.screen.height);
   app.stage.addChild(arena.container);
@@ -14,7 +15,7 @@ function mountArena(
   app.canvas.setAttribute('role', 'img');
   host.appendChild(app.canvas);
   app.render();
-  return startGameLoop(app, arena);
+  return startGameLoop(app, arena, onScoreChange);
 }
 
 export function GameCanvas() {
@@ -23,6 +24,7 @@ export function GameCanvas() {
     'loading',
   );
   const [attempt, setAttempt] = useState(0);
+  const [score, setScore] = useState(0);
 
   useEffect(() => {
     const host = hostRef.current;
@@ -63,7 +65,7 @@ export function GameCanvas() {
           return;
         }
 
-        stopGameLoop = mountArena(app, host, textures);
+        stopGameLoop = mountArena(app, host, textures, setScore);
         setStatus('ready');
       } catch (error) {
         if (initialized) destroy();
@@ -88,6 +90,7 @@ export function GameCanvas() {
 
   return (
     <>
+      <p aria-live="polite">Score: {score}</p>
       <div ref={hostRef} className="arena" />
       <p>
         Hold W or ↑ to move forward. A/D or ←/→ to turn. Space to fire forward.
