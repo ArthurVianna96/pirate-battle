@@ -11,6 +11,7 @@ import islandBottomLeftUrl from '../../assets/png/default/tiles/tile_33.png';
 import islandBottomUrl from '../../assets/png/default/tiles/tile_34.png';
 import islandBottomRightUrl from '../../assets/png/default/tiles/tile_35.png';
 import type { Obstacle } from './collisions';
+import projectileUrl from '../../assets/png/default/ship_parts/cannon_ball.png';
 
 const islandLayout = { tileSize: 64, columns: 3, rows: 3 } as const;
 
@@ -30,16 +31,18 @@ interface ArenaAssets {
   playerShip: Texture;
   water: Texture;
   island: Texture[];
+  projectile: Texture;
 }
 
 export async function loadArenaAssets(): Promise<ArenaAssets> {
-  const [playerShip, water, island] = await Promise.all([
+  const [playerShip, water, island, projectile] = await Promise.all([
     Assets.load<Texture>(playerShipUrl),
     Assets.load<Texture>(waterUrl),
     Promise.all(islandTileUrls.map((url) => Assets.load<Texture>(url))),
+    Assets.load<Texture>(projectileUrl),
   ]);
 
-  return { playerShip, water, island };
+  return { playerShip, water, island, projectile };
 }
 
 function createIsland(textures: Texture[]): Container {
@@ -63,6 +66,7 @@ export interface ArenaView {
   container: Container;
   ship: Sprite;
   obstacles: Obstacle[];
+  projectileTexture: Texture;
 }
 
 export function createArena(
@@ -94,5 +98,6 @@ export function createArena(
     container: arena,
     ship,
     obstacles,
+    projectileTexture: textures.projectile,
   };
 }
