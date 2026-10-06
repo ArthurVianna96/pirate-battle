@@ -9,30 +9,32 @@ import {
   type ProjectileState,
 } from './weapon';
 
-export function createEnemyWeaponState() {
+export function createEnemyProjectilesState() {
   return { nextId: 1, projectiles: [] as ProjectileState[] };
 }
 
-export type EnemyWeaponState = ReturnType<typeof createEnemyWeaponState>;
+export type EnemyProjectilesState = ReturnType<
+  typeof createEnemyProjectilesState
+>;
 
 export function fireEnemyFront(
-  weapon: EnemyWeaponState,
+  projectiles: EnemyProjectilesState,
   position: PlayerState,
   config: FrontWeaponConfig,
 ) {
-  weapon.projectiles.push(
-    createFrontProjectile(weapon.nextId++, position, config),
+  projectiles.projectiles.push(
+    createFrontProjectile(projectiles.nextId++, position, config),
   );
 }
 
 export function updateEnemyProjectiles(
-  weapon: EnemyWeaponState,
+  projectiles: EnemyProjectilesState,
   deltaSeconds: number,
   player: PlayerCombatState,
   { arenaSize, shipSize, obstacles }: MovementWorld,
 ) {
   const playerBounds = getShipBounds(player, shipSize);
-  for (const projectile of weapon.projectiles) {
+  for (const projectile of projectiles.projectiles) {
     const previousPosition = advanceProjectile(
       projectile,
       deltaSeconds,
@@ -51,7 +53,7 @@ export function updateEnemyProjectiles(
       projectile.remainingLife = 0;
     }
   }
-  weapon.projectiles = weapon.projectiles.filter((projectile) =>
+  projectiles.projectiles = projectiles.projectiles.filter((projectile) =>
     isProjectileActive(projectile, arenaSize),
   );
 }

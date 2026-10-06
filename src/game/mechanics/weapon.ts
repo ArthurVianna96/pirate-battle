@@ -43,7 +43,7 @@ export function createWeaponState() {
   };
 }
 
-type WeaponState = ReturnType<typeof createWeaponState>;
+export type WeaponState = ReturnType<typeof createWeaponState>;
 
 export function fireFront(weapon: WeaponState, player: PlayerState) {
   if (weapon.cooldown > 1e-9) return;

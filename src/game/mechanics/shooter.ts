@@ -3,7 +3,7 @@ import { createMovingEnemyState, type MovingEnemyState } from './combat';
 import { updateEnemyMovement, type EnemyMovementWorld } from './enemyMovement';
 import type { MovementConfig, PlayerState } from './simulation';
 import type { PlayerCombatState } from './combat';
-import { fireEnemyFront, type EnemyWeaponState } from './enemyWeapon';
+import { fireEnemyFront, type EnemyProjectilesState } from './enemyProjectiles';
 import { frontWeaponConfig } from './weapon';
 
 export const shooterConfig = {
@@ -37,7 +37,7 @@ export function updateShooterAttack(
   shooter: ShooterState,
   player: PlayerCombatState,
   deltaSeconds: number,
-  weapon: EnemyWeaponState,
+  projectiles: EnemyProjectilesState,
   config: ShooterConfig = shooterConfig,
 ) {
   if (shooter.health === 0 || player.health === 0) return;
@@ -55,7 +55,7 @@ export function updateShooterAttack(
   );
   if (Math.abs(aimError) > config.aimTolerance) return;
 
-  fireEnemyFront(weapon, shooter.position, shooterWeaponConfig);
+  fireEnemyFront(projectiles, shooter.position, shooterWeaponConfig);
   shooter.fireCooldown = shooterWeaponConfig.cooldown;
 }
 

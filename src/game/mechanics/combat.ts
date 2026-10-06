@@ -8,14 +8,6 @@ export interface PlayerCombatState extends PlayerState {
   maxHealth: number;
 }
 
-export function createPlayerState(position: PlayerState): PlayerCombatState {
-  return {
-    ...position,
-    health: combatConfig.playerHealth,
-    maxHealth: combatConfig.playerHealth,
-  };
-}
-
 export interface EnemyState {
   bounds: Obstacle;
   health: number;

@@ -4,7 +4,7 @@ import {
   resolveChaserImpact,
   updateChaser,
 } from '../src/game/mechanics/chaser';
-import { createPlayerState } from '../src/game/mechanics/combat';
+import { createPlayerState } from '../src/game/mechanics/player';
 import {
   createWeaponState,
   fireFront,

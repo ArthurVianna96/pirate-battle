@@ -4,25 +4,20 @@ import { createHealthBar } from './arena/healthBar';
 import { createProjectile } from './arena/projectiles';
 import type { ArenaView } from './arena/types';
 import { resolveChaserImpact, updateChaser } from './mechanics/chaser';
-import { updateShooter, updateShooterAttack } from './mechanics/shooter';
 import {
-  createEnemyWeaponState,
+  createEnemyProjectilesState,
   updateEnemyProjectiles,
-} from './mechanics/enemyWeapon';
-import { createPlayerState } from './mechanics/combat';
+} from './mechanics/enemyProjectiles';
 import { createKeyboardInput } from './mechanics/input';
+import { createPlayerState } from './mechanics/player';
+import { updateShooter, updateShooterAttack } from './mechanics/shooter';
 import { movementConfig, updatePlayer } from './mechanics/simulation';
 import {
   createSpawnerState,
   findEnemySpawn,
   updateSpawner,
 } from './mechanics/spawning';
-import {
-  createWeaponState,
-  fireFront,
-  fireSide,
-  updateWeapon,
-} from './mechanics/weapon';
+import { fireFront, fireSide, updateWeapon } from './mechanics/weapon';
 
 export function startGameLoop(
   app: Application,
@@ -32,10 +27,9 @@ export function startGameLoop(
 ): () => void {
   const { ship, obstacles } = arena;
   const keyboard = createKeyboardInput();
-  const weapon = createWeaponState();
-  const enemyWeapon = createEnemyWeaponState();
+  const enemyProjectilesState = createEnemyProjectilesState();
   const spawner = createSpawnerState();
-  const projectiles = createProjectile(
+  const playerProjectiles = createProjectile(
     arena.container,
     arena.projectileTexture,
   );
@@ -100,7 +94,7 @@ export function startGameLoop(
   function updateAttacks(deltaSeconds: number) {
     fireWeapons();
     const destroyedEnemies = updateWeapon(
-      weapon,
+      player.weapon,
       deltaSeconds,
       arenaSize,
       obstacles,
@@ -113,22 +107,27 @@ export function startGameLoop(
     const previousHealth = player.health;
     for (const enemy of arena.enemies) {
       if (enemy.kind === 'shooter') {
-        updateShooterAttack(enemy.state, player, deltaSeconds, enemyWeapon);
+        updateShooterAttack(
+          enemy.state,
+          player,
+          deltaSeconds,
+          enemyProjectilesState,
+        );
       }
     }
-    updateEnemyProjectiles(enemyWeapon, deltaSeconds, player, world);
+    updateEnemyProjectiles(enemyProjectilesState, deltaSeconds, player, world);
     if (player.health !== previousHealth) onHealthChange(player.health);
   }
 
   function fireWeapons() {
     if (keyboard.input.shootFront) {
-      fireFront(weapon, player);
+      fireFront(player.weapon, player);
     }
     if (keyboard.input.shootLeft) {
-      fireSide(weapon, player, 'left');
+      fireSide(player.weapon, player, 'left');
     }
     if (keyboard.input.shootRight) {
-      fireSide(weapon, player, 'right');
+      fireSide(player.weapon, player, 'right');
     }
   }
 
@@ -159,8 +158,8 @@ export function startGameLoop(
   function syncViews() {
     syncPlayer();
     for (const { renderer } of arena.enemies) renderer.sync();
-    projectiles.sync(weapon.projectiles);
-    enemyProjectiles.sync(enemyWeapon.projectiles);
+    playerProjectiles.sync(player.weapon.projectiles);
+    enemyProjectiles.sync(enemyProjectilesState.projectiles);
   }
 
   function syncPlayer() {
@@ -184,7 +183,7 @@ export function startGameLoop(
     app.stop();
     app.ticker.remove(update);
     keyboard.destroy();
-    projectiles.destroy();
+    playerProjectiles.destroy();
     enemyProjectiles.destroy();
     arena.enemies.forEach(({ renderer }) => renderer.destroy());
     playerHealth.bar.destroy({ children: true });
