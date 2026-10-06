@@ -1,5 +1,5 @@
 import { projectilePathHitsObstacle, type Obstacle } from './collisions';
-import { damageTarget, type TargetState } from './combat';
+import { damageEnemy, type EnemyState } from './combat';
 import type { PlayerState } from './simulation';
 
 export const frontWeaponConfig = {
@@ -104,21 +104,21 @@ export function updateWeapon(
   deltaSeconds: number,
   arenaSize: { width: number; height: number },
   obstacles: readonly Obstacle[] = [],
-  targets: readonly TargetState[] = [],
+  enemies: readonly EnemyState[] = [],
 ) {
   weapon.cooldown = Math.max(0, weapon.cooldown - deltaSeconds);
   weapon.leftCooldown = Math.max(0, weapon.leftCooldown - deltaSeconds);
   weapon.rightCooldown = Math.max(0, weapon.rightCooldown - deltaSeconds);
-  let destroyedTargets = 0;
+  let destroyedEnemies = 0;
   for (const projectile of weapon.projectiles) {
     const { isDestroyed } = updateProjectile(
       projectile,
       deltaSeconds,
       obstacles,
-      targets,
+      enemies,
     );
     if (isDestroyed) {
-      destroyedTargets++;
+      destroyedEnemies++;
     }
   }
   weapon.projectiles = weapon.projectiles.filter(
@@ -129,14 +129,14 @@ export function updateWeapon(
       projectile.y >= 0 &&
       projectile.y <= arenaSize.height,
   );
-  return destroyedTargets;
+  return destroyedEnemies;
 }
 
 function updateProjectile(
   projectile: ProjectileState,
   deltaSeconds: number,
   obstacles: readonly Obstacle[],
-  targets: readonly TargetState[],
+  enemies: readonly EnemyState[],
 ): { isDestroyed: boolean } {
   const previousPosition = { x: projectile.x, y: projectile.y };
   const travelSeconds = Math.min(deltaSeconds, projectile.remainingLife);
@@ -156,17 +156,17 @@ function updateProjectile(
     projectile.remainingLife = 0;
     return { isDestroyed: false };
   }
-  for (const target of targets) {
+  for (const enemy of enemies) {
     if (
-      target.health > 0 &&
+      enemy.health > 0 &&
       projectilePathHitsObstacle(
         previousPosition,
         projectile,
-        target.bounds,
+        enemy.bounds,
         projectile.radius,
       )
     ) {
-      const { isDestroyed } = damageTarget(target, projectile.damage);
+      const { isDestroyed } = damageEnemy(enemy, projectile.damage);
       projectile.remainingLife = 0;
       return { isDestroyed };
     }

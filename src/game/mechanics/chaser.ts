@@ -1,21 +1,21 @@
 import { type Obstacle, type Size } from './collisions';
-import { createTargetState, type TargetState } from './combat';
+import { createEnemyState, type EnemyState } from './combat';
 import { updatePlayer, type PlayerState } from './simulation';
 
 export const chaserConfig = {
   speed: 60,
   rotationSpeed: Math.PI / 2,
-  stopDistance: 80,
+  stopDistance: 110,
 } as const;
 
-export interface ChaserState extends TargetState {
+export interface ChaserState extends EnemyState {
   position: PlayerState;
   shipSize: Size;
 }
 
 export function createChaserState(bounds: Obstacle): ChaserState {
   return {
-    ...createTargetState({ ...bounds }),
+    ...createEnemyState({ ...bounds }),
     position: {
       x: bounds.x + bounds.width / 2,
       y: bounds.y + bounds.height / 2,

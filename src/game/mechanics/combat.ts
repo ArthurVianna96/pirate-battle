@@ -1,20 +1,20 @@
 import type { Obstacle } from './collisions';
 
-export interface TargetState {
+export interface EnemyState {
   bounds: Obstacle;
   health: number;
   maxHealth: number;
 }
 
-export function createTargetState(bounds: Obstacle): TargetState {
+export function createEnemyState(bounds: Obstacle): EnemyState {
   return { bounds, health: 3, maxHealth: 3 };
 }
 
-export function damageTarget(
-  target: TargetState,
+export function damageEnemy(
+  enemy: EnemyState,
   damage: number,
 ): { isDestroyed: boolean } {
-  const wasAlive = target.health > 0;
-  target.health = Math.max(0, target.health - damage);
-  return { isDestroyed: wasAlive && target.health === 0 };
+  const wasAlive = enemy.health > 0;
+  enemy.health = Math.max(0, enemy.health - damage);
+  return { isDestroyed: wasAlive && enemy.health === 0 };
 }

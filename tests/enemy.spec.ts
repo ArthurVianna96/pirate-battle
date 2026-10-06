@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { createTargetState } from '../src/game/mechanics/combat';
+import { createEnemyState } from '../src/game/mechanics/combat';
 import {
   createWeaponState,
   fireFront,
@@ -7,7 +7,7 @@ import {
 } from '../src/game/mechanics/weapon';
 
 test('three hits destroy the target and each projectile deals damage once', () => {
-  const target = createTargetState({
+  const target = createEnemyState({
     x: 687,
     y: 213.5,
     width: 66,
@@ -30,7 +30,7 @@ test('three hits destroy the target and each projectile deals damage once', () =
 });
 
 test('an island protects the target behind it', () => {
-  const target = createTargetState({ x: 750, y: 230, width: 66, height: 113 });
+  const target = createEnemyState({ x: 750, y: 230, width: 66, height: 113 });
   const weapon = createWeaponState();
   fireFront(weapon, { x: 480, y: 270, heading: Math.PI / 2 });
   updateWeapon(
@@ -44,35 +44,23 @@ test('an island protects the target behind it', () => {
   expect(weapon.projectiles).toHaveLength(0);
 });
 
-test('keyboard shots change target health and destruction removes its rendering', async ({
+test('destroying the Chaser removes its rendering and stops its movement', async ({
   page,
 }) => {
   await page.clock.install({ time: new Date('2026-01-01T00:00:00Z') });
   await page.goto('/');
   await page.getByRole('button', { name: 'Play', exact: true }).click();
-  await expect(page.locator('canvas')).toHaveCount(1);
   await expect(page.getByRole('status')).toHaveCount(0);
   await page.clock.pauseAt(new Date('2026-01-01T00:00:10Z'));
-  await page.keyboard.down('d');
-  await page.clock.runFor(500);
-  await page.keyboard.up('d');
   const initial = await page.locator('canvas').screenshot();
-  await page.keyboard.down('Space');
+  await page.keyboard.down('e');
   await page.clock.runFor(32);
-  await page.keyboard.up('Space');
+  await page.keyboard.up('e');
   await page.clock.runFor(800);
-  const damaged = await page.locator('canvas').screenshot();
-  expect(damaged.equals(initial)).toBe(false);
-  await page.keyboard.down('Space');
-  await page.clock.runFor(900);
-  await page.keyboard.up('Space');
-  await page.clock.runFor(2500);
+  await expect(page.getByText('Score: 1', { exact: true })).toBeVisible();
   const destroyed = await page.locator('canvas').screenshot();
-  expect(destroyed.equals(damaged)).toBe(false);
-  await page.keyboard.down('Space');
-  await page.clock.runFor(32);
-  await page.keyboard.up('Space');
-  await page.clock.runFor(2500);
+  expect(destroyed.equals(initial)).toBe(false);
+  await page.clock.runFor(500);
   expect((await page.locator('canvas').screenshot()).equals(destroyed)).toBe(
     true,
   );

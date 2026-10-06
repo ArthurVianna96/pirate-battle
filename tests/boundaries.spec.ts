@@ -1,3 +1,4 @@
+import { arenaScreenshot } from './helpers/arenaScreenshot';
 import { expect, test } from '@playwright/test';
 import { constrainPlayerToArena } from '../src/game/mechanics/collisions';
 import {
@@ -59,19 +60,40 @@ test('holding forward stops at the edge and stays blocked after resize', async (
   await expect(page.getByRole('status')).toHaveCount(0);
   await page.clock.pauseAt(new Date('2026-01-01T00:00:10Z'));
 
-  const initial = await page.locator('canvas').screenshot();
+  const initial = await arenaScreenshot(page, {
+    x: 465,
+    y: 0,
+    width: 30,
+    height: 25,
+  });
   await page.keyboard.down('w');
   await page.clock.runFor(3000);
-  const atEdge = await page.locator('canvas').screenshot();
+  const atEdge = await arenaScreenshot(page, {
+    x: 465,
+    y: 0,
+    width: 30,
+    height: 25,
+  });
   expect(atEdge.equals(initial)).toBe(false);
   await page.clock.runFor(1000);
-  expect((await page.locator('canvas').screenshot()).equals(atEdge)).toBe(true);
+  expect(
+    (
+      await arenaScreenshot(page, { x: 465, y: 0, width: 30, height: 25 })
+    ).equals(atEdge),
+  ).toBe(true);
 
   await page.setViewportSize({ width: 640, height: 800 });
-  const resized = await page.locator('canvas').screenshot();
+  const resized = await arenaScreenshot(page, {
+    x: 465,
+    y: 0,
+    width: 30,
+    height: 25,
+  });
   await page.clock.runFor(1000);
-  expect((await page.locator('canvas').screenshot()).equals(resized)).toBe(
-    true,
-  );
+  expect(
+    (
+      await arenaScreenshot(page, { x: 465, y: 0, width: 30, height: 25 })
+    ).equals(resized),
+  ).toBe(true);
   await page.keyboard.up('w');
 });

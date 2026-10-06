@@ -1,0 +1,54 @@
+import { Container, Graphics, Sprite, type Texture } from 'pixi.js';
+import type { EnemyState } from '../mechanics/combat';
+import type { PlayerState } from '../mechanics/simulation';
+
+const renderHealthBar = (group: Container, bounds: EnemyState['bounds']) => {
+  const bar = new Container();
+  const background = new Graphics().rect(0, 0, 48, 6).fill(0x263238);
+  const health = new Graphics().rect(0, 0, 48, 6).fill(0x66dd88);
+  bar.position.set(-24, -bounds.height / 2 - 12);
+  bar.addChild(background, health);
+  group.addChild(bar);
+  return { bar, health };
+};
+
+export function createEnemy(
+  parent: Container,
+  texture: Texture,
+  enemy: EnemyState,
+  options: { position?: PlayerState; tint?: number } = {},
+) {
+  const ship = new Sprite({
+    texture,
+    anchor: 0.5,
+    tint: options.tint ?? 0xff8888,
+  });
+  const { bounds } = enemy;
+
+  const group = new Container();
+  group.position.set(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
+  group.addChild(ship);
+
+  const { bar, health } = renderHealthBar(group, bounds);
+  parent.addChild(group);
+
+  return {
+    sync() {
+      if (group.destroyed) return;
+      if (enemy.health === 0) {
+        group.destroy({ children: true });
+        return;
+      }
+      health.scale.x = enemy.health / enemy.maxHealth;
+      bar.y = -bounds.height / 2 - 12;
+      group.position.set(
+        bounds.x + bounds.width / 2,
+        bounds.y + bounds.height / 2,
+      );
+      if (options.position) ship.rotation = options.position.heading + Math.PI;
+    },
+    destroy() {
+      if (!group.destroyed) group.destroy({ children: true });
+    },
+  };
+}

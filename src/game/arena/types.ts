@@ -1,7 +1,7 @@
 import type { Container, Sprite, Texture } from 'pixi.js';
 import type { Obstacle } from '../mechanics/collisions';
-import type { TargetState } from '../mechanics/combat';
-import type { createTarget } from './targets';
+import type { createEnemy } from './enemies';
+import type { ChaserState } from '../mechanics/chaser';
 
 export interface ArenaAssets {
   playerShip: Texture;
@@ -15,8 +15,8 @@ export interface ArenaView {
   ship: Sprite;
   obstacles: Obstacle[];
   projectileTexture: Texture;
-  target: TargetState;
-  targetRenderer: ReturnType<typeof createTarget>;
+  chaser: ChaserState;
+  chaserRenderer: ReturnType<typeof createEnemy>;
 }
 
 export interface ArenaSize {
@@ -32,7 +32,7 @@ export interface IslandOptions extends ArenaSize {
   texture: Texture[];
 }
 
-export interface TargetOptions extends ArenaSize {
+export interface EnemyOptions extends ArenaSize {
   ship: Sprite;
   arena: Container;
 }

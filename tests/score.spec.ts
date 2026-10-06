@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { createTargetState, damageTarget } from '../src/game/mechanics/combat';
+import { createEnemyState, damageEnemy } from '../src/game/mechanics/combat';
 import {
   createWeaponState,
   fireFront,
@@ -8,17 +8,17 @@ import {
 } from '../src/game/mechanics/weapon';
 
 test('damage reports destruction only once', () => {
-  const target = createTargetState({ x: 0, y: 0, width: 66, height: 113 });
-  expect(damageTarget(target, 1)).toEqual({ isDestroyed: false });
-  expect(damageTarget(target, 5)).toEqual({ isDestroyed: true });
-  expect(damageTarget(target, 1)).toEqual({ isDestroyed: false });
+  const target = createEnemyState({ x: 0, y: 0, width: 66, height: 113 });
+  expect(damageEnemy(target, 1)).toEqual({ isDestroyed: false });
+  expect(damageEnemy(target, 5)).toEqual({ isDestroyed: true });
+  expect(damageEnemy(target, 1)).toEqual({ isDestroyed: false });
   expect(target.health).toBe(0);
 });
 
 test('missed shots and island impacts award no points', () => {
   const weapon = createWeaponState();
   const player = { x: 480, y: 270, heading: 0 };
-  const target = createTargetState({
+  const target = createEnemyState({
     x: 687,
     y: 213.5,
     width: 66,
@@ -47,14 +47,14 @@ test('firing away from the target keeps the visible score at zero', async ({
     await page.keyboard.down(key);
     await page.clock.runFor(100);
     await expect(page.getByText('Score: 0', { exact: true })).toBeVisible();
-    await page.clock.runFor(2500);
+    await page.clock.runFor(1000);
     await page.keyboard.up(key);
     await expect(page.getByText('Score: 0', { exact: true })).toBeVisible();
   }
 });
 
 test('weapon updates count destroyed targets rather than individual hits', () => {
-  const target = createTargetState({
+  const target = createEnemyState({
     x: 687,
     y: 213.5,
     width: 66,
@@ -102,7 +102,7 @@ for (const attack of ['front', 'side'] as const) {
       ).toBeVisible();
     }
     await page.keyboard.down(key);
-    await page.clock.runFor(2500);
+    await page.clock.runFor(1000);
     await page.keyboard.up(key);
     await expect(page.getByText('Score: 1', { exact: true })).toBeVisible();
     await page.getByRole('button', { name: 'Main Menu', exact: true }).click();

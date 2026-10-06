@@ -1,3 +1,4 @@
+import { arenaScreenshot } from './helpers/arenaScreenshot';
 import { expect, test } from '@playwright/test';
 import {
   movementConfig,
@@ -64,10 +65,10 @@ test('keyboard rotation works together with forward movement', async ({
   await expect(page.getByRole('status')).toHaveCount(0);
   await page.clock.pauseAt(new Date('2026-01-01T00:00:10Z'));
 
-  const initial = await page.locator('canvas').screenshot();
+  const initial = await arenaScreenshot(page);
   await page.keyboard.down('ArrowRight');
   await page.clock.runFor(250);
-  const turned = await page.locator('canvas').screenshot();
+  const turned = await arenaScreenshot(page);
   expect(turned.equals(initial)).toBe(false);
 
   await page.keyboard.down('w');
@@ -75,10 +76,10 @@ test('keyboard rotation works together with forward movement', async ({
   await page.keyboard.up('ArrowRight');
   await page.keyboard.up('w');
   await page.clock.runFor(50);
-  const moved = await page.locator('canvas').screenshot();
+  const moved = await arenaScreenshot(page);
   expect(moved.equals(turned)).toBe(false);
   await page.clock.runFor(500);
-  expect((await page.locator('canvas').screenshot()).equals(moved)).toBe(true);
+  expect((await arenaScreenshot(page)).equals(moved)).toBe(true);
 });
 
 test('one second of movement covers the same distance at 30 and 60 FPS', () => {
@@ -109,15 +110,15 @@ test('holding W moves the rendered ship and releasing stops it', async ({
   await expect(page.getByRole('status')).toHaveCount(0);
   await page.clock.pauseAt(new Date('2026-01-01T00:00:10Z'));
 
-  const initial = await page.locator('canvas').screenshot();
+  const initial = await arenaScreenshot(page);
   await page.keyboard.down('w');
   await page.clock.runFor(500);
   await page.keyboard.up('w');
   await page.clock.runFor(50);
-  const moved = await page.locator('canvas').screenshot();
+  const moved = await arenaScreenshot(page);
   expect(moved.equals(initial)).toBe(false);
 
   await page.clock.runFor(500);
-  const stopped = await page.locator('canvas').screenshot();
+  const stopped = await arenaScreenshot(page);
   expect(stopped.equals(moved)).toBe(true);
 });

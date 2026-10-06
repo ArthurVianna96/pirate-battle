@@ -1,3 +1,4 @@
+import { arenaScreenshot } from './helpers/arenaScreenshot';
 import { expect, test } from '@playwright/test';
 import {
   createWeaponState,
@@ -40,17 +41,13 @@ test('keyboard fire disappears on impact with the island before expiring', async
   await page.keyboard.down('a');
   await page.clock.runFor(500);
   await page.keyboard.up('a');
-  const initial = await page.locator('canvas').screenshot();
+  const initial = await arenaScreenshot(page);
   await page.keyboard.down('Space');
   await page.clock.runFor(32);
   await page.keyboard.up('Space');
-  expect((await page.locator('canvas').screenshot()).equals(initial)).toBe(
-    false,
-  );
+  expect((await arenaScreenshot(page)).equals(initial)).toBe(false);
   await page.clock.runFor(500);
-  expect((await page.locator('canvas').screenshot()).equals(initial)).toBe(
-    true,
-  );
+  expect((await arenaScreenshot(page)).equals(initial)).toBe(true);
 });
 
 test('the cooldown blocks repeated calls and permits the next shot', () => {
@@ -114,26 +111,22 @@ test('Space renders a projectile and its removal restores the arena', async ({
   await expect(page.locator('canvas')).toHaveCount(1);
   await expect(page.getByRole('status')).toHaveCount(0);
   await page.clock.pauseAt(new Date('2026-01-01T00:00:10Z'));
-  const initial = await page.locator('canvas').screenshot();
+  const initial = await arenaScreenshot(page);
   await page.keyboard.down('Space');
   await page.clock.runFor(32);
   await page.keyboard.up('Space');
-  expect((await page.locator('canvas').screenshot()).equals(initial)).toBe(
-    false,
-  );
+  expect((await arenaScreenshot(page)).equals(initial)).toBe(false);
   await page.clock.runFor(2000);
-  expect((await page.locator('canvas').screenshot()).equals(initial)).toBe(
-    true,
-  );
+  expect((await arenaScreenshot(page)).equals(initial)).toBe(true);
 
   await page.keyboard.down('w');
   await page.keyboard.down('Space');
   await page.clock.runFor(200);
   await page.keyboard.up('w');
   await page.keyboard.up('Space');
-  const movingAndFiring = await page.locator('canvas').screenshot();
+  const movingAndFiring = await arenaScreenshot(page);
   await page.clock.runFor(2000);
-  const moved = await page.locator('canvas').screenshot();
+  const moved = await arenaScreenshot(page);
   expect(movingAndFiring.equals(moved)).toBe(false);
   expect(moved.equals(initial)).toBe(false);
 });

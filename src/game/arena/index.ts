@@ -1,8 +1,8 @@
 import { Container, TilingSprite } from 'pixi.js';
 import { renderIsland } from './island';
 import { renderShip } from './ship';
-import { renderTarget } from './targets';
 import type { ArenaAssets, ArenaView } from './types';
+import { renderChaser } from './chaser';
 
 export { loadArenaAssets } from './assets';
 
@@ -21,7 +21,7 @@ export function createArena(
   });
 
   arena.addChild(water, island, ship);
-  const { target, targetRenderer } = renderTarget({
+  const { chaser, chaserRenderer } = renderChaser({
     ship,
     width,
     height,
@@ -33,7 +33,7 @@ export function createArena(
     ship,
     obstacles,
     projectileTexture: textures.projectile,
-    target,
-    targetRenderer,
+    chaser,
+    chaserRenderer,
   };
 }

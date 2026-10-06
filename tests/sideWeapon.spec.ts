@@ -1,5 +1,6 @@
+import { arenaScreenshot } from './helpers/arenaScreenshot';
 import { expect, test } from '@playwright/test';
-import { createTargetState } from '../src/game/mechanics/combat';
+import { createEnemyState } from '../src/game/mechanics/combat';
 import {
   createWeaponState,
   fireFront,
@@ -58,7 +59,7 @@ test('front, left and right weapons have independent cooldowns', () => {
 
 test('one broadside destroys the target and islands block all three shots', () => {
   const weapon = createWeaponState();
-  const target = createTargetState({
+  const target = createEnemyState({
     x: 687,
     y: 213.5,
     width: 66,
@@ -76,7 +77,7 @@ test('one broadside destroys the target and islands block all three shots', () =
   expect(weapon.projectiles).toHaveLength(0);
 });
 
-test('Q renders a broadside and E destroys the target through keyboard input', async ({
+test('Q renders a broadside and E destroys the Chaser through keyboard input', async ({
   page,
 }) => {
   await page.clock.install({ time: new Date('2026-01-01T00:00:00Z') });
@@ -85,28 +86,22 @@ test('Q renders a broadside and E destroys the target through keyboard input', a
   await expect(page.locator('canvas')).toHaveCount(1);
   await expect(page.getByRole('status')).toHaveCount(0);
   await page.clock.pauseAt(new Date('2026-01-01T00:00:10Z'));
-  const initial = await page.locator('canvas').screenshot();
+  const initial = await arenaScreenshot(page);
   await page.keyboard.down('q');
   await page.clock.runFor(32);
   await page.keyboard.up('q');
-  expect((await page.locator('canvas').screenshot()).equals(initial)).toBe(
-    false,
-  );
+  expect((await arenaScreenshot(page)).equals(initial)).toBe(false);
   await page.clock.runFor(600);
-  expect((await page.locator('canvas').screenshot()).equals(initial)).toBe(
-    true,
-  );
+  expect((await arenaScreenshot(page)).equals(initial)).toBe(true);
   await page.keyboard.down('e');
   await page.clock.runFor(32);
   await page.keyboard.up('e');
   await page.clock.runFor(800);
-  const destroyed = await page.locator('canvas').screenshot();
-  expect(destroyed.equals(initial)).toBe(false);
+  const destroyed = await arenaScreenshot(page);
+  await expect(page.getByText('Score: 1', { exact: true })).toBeVisible();
   await page.keyboard.down('e');
   await page.clock.runFor(32);
   await page.keyboard.up('e');
   await page.clock.runFor(2500);
-  expect((await page.locator('canvas').screenshot()).equals(destroyed)).toBe(
-    true,
-  );
+  expect((await arenaScreenshot(page)).equals(destroyed)).toBe(true);
 });

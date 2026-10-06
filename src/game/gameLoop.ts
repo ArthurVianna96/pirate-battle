@@ -3,6 +3,7 @@ import type { ArenaView } from './arena/types';
 import { createKeyboardInput } from './mechanics/input';
 import { createProjectile } from './arena/projectiles';
 import { movementConfig, updatePlayer } from './mechanics/simulation';
+import { updateChaser } from './mechanics/chaser';
 import {
   createWeaponState,
   fireFront,
@@ -15,7 +16,7 @@ export function startGameLoop(
   arena: ArenaView,
   onScoreChange: (score: number) => void,
 ): () => void {
-  const { ship, obstacles, target, targetRenderer } = arena;
+  const { ship, obstacles, chaser, chaserRenderer } = arena;
   const keyboard = createKeyboardInput();
   const weapon = createWeaponState();
   const projectiles = createProjectile(
@@ -27,7 +28,7 @@ export function startGameLoop(
   const shipSize = { width: ship.width, height: ship.height };
   const arenaSize = { width: app.screen.width, height: app.screen.height };
   const world = { shipSize, arenaSize, obstacles };
-  const targets = [target];
+  const enemies = [chaser];
   let score = 0;
 
   function updateAttacks(deltaSeconds: number) {
@@ -40,15 +41,15 @@ export function startGameLoop(
     if (keyboard.input.shootRight) {
       fireSide(weapon, player, 'right');
     }
-    const destroyedTargets = updateWeapon(
+    const destroyedEnemies = updateWeapon(
       weapon,
       deltaSeconds,
       arenaSize,
       obstacles,
-      targets,
+      enemies,
     );
-    if (destroyedTargets > 0) {
-      score += destroyedTargets;
+    if (destroyedEnemies > 0) {
+      score += destroyedEnemies;
       onScoreChange(score);
     }
   }
@@ -56,13 +57,14 @@ export function startGameLoop(
   function syncViews() {
     ship.position.set(player.x, player.y);
     ship.rotation = player.heading + Math.PI;
-    targetRenderer.sync();
+    chaserRenderer.sync();
     projectiles.sync(weapon.projectiles);
   }
 
   function update(ticker: Ticker) {
     const deltaSeconds = ticker.deltaMS / 1000;
     updatePlayer(player, keyboard.input, deltaSeconds, movementConfig, world);
+    updateChaser(chaser, player, deltaSeconds, world);
     updateAttacks(deltaSeconds);
     syncViews();
   }
@@ -75,6 +77,6 @@ export function startGameLoop(
     app.ticker.remove(update);
     keyboard.destroy();
     projectiles.destroy();
-    targetRenderer.destroy();
+    chaserRenderer.destroy();
   };
 }
