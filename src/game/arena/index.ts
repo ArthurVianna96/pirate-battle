@@ -1,6 +1,6 @@
 import { Container, TilingSprite } from 'pixi.js';
 import { renderIsland } from './island';
-import { renderShip } from './ship';
+import { renderPlayer } from './player';
 import type { ArenaAssets, ArenaView } from './types';
 import { renderChaser } from './chaser';
 import { renderShooter } from './shooter';
@@ -15,7 +15,7 @@ export function createArena(
 ): ArenaView {
   const arena = new Container();
   const water = new TilingSprite({ texture: textures.water, width, height });
-  const ship = renderShip({ texture: textures.playerShip, width, height });
+  const ship = renderPlayer({ texture: textures.playerShip, width, height });
   const { island, obstacles } = renderIsland({
     texture: textures.island,
     width,

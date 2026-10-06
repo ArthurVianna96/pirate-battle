@@ -1,7 +1,7 @@
 import { Sprite } from 'pixi.js';
-import type { ShipOptions } from './types';
+import type { PlayerOptions } from './types';
 
-export const renderShip = ({ texture, width, height }: ShipOptions) => {
+export const renderPlayer = ({ texture, width, height }: PlayerOptions) => {
   const ship = new Sprite({ texture, anchor: 0.5 });
   ship.position.set(width / 2, height / 2);
   ship.rotation = Math.PI;

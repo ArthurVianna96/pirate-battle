@@ -35,7 +35,7 @@ export interface ArenaSize {
   height: number;
 }
 
-export interface ShipOptions extends ArenaSize {
+export interface PlayerOptions extends ArenaSize {
   texture: Texture;
 }
 
