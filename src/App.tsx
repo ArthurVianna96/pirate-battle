@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { GameCanvas } from './game/GameCanvas';
 
 export function App() {
   const [playing, setPlaying] = useState(false);
@@ -18,7 +19,7 @@ export function App() {
             <h2>Arena</h2>
             <button autoFocus onClick={leaveGame}>Main Menu</button>
           </div>
-          <p>The arena will be added in the next step.</p>
+          <GameCanvas />
         </section>
       ) : (
         <section aria-label="Main menu" className="menu">

@@ -1,12 +1,68 @@
-* { box-sizing: border-box; }
-:root { font-family: system-ui, sans-serif; color: #f4ead7; background: #10242d; }
-body { margin: 0; }
-main { max-width: 1040px; margin: 0 auto; padding: 32px 20px; }
-h1 { font-size: clamp(2rem, 6vw, 3rem); margin: 0 0 32px; }
-h2 { margin: 0; font-size: 1.2rem; }
-.eyebrow { color: #e4bb75; }
-.menu { padding: 24px; background: #1b3640; border-radius: 12px; }
-button { font: inherit; font-weight: 650; padding: 12px 24px; border: 0; border-radius: 6px; color: #172b33; background: #e4bb75; cursor: pointer; }
-button:hover { background: #f1cf96; }
-button:focus-visible { outline: 3px solid #fff; outline-offset: 4px; }
-.toolbar { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 16px; }
+* {
+  box-sizing: border-box;
+}
+:root {
+  font-family: system-ui, sans-serif;
+  color: #f4ead7;
+  background: #10242d;
+}
+body {
+  margin: 0;
+}
+main {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 32px 20px;
+}
+h1 {
+  font-size: clamp(2rem, 6vw, 3rem);
+  margin: 0 0 32px;
+}
+h2 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+.eyebrow {
+  color: #e4bb75;
+}
+.menu {
+  padding: 24px;
+  background: #1b3640;
+  border-radius: 12px;
+}
+button {
+  font: inherit;
+  font-weight: 650;
+  padding: 12px 24px;
+  border: 0;
+  border-radius: 6px;
+  color: #172b33;
+  background: #e4bb75;
+  cursor: pointer;
+}
+button:hover {
+  background: #f1cf96;
+}
+button:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 4px;
+}
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.arena {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #126b86;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.arena canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
