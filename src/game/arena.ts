@@ -77,7 +77,13 @@ export function createArena(
   const arena = new Container();
   const water = new TilingSprite({ texture: textures.water, width, height });
   const island = createIsland(textures.island);
+  const ship = new Sprite({ texture: textures.playerShip, anchor: 0.5 });
+
   island.position.set(width / 4, height / 2);
+  ship.position.set(width / 2, height / 2);
+  // The supplied artwork points down; turn its bow toward the top.
+  ship.rotation = Math.PI;
+
   const islandWidth = islandLayout.columns * islandLayout.tileSize;
   const islandHeight = islandLayout.rows * islandLayout.tileSize;
   const obstacles: Obstacle[] = [
@@ -88,11 +94,6 @@ export function createArena(
       height: islandHeight,
     },
   ];
-  const ship = new Sprite({ texture: textures.playerShip, anchor: 0.5 });
-  ship.position.set(width / 2, height / 2);
-  // The supplied artwork points down; turn its bow toward the top.
-  ship.rotation = Math.PI;
-
   arena.addChild(water, island, ship);
   return {
     container: arena,

@@ -110,39 +110,7 @@ export function updateWeapon(
   weapon.leftCooldown = Math.max(0, weapon.leftCooldown - deltaSeconds);
   weapon.rightCooldown = Math.max(0, weapon.rightCooldown - deltaSeconds);
   for (const projectile of weapon.projectiles) {
-    const previousPosition = { x: projectile.x, y: projectile.y };
-    const travelSeconds = Math.min(deltaSeconds, projectile.remainingLife);
-    projectile.x += projectile.velocityX * travelSeconds;
-    projectile.y += projectile.velocityY * travelSeconds;
-    projectile.remainingLife -= deltaSeconds;
-    if (
-      obstacles.some((obstacle) =>
-        projectilePathHitsObstacle(
-          previousPosition,
-          projectile,
-          obstacle,
-          projectile.radius,
-        ),
-      )
-    ) {
-      projectile.remainingLife = 0;
-      continue;
-    }
-    for (const target of targets) {
-      if (
-        target.health > 0 &&
-        projectilePathHitsObstacle(
-          previousPosition,
-          projectile,
-          target.bounds,
-          projectile.radius,
-        )
-      ) {
-        damageTarget(target, projectile.damage);
-        projectile.remainingLife = 0;
-        break;
-      }
-    }
+    updateProjectile(projectile, deltaSeconds, obstacles, targets);
   }
   weapon.projectiles = weapon.projectiles.filter(
     (projectile) =>
@@ -152,4 +120,45 @@ export function updateWeapon(
       projectile.y >= 0 &&
       projectile.y <= arenaSize.height,
   );
+}
+
+function updateProjectile(
+  projectile: ProjectileState,
+  deltaSeconds: number,
+  obstacles: readonly Obstacle[],
+  targets: readonly TargetState[],
+) {
+  const previousPosition = { x: projectile.x, y: projectile.y };
+  const travelSeconds = Math.min(deltaSeconds, projectile.remainingLife);
+  projectile.x += projectile.velocityX * travelSeconds;
+  projectile.y += projectile.velocityY * travelSeconds;
+  projectile.remainingLife -= deltaSeconds;
+  if (
+    obstacles.some((obstacle) =>
+      projectilePathHitsObstacle(
+        previousPosition,
+        projectile,
+        obstacle,
+        projectile.radius,
+      ),
+    )
+  ) {
+    projectile.remainingLife = 0;
+    return;
+  }
+  for (const target of targets) {
+    if (
+      target.health > 0 &&
+      projectilePathHitsObstacle(
+        previousPosition,
+        projectile,
+        target.bounds,
+        projectile.radius,
+      )
+    ) {
+      damageTarget(target, projectile.damage);
+      projectile.remainingLife = 0;
+      break;
+    }
+  }
 }

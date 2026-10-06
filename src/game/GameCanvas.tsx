@@ -3,6 +3,20 @@ import { useEffect, useRef, useState } from 'react';
 import { createArena, loadArenaAssets } from './arena';
 import { startGameLoop } from './gameLoop';
 
+function mountArena(
+  app: Application,
+  host: HTMLDivElement,
+  textures: Awaited<ReturnType<typeof loadArenaAssets>>,
+) {
+  const arena = createArena(textures, app.screen.width, app.screen.height);
+  app.stage.addChild(arena.container);
+  app.canvas.setAttribute('aria-label', 'Naval battle arena');
+  app.canvas.setAttribute('role', 'img');
+  host.appendChild(app.canvas);
+  app.render();
+  return startGameLoop(app, arena);
+}
+
 export function GameCanvas() {
   const hostRef = useRef<HTMLDivElement>(null);
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>(
@@ -27,7 +41,7 @@ export function GameCanvas() {
       app.destroy({ removeView: true }, { children: true });
     }
 
-    async function initialize() {
+    async function initialize(host: HTMLDivElement) {
       try {
         const textures = await loadArenaAssets();
         if (cancelled) return;
@@ -49,18 +63,7 @@ export function GameCanvas() {
           return;
         }
 
-        const arena = createArena(
-          textures,
-          app.screen.width,
-          app.screen.height,
-        );
-        app.stage.addChild(arena.container);
-
-        app.canvas.setAttribute('aria-label', 'Naval battle arena');
-        app.canvas.setAttribute('role', 'img');
-        host!.appendChild(app.canvas);
-        app.render();
-        stopGameLoop = startGameLoop(app, arena);
+        stopGameLoop = mountArena(app, host, textures);
         setStatus('ready');
       } catch (error) {
         if (initialized) destroy();
@@ -71,7 +74,7 @@ export function GameCanvas() {
       }
     }
 
-    void initialize();
+    void initialize(host);
     return () => {
       cancelled = true;
       destroy();
