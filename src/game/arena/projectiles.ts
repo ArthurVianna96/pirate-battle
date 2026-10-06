@@ -1,7 +1,7 @@
 import { Container, Sprite, type Texture } from 'pixi.js';
-import type { ProjectileState } from './mechanics/weapon';
+import type { ProjectileState } from '../mechanics/weapon';
 
-export function createProjectileRenderer(parent: Container, texture: Texture) {
+export function createProjectile(parent: Container, texture: Texture) {
   const layer = new Container();
   const sprites = new Map<number, Sprite>();
   parent.addChild(layer);

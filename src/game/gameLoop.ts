@@ -2,7 +2,7 @@ import type { Application, Ticker } from 'pixi.js';
 import type { ArenaView } from './arena/types';
 import { advancePlayer } from './mechanics/collisions';
 import { createKeyboardInput } from './mechanics/input';
-import { createProjectileRenderer } from './projectileRenderer';
+import { createProjectile } from './arena/projectiles';
 import { movementConfig } from './mechanics/simulation';
 import {
   createWeaponState,
@@ -15,7 +15,7 @@ export function startGameLoop(app: Application, arena: ArenaView): () => void {
   const { ship, obstacles, target, targetRenderer } = arena;
   const keyboard = createKeyboardInput();
   const weapon = createWeaponState();
-  const projectiles = createProjectileRenderer(
+  const projectiles = createProjectile(
     arena.container,
     arena.projectileTexture,
   );
