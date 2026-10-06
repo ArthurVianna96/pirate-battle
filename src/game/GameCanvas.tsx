@@ -1,6 +1,6 @@
 import { Application } from 'pixi.js';
 import { useEffect, useRef, useState } from 'react';
-import { createArena, loadArenaAssets } from './arena';
+import { createArena, loadArenaAssets } from './arena/index';
 import { startGameLoop } from './gameLoop';
 
 function mountArena(

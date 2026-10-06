@@ -1,28 +1,15 @@
 import type { Application, Ticker } from 'pixi.js';
-import type { ArenaView } from './arena';
+import type { ArenaView } from './arena/types';
 import { advancePlayer } from './collisions';
 import { createKeyboardInput } from './input';
 import { createProjectileRenderer } from './projectileRenderer';
 import { movementConfig } from './simulation';
-import { createTarget } from './target';
-import { createTargetRenderer } from './targetRenderer';
 import { createWeaponState, fireFront, fireSide, updateWeapon } from './weapon';
 
 export function startGameLoop(app: Application, arena: ArenaView): () => void {
-  const { ship, obstacles } = arena;
+  const { ship, obstacles, target, targetRenderer } = arena;
   const keyboard = createKeyboardInput();
   const weapon = createWeaponState();
-  const target = createTarget({
-    x: app.screen.width * 0.75 - ship.width / 2,
-    y: app.screen.height / 2 - ship.height / 2,
-    width: ship.width,
-    height: ship.height,
-  });
-  const targetRenderer = createTargetRenderer(
-    arena.container,
-    ship.texture,
-    target,
-  );
   const projectiles = createProjectileRenderer(
     arena.container,
     arena.projectileTexture,

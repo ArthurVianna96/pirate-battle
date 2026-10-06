@@ -1,6 +1,6 @@
+import { damageTarget, type TargetState } from './arena/targets';
 import { projectilePathHitsObstacle, type Obstacle } from './collisions';
 import type { PlayerState } from './simulation';
-import { damageTarget, type TargetState } from './target';
 
 export const frontWeaponConfig = {
   speed: 320,

@@ -1,5 +1,6 @@
 import { Container, Graphics, Sprite, type Texture } from 'pixi.js';
-import type { TargetState } from './target';
+import type { Obstacle } from '../collisions';
+import type { TargetOptions } from './types';
 
 export function createTargetRenderer(
   parent: Container,
@@ -31,3 +32,29 @@ export function createTargetRenderer(
     },
   };
 }
+
+export interface TargetState {
+  bounds: Obstacle;
+  health: number;
+  maxHealth: number;
+}
+
+export function createTarget(bounds: Obstacle): TargetState {
+  return { bounds, health: 3, maxHealth: 3 };
+}
+
+export function damageTarget(target: TargetState, damage: number) {
+  target.health = Math.max(0, target.health - damage);
+}
+
+export const renderTarget = ({ ship, width, height, arena }: TargetOptions) => {
+  const target = createTarget({
+    x: width * 0.75 - ship.width / 2,
+    y: height / 2 - ship.height / 2,
+    width: ship.width,
+    height: ship.height,
+  });
+
+  const targetRenderer = createTargetRenderer(arena, ship.texture, target);
+  return { target, targetRenderer };
+};
