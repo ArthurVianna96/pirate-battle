@@ -8,6 +8,7 @@ export interface ArenaAssets {
   water: Texture;
   island: Texture[];
   projectile: Texture;
+  explosion: Texture[];
 }
 
 export interface ArenaView {
@@ -15,6 +16,7 @@ export interface ArenaView {
   ship: Sprite;
   obstacles: Obstacle[];
   projectileTexture: Texture;
+  explosionTextures: Texture[];
   chaser: ChaserState;
   chaserRenderer: ReturnType<typeof createEnemy>;
 }

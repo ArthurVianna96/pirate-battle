@@ -58,6 +58,7 @@ test('destroying the Chaser removes its rendering and stops its movement', async
   await page.keyboard.up('e');
   await page.clock.runFor(800);
   await expect(page.getByText('Score: 1', { exact: true })).toBeVisible();
+  await page.clock.runFor(650);
   const destroyed = await page.locator('canvas').screenshot();
   expect(destroyed.equals(initial)).toBe(false);
   await page.clock.runFor(500);

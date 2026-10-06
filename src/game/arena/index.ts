@@ -33,6 +33,7 @@ export function createArena(
     ship,
     obstacles,
     projectileTexture: textures.projectile,
+    explosionTextures: textures.explosion,
     chaser,
     chaserRenderer,
   };

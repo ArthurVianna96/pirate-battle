@@ -6,6 +6,7 @@ import { movementConfig, updatePlayer } from './mechanics/simulation';
 import { updateChaser, resolveChaserImpact } from './mechanics/chaser';
 import { createPlayerState } from './mechanics/combat';
 import { createHealthBar } from './arena/healthBar';
+import { createExplosion } from './arena/explosions';
 import {
   createWeaponState,
   fireFront,
@@ -27,6 +28,7 @@ export function startGameLoop(
     arena.projectileTexture,
   );
   const playerHealth = createHealthBar(arena.container, ship.height);
+  const explosions = createExplosion(arena.container, arena.explosionTextures);
 
   const player = createPlayerState({
     x: ship.x,
@@ -98,11 +100,20 @@ export function startGameLoop(
 
   function update(ticker: Ticker) {
     const deltaSeconds = ticker.deltaMS / 1000;
+    const chaserWasAlive = chaser.health > 0;
     updatePlayer(player, keyboard.input, deltaSeconds, movementConfig, world);
     updateChaser(chaser, player, deltaSeconds, world);
     updateAttacks(deltaSeconds);
     updateContacts();
+    updateEffects(deltaSeconds, chaserWasAlive);
     syncViews();
+  }
+
+  function updateEffects(deltaSeconds: number, chaserWasAlive: boolean) {
+    explosions.update(deltaSeconds);
+    if (chaserWasAlive && chaser.health === 0) {
+      explosions.play(chaser.position);
+    }
   }
 
   app.ticker.add(update);
@@ -115,5 +126,6 @@ export function startGameLoop(
     projectiles.destroy();
     chaserRenderer.destroy();
     playerHealth.bar.destroy({ children: true });
+    explosions.destroy();
   };
 }

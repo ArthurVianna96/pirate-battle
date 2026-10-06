@@ -12,6 +12,9 @@ import islandBottomUrl from '../../../assets/png/default/tiles/tile_34.png';
 import islandBottomRightUrl from '../../../assets/png/default/tiles/tile_35.png';
 import waterUrl from '../../../assets/png/default/tiles/tile_73.png';
 import type { ArenaAssets } from './types';
+import explosion1Url from '../../../assets/png/default/effects/explosion_1.png';
+import explosion2Url from '../../../assets/png/default/effects/explosion_2.png';
+import explosion3Url from '../../../assets/png/default/effects/explosion_3.png';
 
 const islandTileUrls = [
   islandTopLeftUrl,
@@ -26,12 +29,17 @@ const islandTileUrls = [
 ];
 
 export async function loadArenaAssets(): Promise<ArenaAssets> {
-  const [playerShip, water, island, projectile] = await Promise.all([
+  const [playerShip, water, island, projectile, explosion] = await Promise.all([
     Assets.load<Texture>(playerShipUrl),
     Assets.load<Texture>(waterUrl),
     Promise.all(islandTileUrls.map((url) => Assets.load<Texture>(url))),
     Assets.load<Texture>(projectileUrl),
+    Promise.all(
+      [explosion1Url, explosion2Url, explosion3Url].map((url) =>
+        Assets.load<Texture>(url),
+      ),
+    ),
   ]);
 
-  return { playerShip, water, island, projectile };
+  return { playerShip, water, island, projectile, explosion };
 }
