@@ -1,15 +1,34 @@
 export interface MovementInput {
   forward: boolean;
+  turnLeft: boolean;
+  turnRight: boolean;
 }
 
 export function createKeyboardInput() {
-  const input: MovementInput = { forward: false };
+  const input: MovementInput = {
+    forward: false,
+    turnLeft: false,
+    turnRight: false,
+  };
   const pressed = new Set<string>();
-  const forwardKeys = new Set(['KeyW', 'ArrowUp']);
+  const gameKeys = new Set([
+    'KeyW',
+    'ArrowUp',
+    'KeyA',
+    'ArrowLeft',
+    'KeyD',
+    'ArrowRight',
+  ]);
+
+  function syncInput() {
+    input.forward = pressed.has('KeyW') || pressed.has('ArrowUp');
+    input.turnLeft = pressed.has('KeyA') || pressed.has('ArrowLeft');
+    input.turnRight = pressed.has('KeyD') || pressed.has('ArrowRight');
+  }
 
   function keyDown(event: KeyboardEvent) {
     if (
-      !forwardKeys.has(event.code) ||
+      !gameKeys.has(event.code) ||
       event.ctrlKey ||
       event.metaKey ||
       event.altKey
@@ -17,19 +36,19 @@ export function createKeyboardInput() {
       return;
     event.preventDefault();
     pressed.add(event.code);
-    input.forward = true;
+    syncInput();
   }
 
   function keyUp(event: KeyboardEvent) {
-    if (!forwardKeys.has(event.code)) return;
+    if (!gameKeys.has(event.code)) return;
     event.preventDefault();
     pressed.delete(event.code);
-    input.forward = pressed.size > 0;
+    syncInput();
   }
 
   function reset() {
     pressed.clear();
-    input.forward = false;
+    syncInput();
   }
 
   window.addEventListener('keydown', keyDown);

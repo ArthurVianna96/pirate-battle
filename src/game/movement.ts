@@ -4,11 +4,12 @@ import { movementConfig, updatePlayer } from './simulation';
 
 export function startMovement(app: Application, ship: Sprite): () => void {
   const keyboard = createKeyboardInput();
-  const player = { x: ship.x, y: ship.y };
+  const player = { x: ship.x, y: ship.y, heading: ship.rotation - Math.PI };
 
   function update(ticker: Ticker) {
     updatePlayer(player, keyboard.input, ticker.deltaMS / 1000, movementConfig);
     ship.position.set(player.x, player.y);
+    ship.rotation = player.heading + Math.PI;
   }
 
   app.ticker.add(update);

@@ -86,7 +86,7 @@ export function GameCanvas() {
   return (
     <>
       <div ref={hostRef} className="arena" />
-      <p>Hold W or ↑ to move forward.</p>
+      <p>Hold W or ↑ to move forward. A/D or ←/→ to turn.</p>
       {status === 'loading' && <p role="status">Loading arena...</p>}
       {status === 'error' && (
         <div role="alert">
