@@ -3,6 +3,7 @@ import {
   createSpawnerState,
   updateSpawner,
   findEnemySpawn,
+  takeNextEnemyKind,
 } from '../src/game/mechanics/spawning';
 import { createEnemyState } from '../src/game/mechanics/combat';
 import { overlapsObstacle } from '../src/game/mechanics/collisions';
@@ -11,6 +12,17 @@ import { arenaScreenshot } from './helpers/arenaScreenshot';
 const shipSize = { width: 66, height: 113 };
 const arenaSize = { width: 960, height: 540 };
 const player = { x: 480, y: 270 };
+
+test('spawn order alternates and starts again for each match', () => {
+  const spawner = createSpawnerState();
+  expect(Array.from({ length: 4 }, () => takeNextEnemyKind(spawner))).toEqual([
+    'chaser',
+    'shooter',
+    'chaser',
+    'shooter',
+  ]);
+  expect(takeNextEnemyKind(createSpawnerState())).toBe('chaser');
+});
 
 test('spawns use active time and keep the remainder across updates', () => {
   const state = createSpawnerState();

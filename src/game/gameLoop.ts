@@ -15,6 +15,7 @@ import { movementConfig, updatePlayer } from './mechanics/simulation';
 import {
   createSpawnerState,
   findEnemySpawn,
+  takeNextEnemyKind,
   updateSpawner,
 } from './mechanics/spawning';
 import { fireFront, fireSide, updateWeapon } from './mechanics/weapon';
@@ -75,7 +76,7 @@ export function startGameLoop(
         arena.enemies.map(({ state }) => state),
       );
       if (position) {
-        arena.spawnChaser(position);
+        arena.spawnEnemy(takeNextEnemyKind(spawner), position);
       }
     }
   }

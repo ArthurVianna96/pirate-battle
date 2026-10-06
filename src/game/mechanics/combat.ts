@@ -3,6 +3,8 @@ import type { PlayerState } from './simulation';
 
 export const combatConfig = { playerHealth: 5, enemyHealth: 3 } as const;
 
+export type EnemyKind = 'chaser' | 'shooter';
+
 export interface PlayerCombatState extends PlayerState {
   health: number;
   maxHealth: number;

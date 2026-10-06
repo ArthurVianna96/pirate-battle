@@ -1,21 +1,33 @@
 import { overlapsObstacle, type Obstacle, type Size } from './collisions';
-import type { EnemyState } from './combat';
+import type { EnemyKind, EnemyState } from './combat';
 import type { MovementWorld, PlayerState } from './simulation';
 
-export const spawnConfig = { interval: 4, minPlayerDistance: 220 } as const;
+export const SPAWN_CONFIG = {
+  interval: 4,
+  minPlayerDistance: 220,
+  enemyOrder: ['chaser', 'shooter'] satisfies EnemyKind[],
+} as const;
 
 interface SpawnerState {
   elapsed: number;
+  nextEnemyIndex: number;
 }
 
 export function createSpawnerState(): SpawnerState {
-  return { elapsed: 0 };
+  return { elapsed: 0, nextEnemyIndex: 0 };
+}
+
+export function takeNextEnemyKind(spawner: SpawnerState): EnemyKind {
+  const kind = SPAWN_CONFIG.enemyOrder[spawner.nextEnemyIndex];
+  spawner.nextEnemyIndex =
+    (spawner.nextEnemyIndex + 1) % SPAWN_CONFIG.enemyOrder.length;
+  return kind;
 }
 
 export function updateSpawner(
   spawner: SpawnerState,
   deltaSeconds: number,
-  interval: number = spawnConfig.interval,
+  interval: number = SPAWN_CONFIG.interval,
 ) {
   if (!Number.isFinite(interval) || interval <= 0) {
     throw new Error('Spawn interval must be a positive finite number.');
@@ -51,7 +63,7 @@ export function findEnemySpawn(
     );
 
     return (
-      distanceFromPlayer >= spawnConfig.minPlayerDistance &&
+      distanceFromPlayer >= SPAWN_CONFIG.minPlayerDistance &&
       isInsideArena(position, shipSize, arenaSize) &&
       !overlapsOccupiedArea
     );

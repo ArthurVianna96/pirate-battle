@@ -1,7 +1,7 @@
 import type { Container, Sprite, Texture } from 'pixi.js';
 import type { Obstacle } from '../mechanics/collisions';
 import type { createEnemy } from './enemies';
-import type { MovingEnemyState } from '../mechanics/combat';
+import type { EnemyKind, MovingEnemyState } from '../mechanics/combat';
 import type { ShooterState } from '../mechanics/shooter';
 import type { PlayerState } from '../mechanics/simulation';
 
@@ -20,7 +20,7 @@ export interface ArenaView {
   projectileTexture: Texture;
   explosionTextures: Texture[];
   enemies: EnemyView[];
-  spawnChaser: (position: PlayerState) => void;
+  spawnEnemy: (kind: EnemyKind, position: PlayerState) => void;
 }
 
 export type EnemyView = {
