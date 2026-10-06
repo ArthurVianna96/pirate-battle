@@ -6,6 +6,8 @@ export interface MovementInput {
 
 interface KeyboardInput extends MovementInput {
   shootFront: boolean;
+  shootLeft: boolean;
+  shootRight: boolean;
 }
 
 export function createKeyboardInput() {
@@ -14,6 +16,8 @@ export function createKeyboardInput() {
     turnLeft: false,
     turnRight: false,
     shootFront: false,
+    shootLeft: false,
+    shootRight: false,
   };
   const pressed = new Set<string>();
   const gameKeys = new Set([
@@ -24,6 +28,8 @@ export function createKeyboardInput() {
     'KeyD',
     'ArrowRight',
     'Space',
+    'KeyQ',
+    'KeyE',
   ]);
 
   function syncInput() {
@@ -31,6 +37,8 @@ export function createKeyboardInput() {
     input.turnLeft = pressed.has('KeyA') || pressed.has('ArrowLeft');
     input.turnRight = pressed.has('KeyD') || pressed.has('ArrowRight');
     input.shootFront = pressed.has('Space');
+    input.shootLeft = pressed.has('KeyQ');
+    input.shootRight = pressed.has('KeyE');
   }
 
   function keyDown(event: KeyboardEvent) {
