@@ -1,4 +1,4 @@
-import { playInterfaceSound } from '../audio';
+import { playInterfaceSound } from '../support/audio';
 import type { FeedbackAudio } from './types';
 
 export function createMatchFeedback(audio: FeedbackAudio) {

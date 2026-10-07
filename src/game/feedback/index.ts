@@ -1,4 +1,4 @@
-import { createAudioChannel } from '../audio';
+import { createAudioChannel } from '../support/audio';
 import type { ArenaView } from '../arena/types';
 import { createCombatFeedback } from './combat';
 import { createMatchFeedback } from './match';

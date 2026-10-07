@@ -1,4 +1,4 @@
-import type { createAudioChannel } from '../audio';
+import type { createAudioChannel } from '../support/audio';
 import type { createViewFeedback } from './views';
 
 export type FeedbackAudio = ReturnType<typeof createAudioChannel>;

@@ -5,7 +5,7 @@ import {
   type GameLoopCallbacks,
   type GameLoopController,
 } from './gameLoop';
-import type { GameOptions } from './options';
+import type { GameOptions } from './support/options';
 
 interface GameSessionCallbacks extends GameLoopCallbacks {
   onReady: () => void;

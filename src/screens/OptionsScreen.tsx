@@ -5,7 +5,7 @@ import {
   isSpawnIntervalValid,
   OPTIONS_CONFIG,
   type GameOptions,
-} from '../game/options';
+} from '../game/support/options';
 import { MATCH_CONFIG } from '../game/mechanics/match';
 
 interface OptionsProps {

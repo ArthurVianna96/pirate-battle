@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { GameLoopController } from './gameLoop';
 import { COMBAT_CONFIG } from './mechanics/combat';
 import type { MatchResult } from './mechanics/match';
-import type { GameOptions } from './options';
+import type { GameOptions } from './support/options';
 
 interface GameCanvasProps {
   onMatchEnd: (result: MatchResult) => void;

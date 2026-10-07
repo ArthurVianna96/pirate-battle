@@ -1,4 +1,4 @@
-import { pauseMatch, resumeMatch, type MatchState } from './mechanics/match';
+import { pauseMatch, resumeMatch, type MatchState } from '../mechanics/match';
 
 interface PauseOptions {
   match: MatchState;

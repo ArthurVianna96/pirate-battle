@@ -4,7 +4,7 @@ import {
   isDurationValid,
   isSpawnIntervalValid,
   parseOptions,
-} from '../src/game/options';
+} from '../src/game/support/options';
 import { OPTIONS_STORAGE_KEY } from '../src/storage/options';
 
 test('options accept whole seconds within their limits', () => {

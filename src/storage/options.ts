@@ -2,7 +2,7 @@ import {
   DEFAULT_OPTIONS,
   parseOptions,
   type GameOptions,
-} from '../game/options';
+} from '../game/support/options';
 
 export const OPTIONS_STORAGE_KEY = 'pirate-battle.options';
 

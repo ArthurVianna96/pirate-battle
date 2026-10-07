@@ -2,8 +2,8 @@ import type { Application, Ticker } from 'pixi.js';
 import { createGameFeedback } from './feedback/index';
 import { EXPLOSION_CONFIG } from './arena/explosions';
 import type { ArenaView } from './arena/types';
-import type { GameOptions } from './options';
-import { createPauseControls } from './pause';
+import type { GameOptions } from './support/options';
+import { createPauseControls } from './support/pause';
 import { resolveChaserImpact, updateChaser } from './mechanics/chaser';
 import {
   createEnemyProjectilesState,

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { PauseScreen } from '../game/PauseScreen';
-import type { GameOptions } from '../game/options';
+import type { GameOptions } from '../game/support/options';
 import { OptionsScreen } from './OptionsScreen';
 
 interface PauseMenuProps {

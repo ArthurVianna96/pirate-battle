@@ -1,5 +1,5 @@
-import { MATCH_CONFIG } from './mechanics/match';
-import { SPAWN_CONFIG } from './mechanics/spawning';
+import { MATCH_CONFIG } from '../mechanics/match';
+import { SPAWN_CONFIG } from '../mechanics/spawning';
 
 export interface GameOptions {
   readonly sessionDuration: number;

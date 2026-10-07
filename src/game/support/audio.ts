@@ -1,4 +1,4 @@
-const SOUND_URLS = import.meta.glob('../../assets/sounds/*.wav', {
+const SOUND_URLS = import.meta.glob('../../../assets/sounds/*.wav', {
   eager: true,
   import: 'default',
 }) as Record<string, string>;
@@ -41,7 +41,9 @@ export function unlockAudio() {
 }
 
 async function fetchSound(name: SoundName, audioContext: AudioContext) {
-  const response = await fetch(SOUND_URLS[`../../assets/sounds/${name}.wav`]);
+  const response = await fetch(
+    SOUND_URLS[`../../../assets/sounds/${name}.wav`],
+  );
   if (!response.ok) {
     throw new Error('Unable to load sound');
   }

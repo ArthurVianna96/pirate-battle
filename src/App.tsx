@@ -3,10 +3,13 @@ import { GameCanvas } from './game/GameCanvas';
 import type { MatchResult } from './game/mechanics/match';
 import { MatchResultScreen } from './screens/MatchResultScreen';
 import { OptionsScreen } from './screens/OptionsScreen';
-import { createOptionsSnapshot, type GameOptions } from './game/options';
+import {
+  createOptionsSnapshot,
+  type GameOptions,
+} from './game/support/options';
 import { loadOptions, saveOptions } from './storage/options';
 import { MainMenu } from './screens/MainMenu';
-import { playInterfaceSound } from './game/audio';
+import { playInterfaceSound } from './game/support/audio';
 
 type Screen =
   | { kind: 'menu' }
