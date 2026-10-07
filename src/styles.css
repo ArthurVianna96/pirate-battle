@@ -256,6 +256,17 @@ h2 {
   align-self: center;
   margin-top: 8px;
 }
+.pending-registrations {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  font-size: 0.9rem;
+}
+.pending-registrations button {
+  width: 260px;
+  min-height: 48px;
+  font-size: 0.8rem;
+}
 @media (max-width: 600px) {
   .menu.main-menu {
     padding: 2px 0 0;

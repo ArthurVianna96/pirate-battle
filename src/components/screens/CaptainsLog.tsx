@@ -1,4 +1,4 @@
-import type { KeyboardEvent } from 'react';
+import type { KeyboardEvent, ReactNode } from 'react';
 import type { GameOptions } from '../../game/support/options';
 import { RankingPanel } from './RankingPanel';
 import { MatchHistoryPanel } from './MatchHistoryPanel';
@@ -13,6 +13,7 @@ interface CaptainsLogProps {
   playerId: string;
   playerName: string;
   onMainMenu: () => void;
+  registrationNotice: ReactNode;
 }
 
 export function CaptainsLog({
@@ -22,6 +23,7 @@ export function CaptainsLog({
   playerId,
   playerName,
   onMainMenu,
+  registrationNotice,
 }: CaptainsLogProps) {
   function navigateTabs(event: KeyboardEvent<HTMLDivElement>) {
     let next: LogTab;
@@ -81,6 +83,7 @@ export function CaptainsLog({
       <button className="log-back-button" onClick={onMainMenu}>
         Main Menu
       </button>
+      {registrationNotice}
     </section>
   );
 }

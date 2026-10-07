@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import titleImage from '../../../assets/png/retina/ui/menu/title_pirate_battle.png';
 import playerImage from '../../../assets/png/default/ships/ship_2.png';
 import type { GameOptions } from '../../game/support/options';
@@ -10,6 +10,7 @@ interface MainMenuProps {
   options: GameOptions;
   playerId: string;
   playerName: string;
+  registrationNotice: ReactNode;
 }
 
 export function MainMenu({
@@ -18,6 +19,7 @@ export function MainMenu({
   options,
   playerId,
   playerName,
+  registrationNotice,
 }: MainMenuProps) {
   const [logTab, setLogTab] = useState<LogTab | undefined>();
 
@@ -30,6 +32,7 @@ export function MainMenu({
         playerId={playerId}
         playerName={playerName}
         onMainMenu={() => setLogTab(undefined)}
+        registrationNotice={registrationNotice}
       />
     );
   }
@@ -66,6 +69,7 @@ export function MainMenu({
           Match History
         </button>
       </div>
+      {registrationNotice}
     </section>
   );
 }

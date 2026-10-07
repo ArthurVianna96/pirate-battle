@@ -14,6 +14,7 @@ import { saveLastResult } from './storage/result';
 import { loadPlayer } from './storage/player';
 import type { MatchRecord } from './api/contracts';
 import { useRegisterMatch } from './hooks/useRegisterMatch';
+import { PendingRegistrations } from './components/shared/PendingRegistrations';
 
 type Screen =
   | { kind: 'menu' }
@@ -30,7 +31,7 @@ export function App() {
     undefined,
   );
   const registration = useRegisterMatch();
-  const { mutate: submitMatch } = registration;
+  const { submit: submitMatch } = registration;
 
   function leaveGame() {
     activeMatch.current = undefined;
@@ -77,7 +78,7 @@ export function App() {
         result.endReason === 'death' ? 'game_over' : 'game_complete',
       );
       setScreen({ kind: 'result', result: record });
-      submitMatch(record);
+      void submitMatch(record);
     },
     [player, submitMatch],
   );
@@ -110,8 +111,11 @@ export function App() {
         <MatchResultScreen
           result={screen.result}
           saveFailed={resultSaveFailed}
-          registrationStatus={registration.status}
-          onRetryRegistration={() => submitMatch(screen.result)}
+          registrationStatus={registration.statuses[screen.result.id] ?? 'idle'}
+          pendingSaveFailed={
+            registration.storageFailed && registration.pending.length > 0
+          }
+          onRetryRegistration={() => void submitMatch(screen.result)}
           onPlayAgain={startGame}
           onMainMenu={leaveGame}
         />
@@ -124,6 +128,16 @@ export function App() {
         playerName={player.name}
         onPlay={startGame}
         onOptions={openOptions}
+        registrationNotice={
+          <PendingRegistrations
+            count={registration.pending.length}
+            sending={registration.pending.some(
+              (record) => registration.statuses[record.id] === 'pending',
+            )}
+            storageFailed={registration.storageFailed}
+            onRetry={() => void registration.retryAll()}
+          />
+        }
       />
     );
   }

@@ -87,3 +87,55 @@ test('failed registration can be retried with the original match ID', async ({
     .click();
   await expect(page.getByRole('row')).toHaveCount(2);
 });
+
+test('pending matches survive refresh and allow playing before recovery', async ({
+  page,
+}) => {
+  test.setTimeout(90_000);
+  await page.addInitScript(() => {
+    localStorage.setItem('test.registration-fail', 'true');
+    const original = Storage.prototype.setItem;
+    Storage.prototype.setItem = function (key, value) {
+      if (
+        key === 'pirate-battle.mock-matches' &&
+        localStorage.getItem('test.registration-fail')
+      ) {
+        throw new Error('Mock storage unavailable');
+      }
+      original.call(this, key, value);
+    };
+  });
+  const ids: string[] = [];
+  page.on('request', (request) => {
+    if (request.method() === 'POST' && request.url().endsWith('/api/matches')) {
+      ids.push(request.postDataJSON().id);
+    }
+  });
+  await completeMatch(page);
+  await expect(page.getByRole('alert')).toContainText(
+    'Could not record this match.',
+  );
+  await page.reload();
+  const pending = page.getByRole('complementary', {
+    name: 'Pending registrations',
+  });
+  await expect(pending).toContainText('1 match awaits registration.');
+  await expect(
+    pending.getByRole('button', { name: 'Retry pending matches' }),
+  ).toBeEnabled();
+  await page.getByRole('button', { name: 'Play', exact: true }).click();
+  await expect(page.locator('canvas')).toHaveCount(1);
+  await page.getByRole('button', { name: 'Pause', exact: true }).click();
+  await page.getByRole('button', { name: 'Main Menu', exact: true }).click();
+  await page.evaluate(() => localStorage.removeItem('test.registration-fail'));
+  await page
+    .getByRole('button', { name: 'Retry pending matches', exact: true })
+    .click();
+  await expect(pending).toHaveCount(0);
+  expect(ids).toHaveLength(3);
+  expect(new Set(ids).size).toBe(1);
+  await page
+    .getByRole('button', { name: 'Match History', exact: true })
+    .click();
+  await expect(page.getByRole('row')).toHaveCount(2);
+});

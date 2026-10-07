@@ -5,6 +5,7 @@ interface MatchResultProps {
   onPlayAgain: () => void;
   onMainMenu: () => void;
   saveFailed?: boolean;
+  pendingSaveFailed: boolean;
   registrationStatus: 'idle' | 'pending' | 'error' | 'success';
   onRetryRegistration: () => void;
 }
@@ -14,6 +15,7 @@ export function MatchResultScreen({
   onPlayAgain,
   onMainMenu,
   saveFailed,
+  pendingSaveFailed,
   registrationStatus,
   onRetryRegistration,
 }: MatchResultProps) {
@@ -38,6 +40,12 @@ export function MatchResultScreen({
       {saveFailed && (
         <p role="alert">
           Could not save this result. It will be lost on refresh.
+        </p>
+      )}
+      {pendingSaveFailed && (
+        <p role="alert">
+          Pending registration could not be saved locally. Keep this page open
+          to retry.
         </p>
       )}
       <div className="menu-actions">

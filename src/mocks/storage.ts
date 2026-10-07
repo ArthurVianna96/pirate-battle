@@ -1,6 +1,6 @@
 import type { MatchRecord } from '../api/contracts';
 import { MATCH_FIXTURES } from './fixtures';
-import { parseMatchRecord } from './validation';
+import { parseMatchRecord } from '../api/validation';
 
 export const MOCK_MATCHES_STORAGE_KEY = 'pirate-battle.mock-matches';
 

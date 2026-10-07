@@ -7,7 +7,8 @@ import type {
 } from '../api/contracts';
 import { parseOptions } from '../game/support/options';
 import { createMatchStore } from './store';
-import { parseMatchRecord, parsePage } from './validation';
+import { parseMatchRecord } from '../api/validation';
+import { parsePage } from './validation';
 
 function invalidRequest() {
   return HttpResponse.json<ApiErrorResponse>(
