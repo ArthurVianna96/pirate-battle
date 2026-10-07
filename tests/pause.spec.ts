@@ -25,7 +25,8 @@ test('pause freezes gameplay and resume requires fresh movement and firing input
   );
   const pausedTime = await page.getByText(/^Time: /).textContent();
   const pausedArena = await page.locator('canvas').screenshot();
-  const shipRegion = { x: 430, y: 200, width: 100, height: 130 };
+  // Keep this crop below the muzzle so an existing trail can leave it after resume.
+  const shipRegion = { x: 430, y: 220, width: 100, height: 110 };
   await page.clock.runFor(10_000);
   expect(await page.getByText(/^Time: /).textContent()).toBe(pausedTime);
   expect((await page.locator('canvas').screenshot()).equals(pausedArena)).toBe(

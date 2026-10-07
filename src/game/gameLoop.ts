@@ -262,8 +262,8 @@ export function startGameLoop(
     syncPlayer();
     playerAppearance.update(player.health, player.maxHealth, deltaSeconds);
     for (const { renderer } of arena.enemies) renderer.sync(deltaSeconds);
-    playerProjectiles.sync(player.weapon.projectiles);
-    enemyProjectiles.sync(enemyProjectilesState.projectiles);
+    playerProjectiles.sync(player.weapon.projectiles, deltaSeconds);
+    enemyProjectiles.sync(enemyProjectilesState.projectiles, deltaSeconds);
   }
 
   function syncPlayer() {
