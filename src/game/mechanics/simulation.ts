@@ -36,7 +36,9 @@ export function applyPlayerMovement(
   const previousHeading = player.heading;
   player.heading += angularVelocity * deltaSeconds;
 
-  if (!input.forward) return;
+  if (!input.forward) {
+    return;
+  }
 
   if (angularVelocity === 0) {
     player.x += Math.sin(player.heading) * config.speed * deltaSeconds;

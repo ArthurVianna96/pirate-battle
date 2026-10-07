@@ -50,8 +50,9 @@ test('Shooter cooldowns agree at 30 and 60 FPS and belong to each ship', () => {
   for (const fps of [30, 60]) {
     const { shooter, player, projectiles } = setup();
     updateShooterAttack(shooter, player, 0, projectiles);
-    for (let frame = 0; frame < fps * 2.4; frame++)
+    for (let frame = 0; frame < fps * 2.4; frame++) {
       updateShooterAttack(shooter, player, 1 / fps, projectiles);
+    }
     expect(projectiles.projectiles).toHaveLength(3);
     const other = setup().shooter;
     updateShooterAttack(other, player, 0, projectiles);

@@ -22,6 +22,12 @@ export type SoundName =
   | 'ui_click'
   | 'ui_hover';
 
+const AUDIO_CONFIG = { maxVoices: 24 } as const;
+
+interface AudioLoop {
+  source?: AudioBufferSourceNode;
+}
+
 let context: AudioContext | undefined;
 const buffers = new Map<SoundName, Promise<AudioBuffer>>();
 
@@ -34,17 +40,22 @@ export function unlockAudio() {
   }
 }
 
-async function loadSound(name: SoundName) {
-  if (!context) return undefined;
+async function fetchSound(name: SoundName, audioContext: AudioContext) {
+  const response = await fetch(SOUND_URLS[`../../assets/sounds/${name}.wav`]);
+  if (!response.ok) {
+    throw new Error('Unable to load sound');
+  }
+  const data = await response.arrayBuffer();
+  return audioContext.decodeAudioData(data);
+}
+
+function loadSound(name: SoundName) {
+  if (!context) {
+    return undefined;
+  }
   let buffer = buffers.get(name);
   if (!buffer) {
-    const audioContext = context;
-    buffer = fetch(SOUND_URLS[`../../assets/sounds/${name}.wav`])
-      .then((response) => {
-        if (!response.ok) throw new Error('Unable to load sound');
-        return response.arrayBuffer();
-      })
-      .then((data) => audioContext.decodeAudioData(data));
+    buffer = fetchSound(name, context);
     buffers.set(name, buffer);
   }
   return buffer;
@@ -52,46 +63,76 @@ async function loadSound(name: SoundName) {
 
 export function createAudioChannel() {
   const voices = new Set<AudioBufferSourceNode>();
-  const loops = new Map<SoundName, { source?: AudioBufferSourceNode }>();
+  const loops = new Map<SoundName, AudioLoop>();
   let generation = 0;
   let destroyed = false;
 
+  function startVoice(
+    buffer: AudioBuffer,
+    volume: number,
+    loopState?: AudioLoop,
+  ) {
+    if (!context) {
+      return;
+    }
+    const source = context.createBufferSource();
+    const gain = context.createGain();
+    source.buffer = buffer;
+    source.loop = !!loopState;
+    gain.gain.value = volume;
+    source.connect(gain);
+    gain.connect(context.destination);
+    voices.add(source);
+    if (loopState) {
+      loopState.source = source;
+    }
+    source.onended = () => {
+      voices.delete(source);
+      source.disconnect();
+      gain.disconnect();
+    };
+    source.start();
+  }
+
+  function isCurrentRequest(
+    requestGeneration: number,
+    name: SoundName,
+    loopState?: AudioLoop,
+  ) {
+    if (destroyed || requestGeneration !== generation) {
+      return false;
+    }
+    return !loopState || loops.get(name) === loopState;
+  }
+
+  function clearPendingLoop(name: SoundName, loopState?: AudioLoop) {
+    if (loopState && loops.get(name) === loopState) {
+      loops.delete(name);
+    }
+  }
+
   async function play(name: SoundName, volume = 0.35, loop = false) {
-    if (destroyed || !context || (loop && loops.has(name))) return;
-    const loopState: { source?: AudioBufferSourceNode } = {};
-    if (loop) loops.set(name, loopState);
+    if (destroyed || !context || (loop && loops.has(name))) {
+      return;
+    }
+    const loopState: AudioLoop | undefined = loop ? {} : undefined;
+    if (loopState) {
+      loops.set(name, loopState);
+    }
     const requestGeneration = generation;
     try {
       const buffer = await loadSound(name);
-      if (
-        !buffer ||
-        destroyed ||
-        requestGeneration !== generation ||
-        (loop && loops.get(name) !== loopState)
-      )
-        return;
-      if (voices.size >= 24) {
-        if (loop) loops.delete(name);
+      if (!buffer || !isCurrentRequest(requestGeneration, name, loopState)) {
         return;
       }
-      const source = context.createBufferSource();
-      const gain = context.createGain();
-      source.buffer = buffer;
-      source.loop = loop;
-      gain.gain.value = volume;
-      source.connect(gain);
-      gain.connect(context.destination);
-      voices.add(source);
-      if (loop) loopState.source = source;
-      source.onended = () => {
-        voices.delete(source);
-        source.disconnect();
-        gain.disconnect();
-      };
-      source.start();
+      if (voices.size >= AUDIO_CONFIG.maxVoices) {
+        clearPendingLoop(name, loopState);
+        return;
+      }
+      startVoice(buffer, volume, loopState);
     } catch {
       buffers.delete(name);
-      if (loop && loops.get(name) === loopState) loops.delete(name);
+      clearPendingLoop(name, loopState);
     }
   }
 
@@ -103,7 +144,9 @@ export function createAudioChannel() {
 
   function stopAll() {
     generation++;
-    for (const source of voices) source.stop();
+    for (const source of voices) {
+      source.stop();
+    }
     voices.clear();
     loops.clear();
   }

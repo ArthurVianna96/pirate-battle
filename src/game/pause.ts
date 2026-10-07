@@ -16,21 +16,27 @@ export function createPauseControls({
   onPauseChange,
 }: PauseOptions) {
   function pause() {
-    if (!pauseMatch(match)) return;
+    if (!pauseMatch(match)) {
+      return;
+    }
     setInputEnabled(false);
     stop();
     onPauseChange(true);
   }
 
   function resume() {
-    if (document.hidden || !resumeMatch(match)) return;
+    if (document.hidden || !resumeMatch(match)) {
+      return;
+    }
     setInputEnabled(true);
     start();
     onPauseChange(false);
   }
 
   function pauseWhenHidden() {
-    if (document.hidden) pause();
+    if (document.hidden) {
+      pause();
+    }
   }
 
   window.addEventListener('blur', pause);

@@ -66,8 +66,9 @@ for (const cause of ['blur', 'hidden'] as const) {
     const pausedTime = await page.getByText(/^Time: /).textContent();
     // Headless tabs remain focused. Dispatch browser lifecycle events directly.
     await page.evaluate((cause) => {
-      if (cause === 'blur') window.dispatchEvent(new Event('blur'));
-      else {
+      if (cause === 'blur') {
+        window.dispatchEvent(new Event('blur'));
+      } else {
         Object.defineProperty(document, 'hidden', {
           configurable: true,
           value: true,

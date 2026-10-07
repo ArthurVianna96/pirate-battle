@@ -6,10 +6,14 @@ test('game audio starts after Play, fires once per shot and stops on pause and e
   const events: string[] = [];
   const sounds: string[] = [];
   page.on('console', (message) => {
-    if (message.text().startsWith('audio:')) events.push(message.text());
+    if (message.text().startsWith('audio:')) {
+      events.push(message.text());
+    }
   });
   page.on('request', (request) => {
-    if (request.url().endsWith('.wav')) sounds.push(request.url());
+    if (request.url().endsWith('.wav')) {
+      sounds.push(request.url());
+    }
   });
   await page.addInitScript(() => {
     class Source {

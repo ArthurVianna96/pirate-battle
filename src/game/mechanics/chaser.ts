@@ -39,8 +39,12 @@ export function resolveChaserImpact(
   shipSize: Size,
   config: ChaserConfig = CHASER_CONFIG,
 ): boolean {
-  if (chaser.health === 0 || player.health === 0) return false;
-  if (!overlapsObstacle(player, shipSize, chaser.bounds)) return false;
+  if (chaser.health === 0 || player.health === 0) {
+    return false;
+  }
+  if (!overlapsObstacle(player, shipSize, chaser.bounds)) {
+    return false;
+  }
 
   player.health = Math.max(0, player.health - config.impactDamage);
   chaser.health = 0;

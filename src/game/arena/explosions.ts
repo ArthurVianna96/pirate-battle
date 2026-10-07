@@ -2,13 +2,33 @@ import { Container, Sprite, type Texture } from 'pixi.js';
 
 export const EXPLOSION_CONFIG = { duration: 0.6 } as const;
 
+interface Explosion {
+  sprite: Sprite;
+  elapsed: number;
+}
+
 export function createExplosion(
   parent: Container,
   textures: readonly Texture[],
 ) {
   const layer = new Container();
-  let explosions: { sprite: Sprite; elapsed: number }[] = [];
+  let explosions: Explosion[] = [];
   parent.addChild(layer);
+
+  function updateExplosion(explosion: Explosion, deltaSeconds: number) {
+    explosion.elapsed += deltaSeconds;
+    if (explosion.elapsed >= EXPLOSION_CONFIG.duration - 1e-9) {
+      explosion.sprite.destroy();
+      return;
+    }
+    const progress = explosion.elapsed / EXPLOSION_CONFIG.duration;
+    const frame = Math.min(
+      textures.length - 1,
+      Math.floor(progress * textures.length),
+    );
+    explosion.sprite.texture = textures[frame];
+    explosion.sprite.alpha = 1 - progress;
+  }
 
   return {
     play(position: { x: number; y: number }) {
@@ -18,20 +38,9 @@ export function createExplosion(
       explosions.push({ sprite, elapsed: 0 });
     },
     update(deltaSeconds: number) {
-      for (const explosion of explosions) {
-        explosion.elapsed += deltaSeconds;
-        if (explosion.elapsed >= EXPLOSION_CONFIG.duration - 1e-9) {
-          explosion.sprite.destroy();
-          continue;
-        }
-        const progress = explosion.elapsed / EXPLOSION_CONFIG.duration;
-        const frame = Math.min(
-          textures.length - 1,
-          Math.floor(progress * textures.length),
-        );
-        explosion.sprite.texture = textures[frame];
-        explosion.sprite.alpha = 1 - progress;
-      }
+      explosions.forEach((explosion) =>
+        updateExplosion(explosion, deltaSeconds),
+      );
       explosions = explosions.filter(
         (explosion) => !explosion.sprite.destroyed,
       );

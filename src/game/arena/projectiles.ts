@@ -46,20 +46,26 @@ export function createProjectile(parent: Container, texture: Texture) {
     }
   }
 
+  function createProjectileView(
+    projectile: ProjectileState,
+    deltaSeconds: number,
+  ) {
+    const sprite = new Sprite({ texture, anchor: 0.5 });
+    const trail = createTrail();
+    const origin = {
+      x: projectile.x - projectile.velocityX * deltaSeconds,
+      y: projectile.y - projectile.velocityY * deltaSeconds,
+    };
+    const view = { sprite, trail, origin };
+    trails.addChild(trail);
+    layer.addChild(sprite);
+    sprites.set(projectile.id, view);
+    return view;
+  }
   function syncSprite(projectile: ProjectileState, deltaSeconds: number) {
-    let view = sprites.get(projectile.id);
-    if (!view) {
-      const sprite = new Sprite({ texture, anchor: 0.5 });
-      const trail = createTrail();
-      const origin = {
-        x: projectile.x - projectile.velocityX * deltaSeconds,
-        y: projectile.y - projectile.velocityY * deltaSeconds,
-      };
-      view = { sprite, trail, origin };
-      trails.addChild(trail);
-      layer.addChild(sprite);
-      sprites.set(projectile.id, view);
-    }
+    const view =
+      sprites.get(projectile.id) ??
+      createProjectileView(projectile, deltaSeconds);
     view.sprite.position.set(projectile.x, projectile.y);
     view.trail.position.copyFrom(view.sprite.position);
     view.trail.rotation = Math.atan2(

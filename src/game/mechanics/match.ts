@@ -41,8 +41,9 @@ export function createMatchResult(
   match: MatchState,
   score: number,
 ): MatchResult {
-  if (!match.endReason)
+  if (!match.endReason) {
     throw new Error('Only completed matches have a result.');
+  }
   return {
     score,
     elapsedSeconds: match.duration - match.remainingSeconds,
@@ -51,13 +52,17 @@ export function createMatchResult(
 }
 
 export function pauseMatch(match: MatchState): boolean {
-  if (match.endReason || match.paused) return false;
+  if (match.endReason || match.paused) {
+    return false;
+  }
   match.paused = true;
   return true;
 }
 
 export function resumeMatch(match: MatchState): boolean {
-  if (match.endReason || !match.paused) return false;
+  if (match.endReason || !match.paused) {
+    return false;
+  }
   match.paused = false;
   return true;
 }
@@ -67,13 +72,17 @@ export function advanceMatchClock(
   match: MatchState,
   deltaSeconds: number,
 ): number {
-  if (match.endReason || match.paused) return 0;
+  if (match.endReason || match.paused) {
+    return 0;
+  }
   const activeSeconds = Math.min(
     Math.max(0, deltaSeconds),
     match.remainingSeconds,
   );
   match.remainingSeconds -= activeSeconds;
-  if (match.remainingSeconds < 1e-9) match.remainingSeconds = 0;
+  if (match.remainingSeconds < 1e-9) {
+    match.remainingSeconds = 0;
+  }
   return activeSeconds;
 }
 
@@ -81,8 +90,13 @@ export function finishMatchIfNeeded(
   match: MatchState,
   playerHealth: number,
 ): MatchEndReason | null {
-  if (match.endReason) return null;
-  if (playerHealth <= 0) match.endReason = 'death';
-  else if (match.remainingSeconds === 0) match.endReason = 'time';
+  if (match.endReason) {
+    return null;
+  }
+  if (playerHealth <= 0) {
+    match.endReason = 'death';
+  } else if (match.remainingSeconds === 0) {
+    match.endReason = 'time';
+  }
   return match.endReason;
 }

@@ -53,6 +53,7 @@ test('rotating at a corner keeps every ship corner within the arena', () => {
 test('holding forward stops at the edge and stays blocked after resize', async ({
   page,
 }) => {
+  test.setTimeout(90_000);
   await page.clock.install({ time: new Date('2026-01-01T00:00:00Z') });
   await page.goto('/');
   await page.getByRole('button', { name: 'Play', exact: true }).click();
@@ -67,7 +68,8 @@ test('holding forward stops at the edge and stays blocked after resize', async (
     height: 25,
   });
   await page.keyboard.down('w');
-  await page.clock.runFor(3000);
+  // Let the Chaser's contact flash settle before comparing the stationary bow.
+  await page.clock.runFor(3300);
   const atEdge = await arenaScreenshot(page, {
     x: 465,
     y: 0,

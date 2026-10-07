@@ -22,9 +22,13 @@ export function fireEnemyFront(
   position: PlayerState,
   config: FrontWeaponConfig,
 ) {
-  projectiles.projectiles.push(
-    createFrontProjectile(projectiles.nextId++, position, config),
+  const projectile = createFrontProjectile(
+    projectiles.nextId++,
+    position,
+    config,
   );
+  projectiles.projectiles.push(projectile);
+  return projectile;
 }
 
 export function updateEnemyProjectiles(
@@ -42,7 +46,9 @@ export function updateEnemyProjectiles(
       obstacles,
       onImpact,
     );
-    if (!previousPosition || player.health === 0) continue;
+    if (!previousPosition || player.health === 0) {
+      continue;
+    }
     if (
       projectilePathHitsObstacle(
         previousPosition,

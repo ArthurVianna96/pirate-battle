@@ -8,15 +8,21 @@ import {
 import { OPTIONS_STORAGE_KEY } from '../src/storage/options';
 
 test('options accept whole seconds within their limits', () => {
-  for (const value of [60, 90, 180]) expect(isDurationValid(value)).toBe(true);
-  for (const value of [1, 2, 30])
+  for (const value of [60, 90, 180]) {
+    expect(isDurationValid(value)).toBe(true);
+  }
+  for (const value of [1, 2, 30]) {
     expect(isSpawnIntervalValid(value)).toBe(true);
-  for (const value of [null, '', '60', NaN, 59, 181, 60.5])
+  }
+  for (const value of [null, '', '60', NaN, 59, 181, 60.5]) {
     expect(isDurationValid(value)).toBe(false);
-  for (const value of [null, '', '1', NaN, 0, 31, 1.5])
+  }
+  for (const value of [null, '', '1', NaN, 0, 31, 1.5]) {
     expect(isSpawnIntervalValid(value)).toBe(false);
-  for (const value of [null, {}, { sessionDuration: 60 }])
+  }
+  for (const value of [null, {}, { sessionDuration: 60 }]) {
     expect(parseOptions(value)).toBeNull();
+  }
 });
 
 test('each match receives a validated, independent options snapshot', () => {

@@ -1,34 +1,20 @@
 import { Hud } from './Hud';
 import { GameControls } from './GameControls';
 import { createInputState } from './mechanics/input';
-import { PauseScreen } from './PauseScreen';
-import { OptionsScreen } from '../screens/OptionsScreen';
-import { Application } from 'pixi.js';
+import { PauseMenu } from '../screens/PauseMenu';
+import { createGameSession } from './createGameSession';
 import { useEffect, useRef, useState } from 'react';
-import { createArena, loadArenaAssets } from './arena/index';
-import {
-  startGameLoop,
-  type GameLoopCallbacks,
-  type GameLoopController,
-} from './gameLoop';
+import type { GameLoopController } from './gameLoop';
 import { COMBAT_CONFIG } from './mechanics/combat';
 import type { MatchResult } from './mechanics/match';
 import type { GameOptions } from './options';
 
-function mountArena(
-  app: Application,
-  host: HTMLDivElement,
-  textures: Awaited<ReturnType<typeof loadArenaAssets>>,
-  options: GameOptions,
-  callbacks: GameLoopCallbacks,
-) {
-  const arena = createArena(textures, app.screen.width, app.screen.height);
-  app.stage.addChild(arena.container);
-  app.canvas.setAttribute('aria-label', 'Naval battle arena');
-  app.canvas.setAttribute('role', 'img');
-  host.appendChild(app.canvas);
-  app.render();
-  return startGameLoop(app, arena, options, callbacks);
+interface GameCanvasProps {
+  onMatchEnd: (result: MatchResult) => void;
+  options: GameOptions;
+  savedOptions: GameOptions;
+  onSaveOptions: (options: GameOptions) => void;
+  onMainMenu: () => void;
 }
 
 export function GameCanvas({
@@ -37,15 +23,9 @@ export function GameCanvas({
   savedOptions,
   onSaveOptions,
   onMainMenu,
-}: {
-  onMatchEnd: (result: MatchResult) => void;
-  options: GameOptions;
-  savedOptions: GameOptions;
-  onSaveOptions: (options: GameOptions) => void;
-  onMainMenu: () => void;
-}) {
+}: GameCanvasProps) {
   const hostRef = useRef<HTMLDivElement>(null);
-  const gameLoopRef = useRef<GameLoopController | null>(null);
+  const gameSessionRef = useRef<GameLoopController | null>(null);
   const pauseButtonRef = useRef<HTMLButtonElement>(null);
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>(
     'loading',
@@ -57,75 +37,36 @@ export function GameCanvas({
     options.sessionDuration,
   );
   const [paused, setPaused] = useState(false);
-  const [showOptions, setShowOptions] = useState(false);
   const [input, setInput] = useState(createInputState);
 
   useEffect(() => {
     const host = hostRef.current;
-    if (!host) return;
-
-    const app = new Application();
-    let cancelled = false;
-    let initialized = false;
-    let gameLoop: GameLoopController | undefined;
-
-    function destroy() {
-      gameLoop?.destroy();
-      if (gameLoopRef.current === gameLoop) gameLoopRef.current = null;
-      gameLoop = undefined;
-      if (!initialized) return;
-      initialized = false;
-      app.destroy({ removeView: true }, { children: true });
+    if (!host) {
+      return;
     }
 
-    async function initialize(host: HTMLDivElement) {
-      try {
-        const textures = await loadArenaAssets();
-        if (cancelled) return;
-
-        await app.init({
-          width: 960,
-          height: 540,
-          background: '#126b86',
-          preference: 'webgl',
-          resolution: window.devicePixelRatio || 1,
-          autoDensity: true,
-          autoStart: false,
-          sharedTicker: false,
-        });
-        initialized = true;
-
-        if (cancelled) {
-          destroy();
-          return;
-        }
-
-        gameLoop = mountArena(app, host, textures, options, {
-          onScoreChange: setScore,
-          onInputChange: setInput,
-          onHealthChange: setHealth,
-          onTimeChange: setRemainingSeconds,
-          onMatchEnd,
-          onPauseChange(value) {
-            setPaused(value);
-            requestAnimationFrame(() => pauseButtonRef.current?.focus());
-          },
-        });
-        gameLoopRef.current = gameLoop;
-        setStatus('ready');
-      } catch (error) {
-        if (initialized) destroy();
-        if (!cancelled) {
-          console.error('Unable to initialize the arena.', error);
-          setStatus('error');
-        }
-      }
-    }
-
-    void initialize(host);
+    const session = createGameSession(host, options, {
+      onScoreChange: setScore,
+      onInputChange: setInput,
+      onHealthChange: setHealth,
+      onTimeChange: setRemainingSeconds,
+      onMatchEnd,
+      onPauseChange(value) {
+        setPaused(value);
+        requestAnimationFrame(() => pauseButtonRef.current?.focus());
+      },
+      onReady: () => setStatus('ready'),
+      onError(error) {
+        console.error('Unable to initialize the arena.', error);
+        setStatus('error');
+      },
+    });
+    gameSessionRef.current = session;
     return () => {
-      cancelled = true;
-      destroy();
+      session.destroy();
+      if (gameSessionRef.current === session) {
+        gameSessionRef.current = null;
+      }
     };
   }, [attempt, onMatchEnd, options]);
 
@@ -135,8 +76,11 @@ export function GameCanvas({
   }
 
   function togglePause() {
-    if (paused) gameLoopRef.current?.resume();
-    else gameLoopRef.current?.pause();
+    if (paused) {
+      gameSessionRef.current?.resume();
+    } else {
+      gameSessionRef.current?.pause();
+    }
   }
 
   return (
@@ -157,37 +101,17 @@ export function GameCanvas({
           input={input}
           disabled={status !== 'ready' || paused}
           onAction={(action, active) =>
-            gameLoopRef.current?.setControl(action, active)
+            gameSessionRef.current?.setControl(action, active)
           }
         />
       </div>
       {paused && (
-        <PauseScreen>
-          {showOptions ? (
-            <OptionsScreen
-              options={savedOptions}
-              onSave={(nextOptions) => {
-                onSaveOptions(nextOptions);
-                setShowOptions(false);
-              }}
-            />
-          ) : (
-            <section className="menu pause-menu">
-              <h2>Paused</h2>
-              <p>Ready when you are.</p>
-              <p className="sr-only" role="status">
-                Game paused. Select Resume to continue.
-              </p>
-              <div className="menu-actions">
-                <button autoFocus onClick={togglePause}>
-                  Resume
-                </button>
-                <button onClick={() => setShowOptions(true)}>Options</button>
-                <button onClick={onMainMenu}>Main Menu</button>
-              </div>
-            </section>
-          )}
-        </PauseScreen>
+        <PauseMenu
+          options={savedOptions}
+          onSaveOptions={onSaveOptions}
+          onResume={togglePause}
+          onMainMenu={onMainMenu}
+        />
       )}
       {status === 'loading' && <p role="status">Loading arena...</p>}
       {status === 'error' && (

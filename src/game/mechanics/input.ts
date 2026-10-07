@@ -10,6 +10,15 @@ export interface GameInput extends MovementInput {
   shootRight: boolean;
 }
 
+const INPUT_BINDINGS: { action: keyof GameInput; keys: string[] }[] = [
+  { action: 'forward', keys: ['KeyW', 'ArrowUp'] },
+  { action: 'turnLeft', keys: ['KeyA', 'ArrowLeft'] },
+  { action: 'turnRight', keys: ['KeyD', 'ArrowRight'] },
+  { action: 'shootFront', keys: ['Space'] },
+  { action: 'shootLeft', keys: ['KeyQ'] },
+  { action: 'shootRight', keys: ['KeyE'] },
+];
+
 export function createInputState(): GameInput {
   return {
     forward: false,
@@ -21,37 +30,20 @@ export function createInputState(): GameInput {
   };
 }
 
-export function createKeyboardInput(
+export function createGameInput(
   onChange: (input: GameInput) => void = () => {},
 ) {
   const input = createInputState();
   const pointerInput = createInputState();
   const pressed = new Set<string>();
   let enabled = true;
-  const gameKeys = new Set([
-    'KeyW',
-    'ArrowUp',
-    'KeyA',
-    'ArrowLeft',
-    'KeyD',
-    'ArrowRight',
-    'Space',
-    'KeyQ',
-    'KeyE',
-  ]);
+  const gameKeys = new Set(INPUT_BINDINGS.flatMap(({ keys }) => keys));
 
   function syncInput() {
-    input.forward =
-      pointerInput.forward || pressed.has('KeyW') || pressed.has('ArrowUp');
-    input.turnLeft =
-      pointerInput.turnLeft || pressed.has('KeyA') || pressed.has('ArrowLeft');
-    input.turnRight =
-      pointerInput.turnRight ||
-      pressed.has('KeyD') ||
-      pressed.has('ArrowRight');
-    input.shootFront = pointerInput.shootFront || pressed.has('Space');
-    input.shootLeft = pointerInput.shootLeft || pressed.has('KeyQ');
-    input.shootRight = pointerInput.shootRight || pressed.has('KeyE');
+    for (const { action, keys } of INPUT_BINDINGS) {
+      input[action] =
+        pointerInput[action] || keys.some((key) => pressed.has(key));
+    }
     onChange({ ...input });
   }
 
@@ -62,16 +54,21 @@ export function createKeyboardInput(
       event.ctrlKey ||
       event.metaKey ||
       event.altKey
-    )
+    ) {
       return;
+    }
     event.preventDefault();
-    if (event.repeat) return;
+    if (event.repeat) {
+      return;
+    }
     pressed.add(event.code);
     syncInput();
   }
 
   function keyUp(event: KeyboardEvent) {
-    if (!enabled || !gameKeys.has(event.code)) return;
+    if (!enabled || !gameKeys.has(event.code)) {
+      return;
+    }
     event.preventDefault();
     pressed.delete(event.code);
     syncInput();
@@ -91,7 +88,9 @@ export function createKeyboardInput(
   return {
     input,
     setAction(action: keyof GameInput, active: boolean) {
-      if (!enabled) return;
+      if (!enabled) {
+        return;
+      }
       pointerInput[action] = active;
       syncInput();
     },

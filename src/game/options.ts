@@ -51,20 +51,23 @@ export function parseOptions(value: unknown): GameOptions | null {
     typeof value !== 'object' ||
     !('sessionDuration' in value) ||
     !('enemySpawnInterval' in value)
-  )
+  ) {
     return null;
+  }
   const { sessionDuration, enemySpawnInterval } = value;
   if (
     !isDurationValid(sessionDuration) ||
     !isSpawnIntervalValid(enemySpawnInterval)
-  )
+  ) {
     return null;
+  }
   return { sessionDuration, enemySpawnInterval };
 }
 
 export function createOptionsSnapshot(options: GameOptions): GameOptions {
   const validated = parseOptions(options);
-  if (!validated)
+  if (!validated) {
     throw new Error('Unable to start a match with invalid options.');
+  }
   return Object.freeze(validated);
 }

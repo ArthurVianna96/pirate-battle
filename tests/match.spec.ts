@@ -30,8 +30,9 @@ test('ended matches cannot pause or resume', () => {
 test('match duration defaults to 60 and accepts only the supported range', () => {
   expect(createMatchState().remainingSeconds).toBe(60);
   expect(createMatchState(180).remainingSeconds).toBe(180);
-  for (const duration of [59, 181, NaN, Infinity])
+  for (const duration of [59, 181, NaN, Infinity]) {
     expect(() => createMatchState(duration)).toThrow();
+  }
 });
 
 test('the final update simulates only the remaining fraction of a second', () => {
@@ -45,8 +46,9 @@ test('the final update simulates only the remaining fraction of a second', () =>
 test('match duration agrees at 30 and 60 FPS', () => {
   for (const fps of [30, 60]) {
     const match = createMatchState();
-    for (let frame = 0; frame < fps * 60; frame++)
+    for (let frame = 0; frame < fps * 60; frame++) {
       advanceMatchClock(match, 1 / fps);
+    }
     expect(match.remainingSeconds).toBe(0);
     expect(finishMatchIfNeeded(match, 5)).toBe('time');
   }
@@ -99,10 +101,13 @@ test('completion shows a frozen result and Play Again creates a fresh match', as
   await expect(page.getByRole('status')).toHaveText('Ship destroyed.');
   await expect(page.locator('canvas')).toHaveCount(0);
   const playedTime = await page.getByText(/^Time played: /).textContent();
-  for (const key of ['w', 'ArrowRight', 'q', 'e'])
+  for (const key of ['w', 'ArrowRight', 'q', 'e']) {
     await page.keyboard.down(key);
+  }
   await page.clock.runFor(1000);
-  for (const key of ['w', 'ArrowRight', 'q', 'e']) await page.keyboard.up(key);
+  for (const key of ['w', 'ArrowRight', 'q', 'e']) {
+    await page.keyboard.up(key);
+  }
   expect(await page.getByText(/^Time played: /).textContent()).toBe(playedTime);
   await expect(page.getByText('Score: 1', { exact: true })).toBeVisible();
   const playAgain = page.getByRole('button', {

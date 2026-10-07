@@ -41,52 +41,56 @@ const islandTileUrls = [
 ];
 
 export async function loadArenaAssets(): Promise<ArenaAssets> {
-  const [
-    playerShip,
-    water,
-    island,
-    projectile,
-    explosion,
-    chaser,
-    shooter,
-    fire,
-    healthFrame,
-    healthFill,
-  ] = await Promise.all([
+  const [ships, scenery, effects, enemyHealth] = await Promise.all([
+    loadShips(),
+    loadScenery(),
+    loadEffects(),
+    loadEnemyHealth(),
+  ]);
+  return { ...ships, ...scenery, ...effects, enemyHealth };
+}
+
+async function loadShips() {
+  const [playerShip, chaser, shooter] = await Promise.all([
     loadShipTextures([playerShipUrl, playerDamagedUrl, playerCriticalUrl]),
-    Assets.load<Texture>(waterUrl),
-    Promise.all(islandTileUrls.map((url) => Assets.load<Texture>(url))),
-    Assets.load<Texture>(projectileUrl),
-    Promise.all(
-      [explosion1Url, explosion2Url, explosion3Url].map((url) =>
-        Assets.load<Texture>(url),
-      ),
-    ),
     loadShipTextures([chaserUrl, chaserDamagedUrl, chaserCriticalUrl]),
     loadShipTextures([shooterUrl, shooterDamagedUrl, shooterCriticalUrl]),
-    Promise.all([fire1Url, fire2Url].map((url) => Assets.load<Texture>(url))),
-    Assets.load<Texture>(enemyHealthFrameUrl),
-    Assets.load<Texture>(enemyHealthFillUrl),
   ]);
+  return { playerShip, chaser, shooter };
+}
 
-  return {
-    enemyHealth: { frame: healthFrame, fill: healthFill },
-    playerShip,
-    water,
-    island,
-    projectile,
-    explosion,
-    chaser,
-    shooter,
-    fire,
-  };
+async function loadScenery() {
+  const [water, island] = await Promise.all([
+    Assets.load<Texture>(waterUrl),
+    loadTextures(islandTileUrls),
+  ]);
+  return { water, island };
+}
+
+async function loadEffects() {
+  const [projectile, explosion, fire] = await Promise.all([
+    Assets.load<Texture>(projectileUrl),
+    loadTextures([explosion1Url, explosion2Url, explosion3Url]),
+    loadTextures([fire1Url, fire2Url]),
+  ]);
+  return { projectile, explosion, fire };
+}
+
+async function loadEnemyHealth() {
+  const [frame, fill] = await loadTextures([
+    enemyHealthFrameUrl,
+    enemyHealthFillUrl,
+  ]);
+  return { frame, fill };
+}
+
+function loadTextures(urls: readonly string[]) {
+  return Promise.all(urls.map((url) => Assets.load<Texture>(url)));
 }
 
 async function loadShipTextures(
   urls: readonly [string, string, string],
 ): Promise<ShipTextures> {
-  const [healthy, damaged, critical] = await Promise.all(
-    urls.map((url) => Assets.load<Texture>(url)),
-  );
+  const [healthy, damaged, critical] = await loadTextures(urls);
   return { healthy, damaged, critical };
 }

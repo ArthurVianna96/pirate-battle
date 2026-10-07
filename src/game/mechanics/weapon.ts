@@ -46,11 +46,17 @@ export function createWeaponState() {
 export type WeaponState = ReturnType<typeof createWeaponState>;
 
 export function fireFront(weapon: WeaponState, player: PlayerState) {
-  if (weapon.cooldown > 1e-9) return;
-  weapon.projectiles.push(
-    createFrontProjectile(weapon.nextId++, player, FRONT_WEAPON_CONFIG),
+  if (weapon.cooldown > 1e-9) {
+    return;
+  }
+  const projectile = createFrontProjectile(
+    weapon.nextId++,
+    player,
+    FRONT_WEAPON_CONFIG,
   );
+  weapon.projectiles.push(projectile);
   weapon.cooldown = FRONT_WEAPON_CONFIG.cooldown;
+  return projectile;
 }
 
 export interface FrontWeaponConfig {
@@ -87,7 +93,9 @@ export function fireSide(
   side: 'left' | 'right',
 ) {
   const cooldownKey = side === 'left' ? 'leftCooldown' : 'rightCooldown';
-  if (weapon[cooldownKey] > 1e-9) return;
+  if (weapon[cooldownKey] > 1e-9) {
+    return;
+  }
 
   const firingHeading =
     player.heading + (side === 'left' ? -Math.PI / 2 : Math.PI / 2);
@@ -96,13 +104,14 @@ export function fireSide(
   const forwardX = Math.sin(player.heading);
   const forwardY = -Math.cos(player.heading);
 
+  const shots: ProjectileState[] = [];
   // Spread the cannons along the hull. All three shots travel in the same direction.
   for (const offset of [
     -SIDE_WEAPON_CONFIG.spacing,
     0,
     SIDE_WEAPON_CONFIG.spacing,
   ]) {
-    weapon.projectiles.push({
+    shots.push({
       id: weapon.nextId++,
       x:
         player.x +
@@ -119,7 +128,9 @@ export function fireSide(
       radius: SIDE_WEAPON_CONFIG.radius,
     });
   }
+  weapon.projectiles.push(...shots);
   weapon[cooldownKey] = SIDE_WEAPON_CONFIG.cooldown;
+  return shots;
 }
 
 export function updateWeapon(
@@ -130,9 +141,7 @@ export function updateWeapon(
   enemies: readonly EnemyState[] = [],
   onImpact?: (position: { x: number; y: number }) => void,
 ) {
-  weapon.cooldown = Math.max(0, weapon.cooldown - deltaSeconds);
-  weapon.leftCooldown = Math.max(0, weapon.leftCooldown - deltaSeconds);
-  weapon.rightCooldown = Math.max(0, weapon.rightCooldown - deltaSeconds);
+  updateCooldowns(weapon, deltaSeconds);
   let destroyedEnemies = 0;
   for (const projectile of weapon.projectiles) {
     const { isDestroyed } = updateProjectile(
@@ -152,6 +161,12 @@ export function updateWeapon(
   return destroyedEnemies;
 }
 
+function updateCooldowns(weapon: WeaponState, deltaSeconds: number) {
+  weapon.cooldown = Math.max(0, weapon.cooldown - deltaSeconds);
+  weapon.leftCooldown = Math.max(0, weapon.leftCooldown - deltaSeconds);
+  weapon.rightCooldown = Math.max(0, weapon.rightCooldown - deltaSeconds);
+}
+
 function updateProjectile(
   projectile: ProjectileState,
   deltaSeconds: number,
@@ -165,7 +180,9 @@ function updateProjectile(
     obstacles,
     onImpact,
   );
-  if (!previousPosition) return { isDestroyed: false };
+  if (!previousPosition) {
+    return { isDestroyed: false };
+  }
   for (const enemy of enemies) {
     if (
       enemy.health > 0 &&
@@ -191,7 +208,9 @@ export function advanceProjectile(
   obstacles: readonly Obstacle[],
   onImpact?: (position: { x: number; y: number }) => void,
 ) {
-  if (projectile.remainingLife <= 0) return undefined;
+  if (projectile.remainingLife <= 0) {
+    return undefined;
+  }
   const previousPosition = { x: projectile.x, y: projectile.y };
   const travelSeconds = Math.min(deltaSeconds, projectile.remainingLife);
   projectile.x += projectile.velocityX * travelSeconds;

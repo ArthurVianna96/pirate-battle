@@ -3,7 +3,7 @@ import { createShipAppearance } from './shipAppearance';
 import { Container, Sprite, type Texture } from 'pixi.js';
 import type { EnemyState } from '../mechanics/combat';
 import type { PlayerState } from '../mechanics/simulation';
-import { createHealthBar } from './healthBar';
+import { createHealthBar, HEALTH_BAR_CONFIG } from './healthBar';
 
 export function createEnemy(
   parent: Container,
@@ -46,17 +46,22 @@ export function createEnemy(
       bounds.x + bounds.width / 2,
       bounds.y + bounds.height / 2,
     );
-    if (options.position) ship.rotation = options.position.heading + Math.PI;
+    if (options.position) {
+      ship.rotation = options.position.heading + Math.PI;
+    }
   }
 
   function syncHealth() {
     updateHealthBar(enemy.health / enemy.maxHealth);
-    bar.y = -bounds.height / 2 - 24;
+    const { height, scale, gap } = HEALTH_BAR_CONFIG;
+    bar.y = -bounds.height / 2 - height * scale - gap;
   }
 
   return {
     sync(deltaSeconds = 0) {
-      if (group.destroyed) return;
+      if (group.destroyed) {
+        return;
+      }
       if (enemy.health === 0) {
         group.destroy({ children: true });
         return;
@@ -66,7 +71,9 @@ export function createEnemy(
       appearance.update(enemy.health, enemy.maxHealth, deltaSeconds);
     },
     destroy() {
-      if (!group.destroyed) group.destroy({ children: true });
+      if (!group.destroyed) {
+        group.destroy({ children: true });
+      }
     },
   };
 }

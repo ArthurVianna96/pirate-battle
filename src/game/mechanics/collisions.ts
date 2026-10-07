@@ -67,8 +67,9 @@ export function projectilePathHitsObstacle(
       if (
         axis.startCoordinate < axis.obstacleMin ||
         axis.startCoordinate > axis.obstacleMax
-      )
+      ) {
         return false;
+      }
       continue;
     }
     const minBoundaryFraction =
@@ -83,7 +84,9 @@ export function projectilePathHitsObstacle(
       collisionEndFraction,
       Math.max(minBoundaryFraction, maxBoundaryFraction),
     );
-    if (collisionStartFraction > collisionEndFraction) return false;
+    if (collisionStartFraction > collisionEndFraction) {
+      return false;
+    }
   }
   return true;
 }
@@ -126,7 +129,9 @@ export function resolveObstacle(
   shipSize: Size,
   obstacle: Obstacle,
 ) {
-  if (!overlapsObstacle(player, shipSize, obstacle)) return;
+  if (!overlapsObstacle(player, shipSize, obstacle)) {
+    return;
+  }
   const { halfWidth, halfHeight } = shipExtents(player, shipSize);
   const corrections = [
     { x: obstacle.x - (player.x + halfWidth), y: 0 },

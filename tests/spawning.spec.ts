@@ -37,8 +37,9 @@ test('spawn counts agree at 30 and 60 FPS', () => {
   for (const fps of [30, 60]) {
     const state = createSpawnerState();
     let count = 0;
-    for (let frame = 0; frame < fps * 12; frame++)
+    for (let frame = 0; frame < fps * 12; frame++) {
       count += updateSpawner(state, 1 / fps);
+    }
     expect(count).toBe(3);
     expect(state.elapsed).toBeCloseTo(0);
   }

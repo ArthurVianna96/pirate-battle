@@ -11,7 +11,9 @@ export function loadOptions(): GameOptions {
     const saved = localStorage.getItem(OPTIONS_STORAGE_KEY);
     if (saved) {
       const options = parseOptions(JSON.parse(saved));
-      if (options) return options;
+      if (options) {
+        return options;
+      }
     }
   } catch {
     // Missing, inaccessible or malformed storage uses the default options.
@@ -21,6 +23,8 @@ export function loadOptions(): GameOptions {
 
 export function saveOptions(options: GameOptions) {
   const validated = parseOptions(options);
-  if (!validated) throw new Error('Cannot save invalid options.');
+  if (!validated) {
+    throw new Error('Cannot save invalid options.');
+  }
   localStorage.setItem(OPTIONS_STORAGE_KEY, JSON.stringify(validated));
 }

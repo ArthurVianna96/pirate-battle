@@ -1,9 +1,6 @@
 import type { Application, Ticker } from 'pixi.js';
-import { createAudioChannel, playInterfaceSound } from './audio';
-import { createExplosion, EXPLOSION_CONFIG } from './arena/explosions';
-import { createCombatEffects } from './arena/combatEffects';
-import { createShipAppearance } from './arena/shipAppearance';
-import { createProjectile } from './arena/projectiles';
+import { createGameFeedback } from './feedback/index';
+import { EXPLOSION_CONFIG } from './arena/explosions';
 import type { ArenaView } from './arena/types';
 import type { GameOptions } from './options';
 import { createPauseControls } from './pause';
@@ -12,7 +9,7 @@ import {
   createEnemyProjectilesState,
   updateEnemyProjectiles,
 } from './mechanics/enemyProjectiles';
-import { createKeyboardInput, type GameInput } from './mechanics/input';
+import { createGameInput, type GameInput } from './mechanics/input';
 import { createPlayerState } from './mechanics/player';
 import { updateShooter, updateShooterAttack } from './mechanics/shooter';
 import { MOVEMENT_CONFIG, updatePlayer } from './mechanics/simulation';
@@ -61,43 +58,21 @@ export function startGameLoop(
   }: GameLoopCallbacks,
 ): GameLoopController {
   const { ship, obstacles } = arena;
-  const keyboard = createKeyboardInput(onInputChange);
+  const controls = createGameInput(onInputChange);
   const enemyProjectilesState = createEnemyProjectilesState();
   const spawner = createSpawnerState();
   const match = createMatchState(options.sessionDuration);
-  const audio = createAudioChannel();
-  void audio.play('ocean_ambience_loop', 0.12, true);
+  const feedback = createGameFeedback(arena);
   const pauseControls = createPauseControls({
     match,
     stop: () => app.stop(),
     start: () => app.start(),
-    setInputEnabled: keyboard.setEnabled,
+    setInputEnabled: controls.setEnabled,
     onPauseChange(value) {
-      if (value) audio.stopAll();
-      else void audio.play('ocean_ambience_loop', 0.12, true);
-      playInterfaceSound(value ? 'game_pause' : 'game_resume');
+      feedback.setPaused(value);
       onPauseChange(value);
     },
   });
-  const playerProjectiles = createProjectile(
-    arena.container,
-    arena.projectileTexture,
-  );
-  const enemyProjectiles = createProjectile(
-    arena.container,
-    arena.projectileTexture,
-  );
-  const explosions = createExplosion(arena.container, arena.explosionTextures);
-  const effects = createCombatEffects(
-    arena.container,
-    arena.explosionTextures[0],
-  );
-  const playerAppearance = createShipAppearance(
-    arena.container,
-    ship,
-    arena.playerShipTextures,
-    arena.fireTextures,
-  );
 
   const player = createPlayerState({
     x: ship.x,
@@ -113,20 +88,17 @@ export function startGameLoop(
   let endingAnimationRemaining = 0;
 
   function update(ticker: Ticker) {
-    if (match.paused) return;
-    explosions.update(ticker.deltaMS / 1000);
-    effects.update(ticker.deltaMS / 1000);
+    if (match.paused) {
+      return;
+    }
+    const frameSeconds = ticker.deltaMS / 1000;
+    feedback.updateEffects(frameSeconds);
     if (match.endReason) {
-      endingAnimationRemaining -= ticker.deltaMS / 1000;
-      if (pendingResult && endingAnimationRemaining <= 0) {
-        const result = pendingResult;
-        pendingResult = undefined;
-        onMatchEnd(result);
-      }
+      updateEndingAnimation(frameSeconds);
       return;
     }
 
-    const deltaSeconds = advanceMatchClock(match, ticker.deltaMS / 1000);
+    const deltaSeconds = advanceMatchClock(match, frameSeconds);
 
     updateSpawns(deltaSeconds);
     updateMovement(deltaSeconds);
@@ -134,31 +106,54 @@ export function startGameLoop(
     updateEnemyAttacks(deltaSeconds);
     updateContacts();
     removeDestroyedEnemies();
-    syncViews(deltaSeconds);
+    feedback.syncViews(
+      player,
+      player.weapon.projectiles,
+      enemyProjectilesState.projectiles,
+      deltaSeconds,
+    );
     updateMatchStatus();
   }
 
   function updateMatchStatus() {
-    const remainingSeconds = Math.ceil(match.remainingSeconds);
-    if (remainingSeconds !== displayedSeconds) {
-      displayedSeconds = remainingSeconds;
-      if (remainingSeconds === 10) void audio.play('time_warning');
-      onTimeChange(remainingSeconds);
-    }
+    publishRemainingTime();
     const endReason = finishMatchIfNeeded(match, player.health);
     if (endReason) {
-      audio.stopLoop('ocean_ambience_loop');
-      audio.stopLoop('ship_sailing_loop');
-      keyboard.destroy();
-      const result = createMatchResult(match, score);
-      if (endReason === 'death') {
-        ship.visible = false;
-        explosions.play(player);
-        void audio.play('ship_explosion_1');
-        pendingResult = result;
-        endingAnimationRemaining = EXPLOSION_CONFIG.duration;
-      } else onMatchEnd(result);
+      endMatch(endReason);
     }
+  }
+
+  function publishRemainingTime() {
+    const remainingSeconds = Math.ceil(match.remainingSeconds);
+    if (remainingSeconds === displayedSeconds) {
+      return;
+    }
+    displayedSeconds = remainingSeconds;
+    feedback.time(remainingSeconds);
+    onTimeChange(remainingSeconds);
+  }
+
+  function endMatch(endReason: MatchResult['endReason']) {
+    feedback.finish();
+    controls.destroy();
+    const result = createMatchResult(match, score);
+    if (endReason === 'time') {
+      onMatchEnd(result);
+      return;
+    }
+    feedback.playerDestroyed(player);
+    pendingResult = result;
+    endingAnimationRemaining = EXPLOSION_CONFIG.duration;
+  }
+
+  function updateEndingAnimation(deltaSeconds: number) {
+    endingAnimationRemaining -= deltaSeconds;
+    if (!pendingResult || endingAnimationRemaining > 0) {
+      return;
+    }
+    const result = pendingResult;
+    pendingResult = undefined;
+    onMatchEnd(result);
   }
 
   function updateSpawns(deltaSeconds: number) {
@@ -180,10 +175,8 @@ export function startGameLoop(
   }
 
   function updateMovement(deltaSeconds: number) {
-    if (keyboard.input.forward)
-      void audio.play('ship_sailing_loop', 0.08, true);
-    else audio.stopLoop('ship_sailing_loop');
-    updatePlayer(player, keyboard.input, deltaSeconds, MOVEMENT_CONFIG, world);
+    feedback.movement(controls.input.forward);
+    updatePlayer(player, controls.input, deltaSeconds, MOVEMENT_CONFIG, world);
     for (const { kind, state } of arena.enemies) {
       if (kind === 'chaser') {
         updateChaser(state, player, deltaSeconds, world);
@@ -201,7 +194,7 @@ export function startGameLoop(
       arenaSize,
       obstacles,
       arena.enemies.map(({ state }) => state),
-      playImpact,
+      feedback.impact,
     );
     updateScore(destroyedEnemies);
   }
@@ -209,19 +202,17 @@ export function startGameLoop(
   function updateEnemyAttacks(deltaSeconds: number) {
     const previousHealth = player.health;
     for (const enemy of arena.enemies) {
-      if (enemy.kind === 'shooter') {
-        const shotCount = enemyProjectilesState.projectiles.length;
-        updateShooterAttack(
-          enemy.state,
-          player,
-          deltaSeconds,
-          enemyProjectilesState,
-        );
-        enemyProjectilesState.projectiles
-          .slice(shotCount)
-          .forEach(effects.shot);
-        if (enemyProjectilesState.projectiles.length > shotCount)
-          void audio.play('cannon_fire_1', 0.18);
+      if (enemy.kind !== 'shooter') {
+        continue;
+      }
+      const shot = updateShooterAttack(
+        enemy.state,
+        player,
+        deltaSeconds,
+        enemyProjectilesState,
+      );
+      if (shot) {
+        feedback.enemyShot(shot);
       }
     }
     updateEnemyProjectiles(
@@ -229,105 +220,93 @@ export function startGameLoop(
       deltaSeconds,
       player,
       world,
-      playImpact,
+      feedback.impact,
     );
-    if (player.health !== previousHealth) reportPlayerDamage(previousHealth);
+    if (player.health !== previousHealth) {
+      reportPlayerDamage(previousHealth);
+    }
   }
 
   function fireWeapons() {
-    const shotCount = player.weapon.projectiles.length;
-    const frontId = player.weapon.nextId;
-    if (keyboard.input.shootFront) {
-      fireFront(player.weapon, player);
+    fireFrontWeapon();
+    fireSideWeapons();
+  }
+
+  function fireFrontWeapon() {
+    if (!controls.input.shootFront) {
+      return;
     }
-    if (player.weapon.nextId > frontId) void audio.play('cannon_fire_1');
-    const sideId = player.weapon.nextId;
-    if (keyboard.input.shootLeft) {
-      fireSide(player.weapon, player, 'left');
+    const shot = fireFront(player.weapon, player);
+    if (shot) {
+      feedback.frontShot(shot);
     }
-    if (keyboard.input.shootRight) {
-      fireSide(player.weapon, player, 'right');
-    }
-    if (player.weapon.nextId > sideId) void audio.play('cannon_broadside');
-    player.weapon.projectiles.slice(shotCount).forEach(effects.shot);
+  }
+
+  function fireSideWeapons() {
+    const leftShots = controls.input.shootLeft
+      ? (fireSide(player.weapon, player, 'left') ?? [])
+      : [];
+    const rightShots = controls.input.shootRight
+      ? (fireSide(player.weapon, player, 'right') ?? [])
+      : [];
+    feedback.sideShots([...leftShots, ...rightShots]);
   }
 
   function updateScore(destroyedEnemies: number) {
     if (destroyedEnemies > 0) {
       score += destroyedEnemies;
       onScoreChange(score);
-      void audio.play('score_point', 0.2);
+      feedback.score();
     }
   }
 
   function updateContacts() {
     const previousHealth = player.health;
     for (const { kind, state } of arena.enemies) {
-      if (kind === 'chaser') resolveChaserImpact(state, player, shipSize);
+      if (kind === 'chaser') {
+        resolveChaserImpact(state, player, shipSize);
+      }
     }
     if (player.health !== previousHealth) {
-      effects.impact(player);
-      void audio.play('ship_collision');
+      feedback.collision(player);
       reportPlayerDamage(previousHealth);
     }
   }
 
-  function playImpact(position: { x: number; y: number }) {
-    effects.impact(position);
-    void audio.play('ship_wood_hit_1', 0.18);
-  }
-
   function reportPlayerDamage(previousHealth: number) {
     onHealthChange(player.health);
-    if (previousHealth > 2 && player.health <= 2 && player.health > 0)
-      void audio.play('health_low');
+    feedback.playerDamaged(previousHealth, player.health);
   }
 
   function removeDestroyedEnemies() {
     arena.enemies = arena.enemies.filter(({ state, renderer }) => {
-      if (state.health > 0) return true;
-      explosions.play(state.position);
-      void audio.play('ship_explosion_1', 0.25);
+      if (state.health > 0) {
+        return true;
+      }
+      feedback.enemyDestroyed(state.position);
       renderer.destroy();
       return false;
     });
   }
 
-  function syncViews(deltaSeconds: number) {
-    syncPlayer();
-    playerAppearance.update(player.health, player.maxHealth, deltaSeconds);
-    for (const { renderer } of arena.enemies) renderer.sync(deltaSeconds);
-    playerProjectiles.sync(player.weapon.projectiles, deltaSeconds);
-    enemyProjectiles.sync(enemyProjectilesState.projectiles, deltaSeconds);
-  }
-
-  function syncPlayer() {
-    ship.position.set(player.x, player.y);
-    ship.rotation = player.heading + Math.PI;
-  }
-
   app.ticker.add(update);
   app.start();
-  if (document.hidden) pauseControls.pause();
+  if (document.hidden) {
+    pauseControls.pause();
+  }
 
   function destroy() {
-    audio.destroy();
+    feedback.destroy();
     pauseControls.destroy();
     app.stop();
     app.ticker.remove(update);
-    keyboard.destroy();
-    playerProjectiles.destroy();
-    enemyProjectiles.destroy();
-    arena.enemies.forEach(({ renderer }) => renderer.destroy());
-    explosions.destroy();
-    effects.destroy();
-    playerAppearance.destroy();
+    controls.destroy();
   }
 
   return {
     pause: pauseControls.pause,
     resume: pauseControls.resume,
-    setControl: keyboard.setAction,
+    setControl: controls.setAction,
     destroy,
   };
 }

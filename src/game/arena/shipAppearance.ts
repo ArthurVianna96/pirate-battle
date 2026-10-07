@@ -27,32 +27,45 @@ export function createShipAppearance(
   let flashRemaining = 0;
   let fireElapsed = 0;
 
+  function updateDamageFlash(fraction: number, deltaSeconds: number) {
+    flashRemaining = Math.max(0, flashRemaining - deltaSeconds);
+    if (fraction < previousHealth) {
+      flashRemaining = SHIP_APPEARANCE_CONFIG.flashDuration;
+    }
+    previousHealth = fraction;
+    ship.tint = flashRemaining > 0 ? 0xff6655 : originalTint;
+  }
+
+  function updateShipTexture(fraction: number) {
+    if (fraction <= SHIP_APPEARANCE_CONFIG.criticalThreshold) {
+      ship.texture = textures.critical;
+    } else if (fraction <= SHIP_APPEARANCE_CONFIG.damagedThreshold) {
+      ship.texture = textures.damaged;
+    } else {
+      ship.texture = textures.healthy;
+    }
+    ship.width = size.width;
+    ship.height = size.height;
+  }
+
+  function updateFire(fraction: number, deltaSeconds: number) {
+    fire.visible =
+      fraction > 0 && fraction <= SHIP_APPEARANCE_CONFIG.criticalThreshold;
+    fireElapsed += deltaSeconds;
+    const frame =
+      Math.floor(fireElapsed / SHIP_APPEARANCE_CONFIG.fireFrameDuration) %
+      fireTextures.length;
+    fire.texture = fireTextures[frame];
+    fire.position.copyFrom(ship.position);
+    fire.rotation = 0;
+  }
+
   return {
     update(health: number, maxHealth: number, deltaSeconds: number) {
       const fraction = health / maxHealth;
-      flashRemaining = Math.max(0, flashRemaining - deltaSeconds);
-      if (fraction < previousHealth)
-        flashRemaining = SHIP_APPEARANCE_CONFIG.flashDuration;
-      previousHealth = fraction;
-      ship.texture =
-        fraction <= SHIP_APPEARANCE_CONFIG.criticalThreshold
-          ? textures.critical
-          : fraction <= SHIP_APPEARANCE_CONFIG.damagedThreshold
-            ? textures.damaged
-            : textures.healthy;
-      ship.width = size.width;
-      ship.height = size.height;
-      ship.tint = flashRemaining > 0 ? 0xff6655 : originalTint;
-      fire.visible =
-        fraction > 0 && fraction <= SHIP_APPEARANCE_CONFIG.criticalThreshold;
-      fireElapsed += deltaSeconds;
-      fire.texture =
-        fireTextures[
-          Math.floor(fireElapsed / SHIP_APPEARANCE_CONFIG.fireFrameDuration) %
-            fireTextures.length
-        ];
-      fire.position.copyFrom(ship.position);
-      fire.rotation = 0;
+      updateDamageFlash(fraction, deltaSeconds);
+      updateShipTexture(fraction);
+      updateFire(fraction, deltaSeconds);
     },
     destroy() {
       fire.destroy();

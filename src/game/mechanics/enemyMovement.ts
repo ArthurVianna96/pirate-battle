@@ -1,4 +1,4 @@
-import type { Obstacle, Size } from './collisions';
+import { getShipBounds, type Obstacle, type Size } from './collisions';
 import type { MovingEnemyState } from './combat';
 import {
   updatePlayer,
@@ -23,7 +23,9 @@ export function updateEnemyMovement(
   world: EnemyMovementWorld,
   config: EnemyMovementConfig,
 ) {
-  if (enemy.health === 0 || deltaSeconds <= 0) return;
+  if (enemy.health === 0 || deltaSeconds <= 0) {
+    return;
+  }
 
   const movementWorld = { ...world, shipSize: enemy.shipSize };
   const steps = Math.max(1, Math.ceil(deltaSeconds / (1 / 60)));
@@ -45,7 +47,9 @@ function moveTowardPlayer(
   const distanceX = player.x - enemy.position.x;
   const distanceY = player.y - enemy.position.y;
   const distance = Math.hypot(distanceX, distanceY);
-  if (distance === 0) return;
+  if (distance === 0) {
+    return;
+  }
   const distanceToTravel = Math.max(0, distance - (config.stopDistance ?? 0));
 
   // Heading zero points up. Normalize the turn to take the shortest route.
@@ -71,11 +75,5 @@ function moveTowardPlayer(
 }
 
 function syncEnemyBounds(enemy: MovingEnemyState) {
-  const { position, shipSize, bounds } = enemy;
-  const cos = Math.abs(Math.cos(position.heading));
-  const sin = Math.abs(Math.sin(position.heading));
-  bounds.width = shipSize.width * cos + shipSize.height * sin;
-  bounds.height = shipSize.width * sin + shipSize.height * cos;
-  bounds.x = position.x - bounds.width / 2;
-  bounds.y = position.y - bounds.height / 2;
+  Object.assign(enemy.bounds, getShipBounds(enemy.position, enemy.shipSize));
 }

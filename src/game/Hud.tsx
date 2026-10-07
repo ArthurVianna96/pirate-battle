@@ -1,3 +1,4 @@
+import { HealthMeter } from './HealthMeter';
 import type { Ref } from 'react';
 
 interface HudProps {
@@ -25,24 +26,7 @@ export function Hud({
   const seconds = String(remainingSeconds % 60).padStart(2, '0');
   return (
     <div className="hud">
-      <div className="player-health" aria-live="polite">
-        <span className="sr-only">
-          Health: {health}/{maxHealth}
-        </span>
-        <div className="health-meter" aria-hidden="true">
-          <div
-            className="health-fill-clip"
-            style={{
-              clipPath: `inset(0 ${100 - (health / maxHealth) * 100}% 0 0)`,
-            }}
-          >
-            <div className="health-fill" />
-          </div>
-          <span>
-            {health} / {maxHealth}
-          </span>
-        </div>
-      </div>
+      <HealthMeter health={health} maxHealth={maxHealth} />
       <p className="hud-counter score-counter" aria-live="polite">
         <span className="sr-only">Score: {score}</span>
         <span aria-hidden="true">{score}</span>

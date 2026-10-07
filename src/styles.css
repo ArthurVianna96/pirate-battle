@@ -21,9 +21,7 @@ main {
   place-items: center;
   padding: 24px 16px;
 }
-main.playing {
-  align-items: start;
-}
+
 h1,
 h2,
 p {
@@ -135,36 +133,7 @@ input:focus-visible {
   outline-offset: 4px;
   border-radius: 8px;
 }
-.game-screen {
-  width: min(100%, 1040px);
-  padding: 16px;
-  border: 2px solid #b97c33;
-  border-radius: 16px;
-  background: #172b39f2;
-  box-shadow: 0 12px 40px #061b3360;
-}
-.toolbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 12px;
-}
-.toolbar h2 {
-  font-size: 1.25rem;
-}
-.toolbar button {
-  width: 170px;
-  min-height: 46px;
-  font-size: 0.85rem;
-}
-.hud {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-bottom: 12px;
-}
+
 .hud-counter {
   display: flex;
   align-items: center;
@@ -185,27 +154,11 @@ input:focus-visible {
 .score-counter::before {
   background-image: url('../assets/png/default/ui/hud/icon_score.png');
 }
-.health-counter::before {
-  background-image: url('../assets/png/default/ui/hud/icon_heart.png');
-}
+
 .time-counter::before {
   background-image: url('../assets/png/default/ui/hud/icon_time.png');
 }
-.hud button {
-  width: 120px;
-  min-height: 44px;
-  font-size: 0.85rem;
-  padding: 10px 18px;
-  margin-left: auto;
-}
-.arena {
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  background: #126b86;
-  border-radius: 8px;
-  overflow: hidden;
-  border: 1px solid #c4954a;
-}
+
 .arena canvas {
   display: block;
   width: 100% !important;
@@ -216,21 +169,7 @@ input:focus-visible {
   line-height: 1.7;
   color: #dbcba9;
 }
-.game-screen .controls-help {
-  margin-top: 12px;
-  text-align: center;
-}
-.pause-notice {
-  padding: 20px;
-  margin-top: 12px;
-  text-align: center;
-  border: 1px solid #b97c33;
-  border-radius: 8px;
-  background: #142534;
-}
-.pause-notice h2 {
-  margin-bottom: 8px;
-}
+
 .result-score {
   font-size: clamp(2rem, 6vw, 3.5rem);
   font-weight: 900;
@@ -243,21 +182,6 @@ input:focus-visible {
   .menu {
     min-height: 520px;
     padding: 48px 32px;
-  }
-  .game-screen {
-    padding: 10px;
-  }
-  .hud {
-    gap: 6px;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-  }
-  .hud-counter {
-    padding: 10px;
-    font-size: 0.85rem;
-  }
-  .hud button {
-    width: 100%;
   }
 }
 
@@ -272,13 +196,11 @@ input:focus-visible {
   white-space: nowrap;
   border: 0;
 }
-.options-screen {
+.options-screen,
+.pause-menu {
   width: min(100%, 780px);
   min-height: min(670px, 90svh);
   padding: 80px 64px;
-}
-.options-form {
-  gap: 24px;
 }
 .option-field {
   gap: 20px;
@@ -352,10 +274,10 @@ input:focus-visible {
 .resume-button::after {
   background-image: url('../assets/png/retina/ui/controls/icon_play.png');
 }
-.arena-stage {
-  position: relative;
-}
+
 .arena-stage .hud {
+  align-items: center;
+  flex-wrap: wrap;
   position: absolute;
   z-index: 1;
   top: 14px;
@@ -463,6 +385,7 @@ input:focus-visible {
 }
 
 main.playing {
+  align-items: start;
   padding: 0;
   min-height: 100svh;
 }
@@ -478,10 +401,13 @@ main.playing {
   overflow: hidden;
 }
 .playing .arena-stage {
+  position: relative;
   width: 100%;
   height: 100%;
 }
 .playing .arena {
+  background: #126b86;
+  overflow: hidden;
   width: 100%;
   height: 100%;
   border: 0;
@@ -498,11 +424,7 @@ main.playing {
   overflow: auto;
   background: #10242d55;
 }
-.pause-menu {
-  width: min(100%, 780px);
-  min-height: min(670px, 90svh);
-  padding: 80px 64px;
-}
+
 .pause-menu .menu-actions {
   gap: 20px;
 }

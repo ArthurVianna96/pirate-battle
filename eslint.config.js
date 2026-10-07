@@ -19,6 +19,9 @@ export default tseslint.config(
     files: ['**/*.{ts,tsx}'],
     languageOptions: { globals: { ...globals.browser, ...globals.node } },
     plugins: { 'react-hooks': hooks },
-    rules: hooks.configs.recommended.rules,
+    rules: {
+      ...hooks.configs.recommended.rules,
+      curly: ['error', 'all'],
+    },
   },
 );

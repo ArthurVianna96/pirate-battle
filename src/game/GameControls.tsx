@@ -1,3 +1,4 @@
+import type { PointerEvent } from 'react';
 import type { GameInput } from './mechanics/input';
 
 const CONTROLS = [
@@ -28,6 +29,18 @@ export function GameControls({
   disabled: boolean;
   onAction: (action: keyof GameInput, active: boolean) => void;
 }) {
+  function pressControl(
+    event: PointerEvent<HTMLButtonElement>,
+    action: keyof GameInput,
+  ) {
+    if (event.button !== 0) {
+      return;
+    }
+    event.preventDefault();
+    event.currentTarget.setPointerCapture(event.pointerId);
+    onAction(action, true);
+  }
+
   return (
     <div className="game-controls" aria-label="Ship controls">
       {CONTROLS.map(({ action, label, keys, icon }) => (
@@ -39,12 +52,7 @@ export function GameControls({
           aria-pressed={input[action]}
           title={`${label} (${keys})`}
           disabled={disabled}
-          onPointerDown={(event) => {
-            if (event.button !== 0) return;
-            event.preventDefault();
-            event.currentTarget.setPointerCapture(event.pointerId);
-            onAction(action, true);
-          }}
+          onPointerDown={(event) => pressControl(event, action)}
           onPointerUp={() => onAction(action, false)}
           onPointerCancel={() => onAction(action, false)}
           onLostPointerCapture={() => onAction(action, false)}
