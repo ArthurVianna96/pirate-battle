@@ -1,14 +1,14 @@
 import { useCallback, useState, type MouseEvent } from 'react';
-import { GameCanvas } from './game/GameCanvas';
+import { GameCanvas } from './components/game/GameCanvas';
 import type { MatchResult } from './game/mechanics/match';
-import { MatchResultScreen } from './screens/MatchResultScreen';
-import { OptionsScreen } from './screens/OptionsScreen';
+import { MatchResultScreen } from './components/screens/MatchResultScreen';
+import { OptionsScreen } from './components/screens/OptionsScreen';
 import {
   createOptionsSnapshot,
   type GameOptions,
 } from './game/support/options';
 import { loadOptions, saveOptions } from './storage/options';
-import { MainMenu } from './screens/MainMenu';
+import { MainMenu } from './components/screens/MainMenu';
 import { playInterfaceSound } from './game/support/audio';
 
 type Screen =

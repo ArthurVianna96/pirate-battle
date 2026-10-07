@@ -1,6 +1,6 @@
 import { useRef, useEffect, type ReactNode, type KeyboardEvent } from 'react';
 
-export function PauseScreen({ children }: { children: ReactNode }) {
+export function PauseModal({ children }: { children: ReactNode }) {
   const dialog = useRef<HTMLDivElement>(null);
   useEffect(() => {
     dialog.current?.querySelector<HTMLButtonElement>('button')?.focus();

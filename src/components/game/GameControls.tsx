@@ -1,5 +1,5 @@
 import type { PointerEvent } from 'react';
-import type { GameInput } from './mechanics/input';
+import type { GameInput } from '../../game/mechanics/input';
 
 const CONTROLS = [
   { action: 'forward', label: 'Move forward', keys: 'W / ↑', icon: 'forward' },

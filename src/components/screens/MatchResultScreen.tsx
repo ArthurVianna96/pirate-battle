@@ -1,4 +1,4 @@
-import type { MatchResult } from '../game/mechanics/match';
+import type { MatchResult } from '../../game/mechanics/match';
 
 interface MatchResultProps {
   result: MatchResult;

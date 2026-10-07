@@ -1,13 +1,13 @@
 import { Hud } from './Hud';
 import { GameControls } from './GameControls';
-import { createInputState } from './mechanics/input';
+import { createInputState } from '../../game/mechanics/input';
 import { PauseMenu } from '../screens/PauseMenu';
-import { createGameSession } from './createGameSession';
+import { createGameSession } from '../../game/createGameSession';
 import { useEffect, useRef, useState } from 'react';
-import type { GameLoopController } from './gameLoop';
-import { COMBAT_CONFIG } from './mechanics/combat';
-import type { MatchResult } from './mechanics/match';
-import type { GameOptions } from './support/options';
+import type { GameLoopController } from '../../game/gameLoop';
+import { COMBAT_CONFIG } from '../../game/mechanics/combat';
+import type { MatchResult } from '../../game/mechanics/match';
+import type { GameOptions } from '../../game/support/options';
 
 interface GameCanvasProps {
   onMatchEnd: (result: MatchResult) => void;

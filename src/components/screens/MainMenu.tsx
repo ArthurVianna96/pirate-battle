@@ -1,5 +1,5 @@
-import titleImage from '../../assets/png/retina/ui/menu/title_pirate_battle.png';
-import playerImage from '../../assets/png/default/ships/ship_1.png';
+import titleImage from '../../../assets/png/retina/ui/menu/title_pirate_battle.png';
+import playerImage from '../../../assets/png/default/ships/ship_1.png';
 
 export function MainMenu({
   onPlay,

@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { PauseScreen } from '../game/PauseScreen';
-import type { GameOptions } from '../game/support/options';
+import { PauseModal } from '../game/PauseModal';
+import type { GameOptions } from '../../game/support/options';
 import { OptionsScreen } from './OptionsScreen';
 
 interface PauseMenuProps {
@@ -24,7 +24,7 @@ export function PauseMenu({
   }
 
   return (
-    <PauseScreen>
+    <PauseModal>
       {showOptions ? (
         <OptionsScreen options={options} onSave={saveOptions} />
       ) : (
@@ -43,6 +43,6 @@ export function PauseMenu({
           </div>
         </section>
       )}
-    </PauseScreen>
+    </PauseModal>
   );
 }
