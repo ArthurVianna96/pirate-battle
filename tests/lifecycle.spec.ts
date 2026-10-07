@@ -33,8 +33,9 @@ test('entering and leaving creates a single canvas without errors', async ({
 for (const asset of ['ship_1.png', 'tile_73.png']) {
   test(`${asset} loading failure can be retried`, async ({
     page,
+    context,
   }, testInfo) => {
-    await page.route(`**/${asset}*`, (route) =>
+    await context.route(`**/${asset}*`, (route) =>
       route.request().resourceType() === 'script'
         ? route.continue()
         : route.abort(),
@@ -46,7 +47,7 @@ for (const asset of ['ship_1.png', 'tile_73.png']) {
     );
     await expect(page.locator('canvas')).toHaveCount(0);
 
-    await page.unroute(`**/${asset}*`);
+    await context.unroute(`**/${asset}*`);
     await page.getByRole('button', { name: 'Retry' }).click();
     await expect(page.getByRole('alert')).toHaveCount(0);
     await expect(page.getByRole('status')).toHaveCount(0);
