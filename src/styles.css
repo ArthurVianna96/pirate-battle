@@ -30,6 +30,12 @@ h2 {
   background: #1b3640;
   border-radius: 12px;
 }
+.result-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 24px;
+}
 button {
   font: inherit;
   font-weight: 650;

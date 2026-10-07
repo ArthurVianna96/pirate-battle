@@ -6,6 +6,12 @@ export const MATCH_CONFIG = {
 
 export type MatchEndReason = 'time' | 'death';
 
+export interface MatchResult {
+  score: number;
+  elapsedSeconds: number;
+  endReason: MatchEndReason;
+}
+
 export interface MatchState {
   duration: number;
   remainingSeconds: number;
@@ -28,6 +34,19 @@ export function createMatchState(
     remainingSeconds: duration,
     endReason: null,
     paused: false,
+  };
+}
+
+export function createMatchResult(
+  match: MatchState,
+  score: number,
+): MatchResult {
+  if (!match.endReason)
+    throw new Error('Only completed matches have a result.');
+  return {
+    score,
+    elapsedSeconds: match.duration - match.remainingSeconds,
+    endReason: match.endReason,
   };
 }
 

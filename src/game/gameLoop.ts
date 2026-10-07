@@ -23,15 +23,16 @@ import { fireFront, fireSide, updateWeapon } from './mechanics/weapon';
 import {
   advanceMatchClock,
   createMatchState,
+  createMatchResult,
   finishMatchIfNeeded,
-  type MatchEndReason,
+  type MatchResult,
 } from './mechanics/match';
 
 export interface GameLoopCallbacks {
   onScoreChange: (score: number) => void;
   onHealthChange: (health: number) => void;
   onTimeChange: (remainingSeconds: number) => void;
-  onMatchEnd: (reason: MatchEndReason) => void;
+  onMatchEnd: (result: MatchResult) => void;
   onPauseChange: (paused: boolean) => void;
 }
 
@@ -114,7 +115,7 @@ export function startGameLoop(
     const endReason = finishMatchIfNeeded(match, player.health);
     if (endReason) {
       keyboard.destroy();
-      onMatchEnd(endReason);
+      onMatchEnd(createMatchResult(match, score));
     }
   }
 

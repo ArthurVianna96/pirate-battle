@@ -7,7 +7,7 @@ import {
   type GameLoopController,
 } from './gameLoop';
 import { COMBAT_CONFIG } from './mechanics/combat';
-import { MATCH_CONFIG, type MatchEndReason } from './mechanics/match';
+import { MATCH_CONFIG, type MatchResult } from './mechanics/match';
 
 function mountArena(
   app: Application,
@@ -24,7 +24,11 @@ function mountArena(
   return startGameLoop(app, arena, callbacks);
 }
 
-export function GameCanvas() {
+export function GameCanvas({
+  onMatchEnd,
+}: {
+  onMatchEnd: (result: MatchResult) => void;
+}) {
   const hostRef = useRef<HTMLDivElement>(null);
   const gameLoopRef = useRef<GameLoopController | null>(null);
   const pauseButtonRef = useRef<HTMLButtonElement>(null);
@@ -37,7 +41,6 @@ export function GameCanvas() {
   const [remainingSeconds, setRemainingSeconds] = useState<number>(
     MATCH_CONFIG.duration,
   );
-  const [endReason, setEndReason] = useState<MatchEndReason | null>(null);
   const [paused, setPaused] = useState(false);
 
   useEffect(() => {
@@ -84,7 +87,7 @@ export function GameCanvas() {
           onScoreChange: setScore,
           onHealthChange: setHealth,
           onTimeChange: setRemainingSeconds,
-          onMatchEnd: setEndReason,
+          onMatchEnd,
           onPauseChange(value) {
             setPaused(value);
             requestAnimationFrame(() => pauseButtonRef.current?.focus());
@@ -106,7 +109,7 @@ export function GameCanvas() {
       cancelled = true;
       destroy();
     };
-  }, [attempt]);
+  }, [attempt, onMatchEnd]);
 
   function retry() {
     setStatus('loading');
@@ -128,15 +131,10 @@ export function GameCanvas() {
       <button
         ref={pauseButtonRef}
         onClick={togglePause}
-        disabled={status !== 'ready' || endReason !== null}
+        disabled={status !== 'ready'}
       >
         {paused ? 'Resume' : 'Pause'}
       </button>
-      {endReason && (
-        <p role="status">
-          {endReason === 'death' ? 'Ship destroyed.' : 'Time expired.'}
-        </p>
-      )}
       <div ref={hostRef} className="arena" />
       {paused && <p role="status">Game paused. Select Resume to continue.</p>}
       <p>
