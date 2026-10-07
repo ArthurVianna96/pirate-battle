@@ -10,7 +10,7 @@ const server = setupServer(...createHandlers());
 
 test.beforeAll(() => {
   apiClient.defaults.baseURL = 'http://localhost/api';
-  server.listen({ onUnhandledFrame: 'error' });
+  server.listen({ onUnhandledRequest: 'error' });
 });
 
 test.afterAll(() => server.close());

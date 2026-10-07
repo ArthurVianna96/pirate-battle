@@ -1,4 +1,4 @@
-import { useCallback, useState, type MouseEvent } from 'react';
+import { useCallback, useRef, useState, type MouseEvent } from 'react';
 import { GameCanvas } from './components/game/GameCanvas';
 import type { MatchResult } from './game/mechanics/match';
 import { MatchResultScreen } from './components/screens/MatchResultScreen';
@@ -12,26 +12,36 @@ import { MainMenu } from './components/screens/MainMenu';
 import { playInterfaceSound } from './game/support/audio';
 import { saveLastResult } from './storage/result';
 import { loadPlayer } from './storage/player';
+import type { MatchRecord } from './api/contracts';
+import { useRegisterMatch } from './hooks/useRegisterMatch';
 
 type Screen =
   | { kind: 'menu' }
   | { kind: 'options' }
   | { kind: 'game'; options: GameOptions }
-  | { kind: 'result'; result: MatchResult };
+  | { kind: 'result'; result: MatchRecord };
 
 export function App() {
   const [screen, setScreen] = useState<Screen>({ kind: 'menu' });
   const [options, setOptions] = useState(loadOptions);
   const [player] = useState(loadPlayer);
   const [resultSaveFailed, setResultSaveFailed] = useState(false);
+  const activeMatch = useRef<{ id: string; options: GameOptions } | undefined>(
+    undefined,
+  );
+  const registration = useRegisterMatch();
+  const { mutate: submitMatch } = registration;
 
   function leaveGame() {
+    activeMatch.current = undefined;
     setScreen({ kind: 'menu' });
   }
 
   function startGame() {
+    const matchOptions = createOptionsSnapshot(options);
+    activeMatch.current = { id: crypto.randomUUID(), options: matchOptions };
     playInterfaceSound('game_start');
-    setScreen({ kind: 'game', options: createOptionsSnapshot(options) });
+    setScreen({ kind: 'game', options: matchOptions });
   }
 
   function saveGameOptions(nextOptions: GameOptions) {
@@ -48,13 +58,29 @@ export function App() {
     setScreen({ kind: 'options' });
   }
 
-  const finishGame = useCallback((result: MatchResult) => {
-    setResultSaveFailed(!saveLastResult(result));
-    playInterfaceSound(
-      result.endReason === 'death' ? 'game_over' : 'game_complete',
-    );
-    setScreen({ kind: 'result', result });
-  }, []);
+  const finishGame = useCallback(
+    (result: MatchResult) => {
+      const match = activeMatch.current;
+      if (!match) {
+        return;
+      }
+      activeMatch.current = undefined;
+      const record: MatchRecord = {
+        ...result,
+        id: match.id,
+        player,
+        completedAt: new Date().toISOString(),
+        configuration: match.options,
+      };
+      setResultSaveFailed(!saveLastResult(result));
+      playInterfaceSound(
+        result.endReason === 'death' ? 'game_over' : 'game_complete',
+      );
+      setScreen({ kind: 'result', result: record });
+      submitMatch(record);
+    },
+    [player, submitMatch],
+  );
 
   function playClickSound(event: MouseEvent<HTMLElement>) {
     if ((event.target as HTMLElement).closest('button')) {
@@ -84,6 +110,8 @@ export function App() {
         <MatchResultScreen
           result={screen.result}
           saveFailed={resultSaveFailed}
+          registrationStatus={registration.status}
+          onRetryRegistration={() => submitMatch(screen.result)}
           onPlayAgain={startGame}
           onMainMenu={leaveGame}
         />

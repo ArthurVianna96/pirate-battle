@@ -4,9 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "predev": "msw init public",
+    "predev": "msw init public --save",
     "dev": "vite",
-    "prebuild": "msw init public",
+    "prebuild": "msw init public --save",
     "build": "npm run typecheck && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
@@ -18,7 +18,7 @@
   "dependencies": {
     "@tanstack/react-query": "^5.104.1",
     "axios": "^1.20.0",
-    "msw": "^3.0.2",
+    "msw": "^2.15.0",
     "pixi.js": "^8.22.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0"

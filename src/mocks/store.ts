@@ -1,7 +1,10 @@
 import type { MatchRecord } from '../api/contracts';
 import { MATCH_FIXTURES } from './fixtures';
 
-export function createMatchStore(initialRecords = MATCH_FIXTURES) {
+export function createMatchStore(
+  initialRecords = MATCH_FIXTURES,
+  saveRecords?: (records: MatchRecord[]) => void,
+) {
   const records = new Map(initialRecords.map((record) => [record.id, record]));
 
   function register(record: MatchRecord) {
@@ -9,6 +12,7 @@ export function createMatchStore(initialRecords = MATCH_FIXTURES) {
     if (existing) {
       return existing;
     }
+    saveRecords?.([...records.values(), record]);
     records.set(record.id, record);
     return record;
   }

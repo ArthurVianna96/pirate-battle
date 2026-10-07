@@ -90,9 +90,19 @@ export function createHandlers(store = createMatchStore()) {
       if (!record) {
         return invalidRequest();
       }
-      return HttpResponse.json<RegisterMatchResponse>({
-        match: store.register(record),
-      });
+      try {
+        return HttpResponse.json<RegisterMatchResponse>({
+          match: store.register(record),
+        });
+      } catch {
+        return HttpResponse.json<ApiErrorResponse>(
+          {
+            code: 'STORE_UNAVAILABLE',
+            message: 'Could not save the match. Try again.',
+          },
+          { status: 503 },
+        );
+      }
     }),
   ];
 }

@@ -98,19 +98,9 @@ test('ranking loading and failure allow retry without blocking Play', async ({
   page,
   context,
 }) => {
-  await context.route('**/mockServiceWorker.js', (route) => route.abort());
-  let fail = true;
-  await context.route('**/api/ranking?*', async (route) => {
+  await context.route('**/mockServiceWorker.js', async (route) => {
     await new Promise((resolve) => setTimeout(resolve, 500));
-    await route.fulfill({
-      status: fail ? 400 : 200,
-      contentType: 'application/json',
-      body: JSON.stringify(
-        fail
-          ? { code: 'TEST_ERROR', message: 'Unavailable' }
-          : { items: [], totalItems: 0, page: 1, pageSize: 5 },
-      ),
-    });
+    await route.abort();
   });
   await page.goto('/');
   await page.getByRole('button', { name: 'Ranking', exact: true }).click();
@@ -123,10 +113,10 @@ test('ranking loading and failure allow retry without blocking Play', async ({
   await expect(
     page.getByRole('button', { name: 'Main Menu', exact: true }),
   ).toBeEnabled();
-  fail = false;
+  await context.unroute('**/mockServiceWorker.js');
   await page.getByRole('button', { name: 'Retry', exact: true }).click();
   await expect(
-    page.getByText('No scores for this configuration yet.', { exact: true }),
+    page.getByRole('cell', { name: 'Blackbeard', exact: true }),
   ).toBeVisible();
   await expect(page.getByRole('alert')).toHaveCount(0);
 });

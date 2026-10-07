@@ -5,6 +5,8 @@ interface MatchResultProps {
   onPlayAgain: () => void;
   onMainMenu: () => void;
   saveFailed?: boolean;
+  registrationStatus: 'idle' | 'pending' | 'error' | 'success';
+  onRetryRegistration: () => void;
 }
 
 export function MatchResultScreen({
@@ -12,6 +14,8 @@ export function MatchResultScreen({
   onPlayAgain,
   onMainMenu,
   saveFailed,
+  registrationStatus,
+  onRetryRegistration,
 }: MatchResultProps) {
   return (
     <section aria-label="Match result" className="menu">
@@ -21,6 +25,16 @@ export function MatchResultScreen({
       </p>
       <p className="result-score">Score: {result.score}</p>
       <p>Time played: {result.elapsedSeconds.toFixed(1)}s</p>
+      {registrationStatus === 'pending' && (
+        <p role="status">Recording match…</p>
+      )}
+      {registrationStatus === 'success' && <p role="status">Match recorded.</p>}
+      {registrationStatus === 'error' && (
+        <div role="alert">
+          <p>Could not record this match. You can still play.</p>
+          <button onClick={onRetryRegistration}>Retry registration</button>
+        </div>
+      )}
       {saveFailed && (
         <p role="alert">
           Could not save this result. It will be lost on refresh.
