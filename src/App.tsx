@@ -133,16 +133,12 @@ export function App() {
           <>
             <PendingRegistrations
               count={registration.pending.length}
-              sending={registration.pending.some(
-                (record) => registration.statuses[record.id] === 'pending',
-              )}
+              sending={registration.sending}
               storageFailed={registration.storageFailed}
               onRetry={() => void registration.retryAll()}
             />
             <NetworkControls
-              sending={registration.pending.some(
-                (record) => registration.statuses[record.id] === 'pending',
-              )}
+              sending={registration.sending}
               onResetPending={registration.clear}
             />
           </>

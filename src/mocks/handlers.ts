@@ -10,6 +10,7 @@ import { createMatchStore } from './store';
 import { parseMatchRecord } from '../api/validation';
 import { parsePage } from './validation';
 import { createNetworkScenario } from './network';
+import { getRanking, getMatchHistory } from './queries';
 
 function invalidRequest() {
   return HttpResponse.json<ApiErrorResponse>(
@@ -46,22 +47,7 @@ export function createHandlers(
         return invalidRequest();
       }
       return network.respond('ranking', { page: page.page }, () => {
-        const entries = network
-          .list(store.list())
-          .filter(
-            (record) =>
-              record.configuration.sessionDuration ===
-                configuration.sessionDuration &&
-              record.configuration.enemySpawnInterval ===
-                configuration.enemySpawnInterval,
-          )
-          .sort(
-            (a, b) =>
-              b.score - a.score ||
-              Date.parse(a.completedAt) - Date.parse(b.completedAt) ||
-              a.id.localeCompare(b.id),
-          )
-          .map((record, index) => ({ ...record, rank: index + 1 }));
+        const entries = getRanking(network.list(store.list()), configuration);
         return HttpResponse.json(paginate(entries, page));
       });
     }),
@@ -73,14 +59,7 @@ export function createHandlers(
         return invalidRequest();
       }
       return network.respond('history', { page: page.page }, () => {
-        const records = network
-          .list(store.list())
-          .filter((record) => record.player.id === playerId)
-          .sort(
-            (a, b) =>
-              Date.parse(b.completedAt) - Date.parse(a.completedAt) ||
-              a.id.localeCompare(b.id),
-          );
+        const records = getMatchHistory(network.list(store.list()), playerId);
         return HttpResponse.json(paginate(records, page));
       });
     }),

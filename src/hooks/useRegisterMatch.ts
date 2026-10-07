@@ -23,6 +23,9 @@ export function useRegisterMatch() {
 
   return {
     ...snapshot,
+    sending: snapshot.pending.some(
+      (record) => snapshot.statuses[record.id] === 'pending',
+    ),
     submit: queue.submit,
     retryAll: queue.retryAll,
     clear: queue.clear,

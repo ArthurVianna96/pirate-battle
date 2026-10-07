@@ -1,5 +1,5 @@
 import type { MatchResult } from '../game/mechanics/match';
-import { MATCH_CONFIG } from '../game/mechanics/match';
+import { parseMatchResult } from '../api/validation';
 
 export const RESULT_STORAGE_KEY = 'pirate-battle.last-result';
 
@@ -9,24 +9,7 @@ export function loadLastResult(): MatchResult | undefined {
     if (!saved) {
       return undefined;
     }
-    const result: unknown = JSON.parse(saved);
-    if (!result || typeof result !== 'object') {
-      return undefined;
-    }
-    const { score, elapsedSeconds, endReason } = result as Partial<MatchResult>;
-    if (
-      typeof score !== 'number' ||
-      !Number.isSafeInteger(score) ||
-      score < 0 ||
-      typeof elapsedSeconds !== 'number' ||
-      !Number.isFinite(elapsedSeconds) ||
-      elapsedSeconds < 0 ||
-      elapsedSeconds > MATCH_CONFIG.maxDuration ||
-      (endReason !== 'time' && endReason !== 'death')
-    ) {
-      return undefined;
-    }
-    return { score, elapsedSeconds, endReason };
+    return parseMatchResult(JSON.parse(saved));
   } catch {
     return undefined;
   }

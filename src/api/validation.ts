@@ -45,9 +45,11 @@ function parsePlayer(value: unknown): PlayerIdentity | undefined {
   return { id: value.id, name: value.name };
 }
 
-function parseOutcome(
-  record: Record<string, unknown>,
-): MatchResult | undefined {
+export function parseMatchResult(value: unknown): MatchResult | undefined {
+  if (!isObject(value)) {
+    return undefined;
+  }
+  const record = value;
   if (!isScore(record.score)) {
     return undefined;
   }
@@ -73,7 +75,7 @@ export function parseMatchRecord(value: unknown): MatchRecord | undefined {
   }
   const player = parsePlayer(value.player);
   const configuration = parseOptions(value.configuration);
-  const outcome = parseOutcome(value);
+  const outcome = parseMatchResult(value);
   if (!player || !configuration || !outcome) {
     return undefined;
   }

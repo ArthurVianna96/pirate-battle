@@ -26,6 +26,29 @@ interface RequestContext {
   alreadyAccepted?: boolean;
 }
 
+type ScenarioDefinition = ReturnType<typeof getScenario>;
+
+function appliesToOperation(
+  scenario: ScenarioDefinition,
+  operation: NetworkOperation,
+) {
+  return !scenario.operation || scenario.operation === operation;
+}
+
+function shouldTimeoutAfterAcceptance(
+  scenario: ScenarioDefinition,
+  operation: NetworkOperation,
+  context: RequestContext,
+  response: Response,
+) {
+  return (
+    scenario.acceptedTimeout &&
+    operation === 'registration' &&
+    !context.alreadyAccepted &&
+    response.ok
+  );
+}
+
 export function createNetworkScenario(
   initial: ScenarioState = { id: 'success', seed: 0 },
   player: PlayerIdentity = { id: 'demo-player', name: 'Demo Captain' },
@@ -84,7 +107,9 @@ export function createNetworkScenario(
     return 0;
   }
 
-  async function faultResponse(fault: string) {
+  async function faultResponse(
+    fault: NonNullable<ScenarioDefinition['fault']>,
+  ) {
     if (fault === 'connection') {
       return HttpResponse.error();
     }
@@ -109,22 +134,15 @@ export function createNetworkScenario(
   ): Promise<Response> {
     const scenario = getScenario(state.id);
     const index = requestCount++;
-    if (
-      scenario.fault &&
-      (!scenario.operation || scenario.operation === operation)
-    ) {
+    if (scenario.fault && appliesToOperation(scenario, operation)) {
       return faultResponse(scenario.fault);
     }
-    const latency = responseDelay(context, index);
+    let latency = responseDelay(context, index);
     const response = success();
-    if (
-      scenario.acceptedTimeout &&
-      operation === 'registration' &&
-      !context.alreadyAccepted &&
-      response.ok
-    ) {
-      await delay(timing.timeout);
-    } else if (latency > 0) {
+    if (shouldTimeoutAfterAcceptance(scenario, operation, context, response)) {
+      latency = timing.timeout;
+    }
+    if (latency > 0) {
       await delay(latency);
     }
     return response;
