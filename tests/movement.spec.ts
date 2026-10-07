@@ -1,7 +1,7 @@
 import { arenaScreenshot } from './helpers/arenaScreenshot';
 import { expect, test } from '@playwright/test';
 import {
-  movementConfig,
+  MOVEMENT_CONFIG,
   applyPlayerMovement,
 } from '../src/game/mechanics/simulation';
 
@@ -13,7 +13,7 @@ test('turning while advancing follows the same arc at 30 and 60 FPS', () => {
         player,
         { forward: true, turnLeft: false, turnRight: true },
         0.5 / frames,
-        movementConfig,
+        MOVEMENT_CONFIG,
       );
     }
     return player;
@@ -36,19 +36,19 @@ test('left and right turn in opposite directions and cancel together', () => {
     left,
     { forward: false, turnLeft: true, turnRight: false },
     0.5,
-    movementConfig,
+    MOVEMENT_CONFIG,
   );
   applyPlayerMovement(
     right,
     { forward: false, turnLeft: false, turnRight: true },
     0.5,
-    movementConfig,
+    MOVEMENT_CONFIG,
   );
   applyPlayerMovement(
     both,
     { forward: false, turnLeft: true, turnRight: true },
     0.5,
-    movementConfig,
+    MOVEMENT_CONFIG,
   );
   expect(left.heading).toBeCloseTo(-Math.PI / 2);
   expect(right.heading).toBeCloseTo(Math.PI / 2);
@@ -90,7 +90,7 @@ test('one second of movement covers the same distance at 30 and 60 FPS', () => {
         player,
         { forward: true, turnLeft: false, turnRight: false },
         1 / frames,
-        movementConfig,
+        MOVEMENT_CONFIG,
       );
     }
     return player;

@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import {
   createShooterState,
-  shooterConfig,
+  SHOOTER_CONFIG,
   updateShooter,
 } from '../src/game/mechanics/shooter';
 import { damageEnemy } from '../src/game/mechanics/combat';
@@ -24,9 +24,9 @@ function createShooter() {
 test('the Shooter approaches and stops at attack range', () => {
   const shooter = createShooter();
   updateShooter(shooter, player, 1, world);
-  expect(shooter.position.x).toBeCloseTo(840 - shooterConfig.speed);
+  expect(shooter.position.x).toBeCloseTo(840 - SHOOTER_CONFIG.speed);
   updateShooter(shooter, player, 5, world);
-  expect(shooter.position.x - player.x).toBeCloseTo(shooterConfig.attackRange);
+  expect(shooter.position.x - player.x).toBeCloseTo(SHOOTER_CONFIG.attackRange);
   const stopped = { ...shooter.position };
   updateShooter(shooter, player, 2, world);
   expect(shooter.position.x).toBeCloseTo(stopped.x);
@@ -48,7 +48,7 @@ test('the Shooter resumes approaching when the player leaves its range', () => {
   updateShooter(shooter, player, 5, world);
   const stoppedX = shooter.position.x;
   updateShooter(shooter, { x: 380, y: 270 }, 1, world);
-  expect(shooter.position.x).toBeCloseTo(stoppedX - shooterConfig.speed);
+  expect(shooter.position.x).toBeCloseTo(stoppedX - SHOOTER_CONFIG.speed);
 });
 
 test('Shooter pursuit agrees at 30 and 60 FPS', () => {

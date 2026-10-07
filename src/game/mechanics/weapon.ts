@@ -6,7 +6,7 @@ import {
 import { damageEnemy, type EnemyState } from './combat';
 import type { PlayerState } from './simulation';
 
-export const frontWeaponConfig = {
+export const FRONT_WEAPON_CONFIG = {
   speed: 320,
   lifetime: 2,
   cooldown: 0.4,
@@ -15,8 +15,8 @@ export const frontWeaponConfig = {
   damage: 1,
 } as const;
 
-export const sideWeaponConfig = {
-  ...frontWeaponConfig,
+export const SIDE_WEAPON_CONFIG = {
+  ...FRONT_WEAPON_CONFIG,
   cooldown: 0.8,
   muzzleOffset: 38,
   spacing: 28,
@@ -48,9 +48,9 @@ export type WeaponState = ReturnType<typeof createWeaponState>;
 export function fireFront(weapon: WeaponState, player: PlayerState) {
   if (weapon.cooldown > 1e-9) return;
   weapon.projectiles.push(
-    createFrontProjectile(weapon.nextId++, player, frontWeaponConfig),
+    createFrontProjectile(weapon.nextId++, player, FRONT_WEAPON_CONFIG),
   );
-  weapon.cooldown = frontWeaponConfig.cooldown;
+  weapon.cooldown = FRONT_WEAPON_CONFIG.cooldown;
 }
 
 export interface FrontWeaponConfig {
@@ -98,28 +98,28 @@ export function fireSide(
 
   // Spread the cannons along the hull. All three shots travel in the same direction.
   for (const offset of [
-    -sideWeaponConfig.spacing,
+    -SIDE_WEAPON_CONFIG.spacing,
     0,
-    sideWeaponConfig.spacing,
+    SIDE_WEAPON_CONFIG.spacing,
   ]) {
     weapon.projectiles.push({
       id: weapon.nextId++,
       x:
         player.x +
-        directionX * sideWeaponConfig.muzzleOffset +
+        directionX * SIDE_WEAPON_CONFIG.muzzleOffset +
         forwardX * offset,
       y:
         player.y +
-        directionY * sideWeaponConfig.muzzleOffset +
+        directionY * SIDE_WEAPON_CONFIG.muzzleOffset +
         forwardY * offset,
-      velocityX: directionX * sideWeaponConfig.speed,
-      velocityY: directionY * sideWeaponConfig.speed,
-      remainingLife: sideWeaponConfig.lifetime,
-      damage: sideWeaponConfig.damage,
-      radius: sideWeaponConfig.radius,
+      velocityX: directionX * SIDE_WEAPON_CONFIG.speed,
+      velocityY: directionY * SIDE_WEAPON_CONFIG.speed,
+      remainingLife: SIDE_WEAPON_CONFIG.lifetime,
+      damage: SIDE_WEAPON_CONFIG.damage,
+      radius: SIDE_WEAPON_CONFIG.radius,
     });
   }
-  weapon[cooldownKey] = sideWeaponConfig.cooldown;
+  weapon[cooldownKey] = SIDE_WEAPON_CONFIG.cooldown;
 }
 
 export function updateWeapon(

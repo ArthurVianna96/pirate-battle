@@ -5,7 +5,7 @@ import {
   createWeaponState,
   fireFront,
   fireSide,
-  sideWeaponConfig,
+  SIDE_WEAPON_CONFIG,
   updateWeapon,
 } from '../src/game/mechanics/weapon';
 
@@ -20,20 +20,20 @@ test('side shots remain parallel and rotate with the ship', () => {
         heading + (side === 'left' ? -Math.PI / 2 : Math.PI / 2);
       weapon.projectiles.forEach((projectile, index) => {
         expect(projectile.velocityX).toBeCloseTo(
-          Math.sin(direction) * sideWeaponConfig.speed,
+          Math.sin(direction) * SIDE_WEAPON_CONFIG.speed,
         );
         expect(projectile.velocityY).toBeCloseTo(
-          -Math.cos(direction) * sideWeaponConfig.speed,
+          -Math.cos(direction) * SIDE_WEAPON_CONFIG.speed,
         );
-        const offset = (index - 1) * sideWeaponConfig.spacing;
+        const offset = (index - 1) * SIDE_WEAPON_CONFIG.spacing;
         expect(projectile.x).toBeCloseTo(
           player.x +
-            Math.sin(direction) * sideWeaponConfig.muzzleOffset +
+            Math.sin(direction) * SIDE_WEAPON_CONFIG.muzzleOffset +
             Math.sin(heading) * offset,
         );
         expect(projectile.y).toBeCloseTo(
           player.y -
-            Math.cos(direction) * sideWeaponConfig.muzzleOffset -
+            Math.cos(direction) * SIDE_WEAPON_CONFIG.muzzleOffset -
             Math.cos(heading) * offset,
         );
       });
@@ -49,7 +49,7 @@ test('front, left and right weapons have independent cooldowns', () => {
   fireSide(weapon, player, 'right');
   fireFront(weapon, player);
   expect(weapon.projectiles).toHaveLength(7);
-  updateWeapon(weapon, sideWeaponConfig.cooldown, {
+  updateWeapon(weapon, SIDE_WEAPON_CONFIG.cooldown, {
     width: 2000,
     height: 2000,
   });

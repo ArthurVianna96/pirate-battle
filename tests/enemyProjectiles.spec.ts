@@ -7,7 +7,7 @@ import {
 } from '../src/game/mechanics/enemyProjectiles';
 import {
   createShooterState,
-  shooterWeaponConfig,
+  SHOOTER_WEAPON_CONFIG,
   updateShooterAttack,
 } from '../src/game/mechanics/shooter';
 
@@ -87,7 +87,7 @@ test('expired enemy shots and shots outside the arena are removed', () => {
   fireEnemyFront(
     projectiles,
     { x: 900, y: 270, heading: -Math.PI / 2 },
-    { ...shooterWeaponConfig, lifetime: 0.1 },
+    { ...SHOOTER_WEAPON_CONFIG, lifetime: 0.1 },
   );
   updateEnemyProjectiles(projectiles, 1, player, world);
   expect(projectiles.projectiles).toHaveLength(0);
@@ -95,7 +95,7 @@ test('expired enemy shots and shots outside the arena are removed', () => {
   fireEnemyFront(
     projectiles,
     { x: 480, y: 80, heading: 0 },
-    shooterWeaponConfig,
+    SHOOTER_WEAPON_CONFIG,
   );
   updateEnemyProjectiles(projectiles, 0.2, player, world);
   expect(projectiles.projectiles).toHaveLength(0);
@@ -105,7 +105,7 @@ test('enemy projectile damage clamps player health at zero', () => {
   const { shooter, player, projectiles } = setup();
   player.health = 1;
   fireEnemyFront(projectiles, shooter.position, {
-    ...shooterWeaponConfig,
+    ...SHOOTER_WEAPON_CONFIG,
     damage: 2,
   });
   updateEnemyProjectiles(projectiles, 1, player, world);

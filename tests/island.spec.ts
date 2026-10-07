@@ -1,6 +1,9 @@
 import { expect, test } from '@playwright/test';
 import { overlapsObstacle } from '../src/game/mechanics/collisions';
-import { movementConfig, updatePlayer } from '../src/game/mechanics/simulation';
+import {
+  MOVEMENT_CONFIG,
+  updatePlayer,
+} from '../src/game/mechanics/simulation';
 
 const obstacle = { x: 144, y: 174, width: 192, height: 192 };
 const world = {
@@ -22,7 +25,7 @@ test('the island blocks approaches from every side, including a long frame', () 
       player,
       { forward: true, turnLeft: false, turnRight: false },
       3,
-      movementConfig,
+      MOVEMENT_CONFIG,
       world,
     );
     expect(overlapsObstacle(player, world.shipSize, obstacle)).toBe(false);
@@ -33,7 +36,7 @@ test('the island blocks approaches from every side, including a long frame', () 
       player,
       { forward: true, turnLeft: false, turnRight: false },
       1,
-      movementConfig,
+      MOVEMENT_CONFIG,
       world,
     );
     expect(player.x).toBeCloseTo(atContact.x);
@@ -47,7 +50,7 @@ test('rotation at contact remains possible without overlapping the island', () =
     player,
     { forward: false, turnLeft: false, turnRight: true },
     1,
-    movementConfig,
+    MOVEMENT_CONFIG,
     world,
   );
   expect(player.heading).toBeCloseTo(Math.PI / 2);

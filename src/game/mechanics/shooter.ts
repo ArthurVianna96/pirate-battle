@@ -4,17 +4,17 @@ import { updateEnemyMovement, type EnemyMovementWorld } from './enemyMovement';
 import type { MovementConfig, PlayerState } from './simulation';
 import type { PlayerCombatState } from './combat';
 import { fireEnemyFront, type EnemyProjectilesState } from './enemyProjectiles';
-import { frontWeaponConfig } from './weapon';
+import { FRONT_WEAPON_CONFIG } from './weapon';
 
-export const shooterConfig = {
+export const SHOOTER_CONFIG = {
   speed: 45,
   rotationSpeed: Math.PI / 2,
   attackRange: 200,
   aimTolerance: 0.1,
 } as const;
 
-export const shooterWeaponConfig = {
-  ...frontWeaponConfig,
+export const SHOOTER_WEAPON_CONFIG = {
+  ...FRONT_WEAPON_CONFIG,
   speed: 220,
   lifetime: 3,
   cooldown: 1.2,
@@ -38,7 +38,7 @@ export function updateShooterAttack(
   player: PlayerCombatState,
   deltaSeconds: number,
   projectiles: EnemyProjectilesState,
-  config: ShooterConfig = shooterConfig,
+  config: ShooterConfig = SHOOTER_CONFIG,
 ) {
   if (shooter.health === 0 || player.health === 0) return;
   shooter.fireCooldown = Math.max(0, shooter.fireCooldown - deltaSeconds);
@@ -55,8 +55,8 @@ export function updateShooterAttack(
   );
   if (Math.abs(aimError) > config.aimTolerance) return;
 
-  fireEnemyFront(projectiles, shooter.position, shooterWeaponConfig);
-  shooter.fireCooldown = shooterWeaponConfig.cooldown;
+  fireEnemyFront(projectiles, shooter.position, SHOOTER_WEAPON_CONFIG);
+  shooter.fireCooldown = SHOOTER_WEAPON_CONFIG.cooldown;
 }
 
 export function updateShooter(
@@ -64,7 +64,7 @@ export function updateShooter(
   player: Pick<PlayerState, 'x' | 'y'>,
   deltaSeconds: number,
   world: EnemyMovementWorld,
-  config: ShooterConfig = shooterConfig,
+  config: ShooterConfig = SHOOTER_CONFIG,
 ) {
   updateEnemyMovement(shooter, player, deltaSeconds, world, {
     ...config,

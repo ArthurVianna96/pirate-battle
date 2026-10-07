@@ -7,7 +7,7 @@ import {
 import { updateEnemyMovement, type EnemyMovementWorld } from './enemyMovement';
 import type { PlayerState, MovementConfig } from './simulation';
 
-export const chaserConfig = {
+export const CHASER_CONFIG = {
   speed: 60,
   rotationSpeed: Math.PI / 2,
   impactDamage: 1,
@@ -28,7 +28,7 @@ export function updateChaser(
   player: Pick<PlayerState, 'x' | 'y'>,
   deltaSeconds: number,
   world: EnemyMovementWorld,
-  config: ChaserConfig = chaserConfig,
+  config: ChaserConfig = CHASER_CONFIG,
 ) {
   updateEnemyMovement(chaser, player, deltaSeconds, world, config);
 }
@@ -37,7 +37,7 @@ export function resolveChaserImpact(
   chaser: ChaserState,
   player: PlayerCombatState,
   shipSize: Size,
-  config: ChaserConfig = chaserConfig,
+  config: ChaserConfig = CHASER_CONFIG,
 ): boolean {
   if (chaser.health === 0 || player.health === 0) return false;
   if (!overlapsObstacle(player, shipSize, chaser.bounds)) return false;

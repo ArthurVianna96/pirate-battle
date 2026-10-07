@@ -4,7 +4,7 @@ import {
   createWeaponState,
   fireFront,
   updateWeapon,
-  frontWeaponConfig,
+  FRONT_WEAPON_CONFIG,
 } from '../src/game/mechanics/weapon';
 
 test('an island removes a projectile even when one frame crosses it entirely', () => {
@@ -56,7 +56,7 @@ test('the cooldown blocks repeated calls and permits the next shot', () => {
   fireFront(weapon, player);
   fireFront(weapon, player);
   expect(weapon.projectiles).toHaveLength(1);
-  updateWeapon(weapon, frontWeaponConfig.cooldown, {
+  updateWeapon(weapon, FRONT_WEAPON_CONFIG.cooldown, {
     width: 2000,
     height: 2000,
   });

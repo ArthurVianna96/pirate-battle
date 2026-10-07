@@ -2,7 +2,7 @@ import { arenaScreenshot } from './helpers/arenaScreenshot';
 import { expect, test } from '@playwright/test';
 import { constrainPlayerToArena } from '../src/game/mechanics/collisions';
 import {
-  movementConfig,
+  MOVEMENT_CONFIG,
   applyPlayerMovement,
 } from '../src/game/mechanics/simulation';
 
@@ -22,7 +22,7 @@ test('movement cannot take the ship through any arena edge', () => {
       player,
       { forward: true, turnLeft: false, turnRight: false },
       10,
-      movementConfig,
+      MOVEMENT_CONFIG,
     );
     constrainPlayerToArena(player, ship, arena);
     expect(player.x).toBeCloseTo(expected.x);

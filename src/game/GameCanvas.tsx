@@ -1,15 +1,15 @@
 import { Application } from 'pixi.js';
 import { useEffect, useRef, useState } from 'react';
 import { createArena, loadArenaAssets } from './arena/index';
-import { startGameLoop } from './gameLoop';
-import { combatConfig } from './mechanics/combat';
+import { startGameLoop, type GameLoopCallbacks } from './gameLoop';
+import { COMBAT_CONFIG } from './mechanics/combat';
+import { MATCH_CONFIG, type MatchEndReason } from './mechanics/match';
 
 function mountArena(
   app: Application,
   host: HTMLDivElement,
   textures: Awaited<ReturnType<typeof loadArenaAssets>>,
-  onScoreChange: (score: number) => void,
-  onHealthChange: (health: number) => void,
+  callbacks: GameLoopCallbacks,
 ) {
   const arena = createArena(textures, app.screen.width, app.screen.height);
   app.stage.addChild(arena.container);
@@ -17,7 +17,7 @@ function mountArena(
   app.canvas.setAttribute('role', 'img');
   host.appendChild(app.canvas);
   app.render();
-  return startGameLoop(app, arena, onScoreChange, onHealthChange);
+  return startGameLoop(app, arena, callbacks);
 }
 
 export function GameCanvas() {
@@ -27,7 +27,11 @@ export function GameCanvas() {
   );
   const [attempt, setAttempt] = useState(0);
   const [score, setScore] = useState(0);
-  const [health, setHealth] = useState<number>(combatConfig.playerHealth);
+  const [health, setHealth] = useState<number>(COMBAT_CONFIG.playerHealth);
+  const [remainingSeconds, setRemainingSeconds] = useState<number>(
+    MATCH_CONFIG.duration,
+  );
+  const [endReason, setEndReason] = useState<MatchEndReason | null>(null);
 
   useEffect(() => {
     const host = hostRef.current;
@@ -68,7 +72,12 @@ export function GameCanvas() {
           return;
         }
 
-        stopGameLoop = mountArena(app, host, textures, setScore, setHealth);
+        stopGameLoop = mountArena(app, host, textures, {
+          onScoreChange: setScore,
+          onHealthChange: setHealth,
+          onTimeChange: setRemainingSeconds,
+          onMatchEnd: setEndReason,
+        });
         setStatus('ready');
       } catch (error) {
         if (initialized) destroy();
@@ -95,9 +104,14 @@ export function GameCanvas() {
     <>
       <p aria-live="polite">Score: {score}</p>
       <p aria-live="polite">
-        Health: {health}/{combatConfig.playerHealth}
+        Health: {health}/{COMBAT_CONFIG.playerHealth}
       </p>
-      {health === 0 && <p role="status">Ship destroyed.</p>}
+      <p>Time: {remainingSeconds}s</p>
+      {endReason && (
+        <p role="status">
+          {endReason === 'death' ? 'Ship destroyed.' : 'Time expired.'}
+        </p>
+      )}
       <div ref={hostRef} className="arena" />
       <p>
         Hold W or ↑ to move forward. A/D or ←/→ to turn. Space to fire forward.

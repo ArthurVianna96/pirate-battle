@@ -1,7 +1,7 @@
 import type { Obstacle, Size } from './collisions';
 import type { PlayerState } from './simulation';
 
-export const combatConfig = { playerHealth: 5, enemyHealth: 3 } as const;
+export const COMBAT_CONFIG = { playerHealth: 5, enemyHealth: 3 } as const;
 
 export type EnemyKind = 'chaser' | 'shooter';
 
@@ -36,8 +36,8 @@ export function createMovingEnemyState(bounds: Obstacle): MovingEnemyState {
 export function createEnemyState(bounds: Obstacle): EnemyState {
   return {
     bounds,
-    health: combatConfig.enemyHealth,
-    maxHealth: combatConfig.enemyHealth,
+    health: COMBAT_CONFIG.enemyHealth,
+    maxHealth: COMBAT_CONFIG.enemyHealth,
   };
 }
 

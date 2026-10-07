@@ -1,0 +1,90 @@
+import { expect, test } from '@playwright/test';
+import {
+  advanceMatchClock,
+  createMatchState,
+  finishMatchIfNeeded,
+} from '../src/game/mechanics/match';
+
+test('match duration defaults to 60 and accepts only the supported range', () => {
+  expect(createMatchState().remainingSeconds).toBe(60);
+  expect(createMatchState(180).remainingSeconds).toBe(180);
+  for (const duration of [59, 181, NaN, Infinity])
+    expect(() => createMatchState(duration)).toThrow();
+});
+
+test('the final update simulates only the remaining fraction of a second', () => {
+  const match = createMatchState();
+  advanceMatchClock(match, 59.95);
+  expect(advanceMatchClock(match, 0.1)).toBeCloseTo(0.05);
+  expect(match.remainingSeconds).toBe(0);
+  expect(finishMatchIfNeeded(match, 5)).toBe('time');
+});
+
+test('match duration agrees at 30 and 60 FPS', () => {
+  for (const fps of [30, 60]) {
+    const match = createMatchState();
+    for (let frame = 0; frame < fps * 60; frame++)
+      advanceMatchClock(match, 1 / fps);
+    expect(match.remainingSeconds).toBe(0);
+    expect(finishMatchIfNeeded(match, 5)).toBe('time');
+  }
+});
+
+test('death ends the match once and freezes its clock', () => {
+  const match = createMatchState();
+  advanceMatchClock(match, 3);
+  expect(finishMatchIfNeeded(match, 1)).toBeNull();
+  expect(finishMatchIfNeeded(match, 0)).toBe('death');
+  expect(finishMatchIfNeeded(match, 0)).toBeNull();
+  expect(advanceMatchClock(match, 10)).toBe(0);
+  expect(match.remainingSeconds).toBe(57);
+});
+
+test('time expiry freezes the clock and death wins a simultaneous ending', () => {
+  const match = createMatchState();
+  advanceMatchClock(match, 100);
+  expect(finishMatchIfNeeded(match, 5)).toBe('time');
+  expect(finishMatchIfNeeded(match, 0)).toBeNull();
+  expect(match.endReason).toBe('time');
+  expect(advanceMatchClock(match, 1)).toBe(0);
+  const simultaneous = createMatchState();
+  advanceMatchClock(simultaneous, 60);
+  expect(finishMatchIfNeeded(simultaneous, 0)).toBe('death');
+});
+
+test('the live timer stops with gameplay after death and resets on a new match', async ({
+  page,
+}) => {
+  test.setTimeout(90_000);
+  await page.clock.install({ time: new Date('2026-01-01T00:00:00Z') });
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Play', exact: true }).click();
+  await expect(page.getByRole('status')).toHaveCount(0);
+  await expect(page.getByText('Time: 60s', { exact: true })).toBeVisible();
+  await page.clock.pauseAt(new Date('2026-01-01T00:00:10Z'));
+  await page.clock.runFor(1000);
+  await expect(page.getByText('Time: 59s', { exact: true })).toBeVisible();
+  await page.clock.runFor(8000);
+  await expect(page.getByRole('status')).toHaveText('Ship destroyed.');
+  await expect(page.getByText('Health: 0/5', { exact: true })).toBeVisible();
+  const stoppedTime = await page.getByText(/^Time: /).textContent();
+  const stoppedArena = await page.locator('canvas').screenshot();
+  await page.locator('canvas').click({ position: { x: 10, y: 10 } });
+  for (const key of ['w', 'ArrowRight', 'Space', 'q', 'e'])
+    await page.keyboard.down(key);
+  await page.clock.runFor(1000);
+  for (const key of ['w', 'ArrowRight', 'Space', 'q', 'e'])
+    await page.keyboard.up(key);
+  expect(await page.getByText(/^Time: /).textContent()).toBe(stoppedTime);
+  expect((await page.locator('canvas').screenshot()).equals(stoppedArena)).toBe(
+    true,
+  );
+  await expect(page.getByText('Score: 0', { exact: true })).toBeVisible();
+
+  await page.getByRole('button', { name: 'Main Menu', exact: true }).click();
+  await page.getByRole('button', { name: 'Play', exact: true }).click();
+  await expect(page.getByRole('status')).toHaveCount(0);
+  await expect(page.getByText('Time: 60s', { exact: true })).toBeVisible();
+  await expect(page.getByText('Health: 5/5', { exact: true })).toBeVisible();
+  await expect(page.getByText('Score: 0', { exact: true })).toBeVisible();
+});

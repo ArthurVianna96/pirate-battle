@@ -1,4 +1,4 @@
-import { combatConfig, type PlayerCombatState } from './combat';
+import { COMBAT_CONFIG, type PlayerCombatState } from './combat';
 import type { PlayerState } from './simulation';
 import { createWeaponState, type WeaponState } from './weapon';
 
@@ -9,8 +9,8 @@ export interface PlayerGameState extends PlayerCombatState {
 export function createPlayerState(position: PlayerState): PlayerGameState {
   return {
     ...position,
-    health: combatConfig.playerHealth,
-    maxHealth: combatConfig.playerHealth,
+    health: COMBAT_CONFIG.playerHealth,
+    maxHealth: COMBAT_CONFIG.playerHealth,
     weapon: createWeaponState(),
   };
 }

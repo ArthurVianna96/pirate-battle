@@ -11,7 +11,7 @@ import {
 import { createKeyboardInput } from './mechanics/input';
 import { createPlayerState } from './mechanics/player';
 import { updateShooter, updateShooterAttack } from './mechanics/shooter';
-import { movementConfig, updatePlayer } from './mechanics/simulation';
+import { MOVEMENT_CONFIG, updatePlayer } from './mechanics/simulation';
 import {
   createSpawnerState,
   findEnemySpawn,
@@ -19,17 +19,35 @@ import {
   updateSpawner,
 } from './mechanics/spawning';
 import { fireFront, fireSide, updateWeapon } from './mechanics/weapon';
+import {
+  advanceMatchClock,
+  createMatchState,
+  finishMatchIfNeeded,
+  type MatchEndReason,
+} from './mechanics/match';
+
+export interface GameLoopCallbacks {
+  onScoreChange: (score: number) => void;
+  onHealthChange: (health: number) => void;
+  onTimeChange: (remainingSeconds: number) => void;
+  onMatchEnd: (reason: MatchEndReason) => void;
+}
 
 export function startGameLoop(
   app: Application,
   arena: ArenaView,
-  onScoreChange: (score: number) => void,
-  onHealthChange: (health: number) => void,
+  {
+    onScoreChange,
+    onHealthChange,
+    onTimeChange,
+    onMatchEnd,
+  }: GameLoopCallbacks,
 ): () => void {
   const { ship, obstacles } = arena;
   const keyboard = createKeyboardInput();
   const enemyProjectilesState = createEnemyProjectilesState();
   const spawner = createSpawnerState();
+  const match = createMatchState();
   const playerProjectiles = createProjectile(
     arena.container,
     arena.projectileTexture,
@@ -50,13 +68,15 @@ export function startGameLoop(
   const arenaSize = { width: app.screen.width, height: app.screen.height };
   const world = { shipSize, arenaSize, obstacles };
   let score = 0;
+  let displayedSeconds = match.duration;
 
   function update(ticker: Ticker) {
-    const deltaSeconds = ticker.deltaMS / 1000;
-    explosions.update(deltaSeconds);
-    if (player.health === 0) {
+    explosions.update(ticker.deltaMS / 1000);
+    if (match.endReason) {
       return;
     }
+
+    const deltaSeconds = advanceMatchClock(match, ticker.deltaMS / 1000);
 
     updateSpawns(deltaSeconds);
     updateMovement(deltaSeconds);
@@ -65,6 +85,20 @@ export function startGameLoop(
     updateContacts();
     removeDestroyedEnemies();
     syncViews();
+    updateMatchStatus();
+  }
+
+  function updateMatchStatus() {
+    const remainingSeconds = Math.ceil(match.remainingSeconds);
+    if (remainingSeconds !== displayedSeconds) {
+      displayedSeconds = remainingSeconds;
+      onTimeChange(remainingSeconds);
+    }
+    const endReason = finishMatchIfNeeded(match, player.health);
+    if (endReason) {
+      keyboard.destroy();
+      onMatchEnd(endReason);
+    }
   }
 
   function updateSpawns(deltaSeconds: number) {
@@ -82,7 +116,7 @@ export function startGameLoop(
   }
 
   function updateMovement(deltaSeconds: number) {
-    updatePlayer(player, keyboard.input, deltaSeconds, movementConfig, world);
+    updatePlayer(player, keyboard.input, deltaSeconds, MOVEMENT_CONFIG, world);
     for (const { kind, state } of arena.enemies) {
       if (kind === 'chaser') {
         updateChaser(state, player, deltaSeconds, world);
