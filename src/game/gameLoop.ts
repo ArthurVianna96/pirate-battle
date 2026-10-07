@@ -1,4 +1,5 @@
 import type { Application, Ticker } from 'pixi.js';
+import { createAudioChannel, playInterfaceSound } from './audio';
 import { createExplosion, EXPLOSION_CONFIG } from './arena/explosions';
 import { createCombatEffects } from './arena/combatEffects';
 import { createShipAppearance } from './arena/shipAppearance';
@@ -64,12 +65,19 @@ export function startGameLoop(
   const enemyProjectilesState = createEnemyProjectilesState();
   const spawner = createSpawnerState();
   const match = createMatchState(options.sessionDuration);
+  const audio = createAudioChannel();
+  void audio.play('ocean_ambience_loop', 0.12, true);
   const pauseControls = createPauseControls({
     match,
     stop: () => app.stop(),
     start: () => app.start(),
     setInputEnabled: keyboard.setEnabled,
-    onPauseChange,
+    onPauseChange(value) {
+      if (value) audio.stopAll();
+      else void audio.play('ocean_ambience_loop', 0.12, true);
+      playInterfaceSound(value ? 'game_pause' : 'game_resume');
+      onPauseChange(value);
+    },
   });
   const playerProjectiles = createProjectile(
     arena.container,
@@ -134,15 +142,19 @@ export function startGameLoop(
     const remainingSeconds = Math.ceil(match.remainingSeconds);
     if (remainingSeconds !== displayedSeconds) {
       displayedSeconds = remainingSeconds;
+      if (remainingSeconds === 10) void audio.play('time_warning');
       onTimeChange(remainingSeconds);
     }
     const endReason = finishMatchIfNeeded(match, player.health);
     if (endReason) {
+      audio.stopLoop('ocean_ambience_loop');
+      audio.stopLoop('ship_sailing_loop');
       keyboard.destroy();
       const result = createMatchResult(match, score);
       if (endReason === 'death') {
         ship.visible = false;
         explosions.play(player);
+        void audio.play('ship_explosion_1');
         pendingResult = result;
         endingAnimationRemaining = EXPLOSION_CONFIG.duration;
       } else onMatchEnd(result);
@@ -168,6 +180,9 @@ export function startGameLoop(
   }
 
   function updateMovement(deltaSeconds: number) {
+    if (keyboard.input.forward)
+      void audio.play('ship_sailing_loop', 0.08, true);
+    else audio.stopLoop('ship_sailing_loop');
     updatePlayer(player, keyboard.input, deltaSeconds, MOVEMENT_CONFIG, world);
     for (const { kind, state } of arena.enemies) {
       if (kind === 'chaser') {
@@ -186,7 +201,7 @@ export function startGameLoop(
       arenaSize,
       obstacles,
       arena.enemies.map(({ state }) => state),
-      effects.impact,
+      playImpact,
     );
     updateScore(destroyedEnemies);
   }
@@ -205,6 +220,8 @@ export function startGameLoop(
         enemyProjectilesState.projectiles
           .slice(shotCount)
           .forEach(effects.shot);
+        if (enemyProjectilesState.projectiles.length > shotCount)
+          void audio.play('cannon_fire_1', 0.18);
       }
     }
     updateEnemyProjectiles(
@@ -212,22 +229,26 @@ export function startGameLoop(
       deltaSeconds,
       player,
       world,
-      effects.impact,
+      playImpact,
     );
-    if (player.health !== previousHealth) onHealthChange(player.health);
+    if (player.health !== previousHealth) reportPlayerDamage(previousHealth);
   }
 
   function fireWeapons() {
     const shotCount = player.weapon.projectiles.length;
+    const frontId = player.weapon.nextId;
     if (keyboard.input.shootFront) {
       fireFront(player.weapon, player);
     }
+    if (player.weapon.nextId > frontId) void audio.play('cannon_fire_1');
+    const sideId = player.weapon.nextId;
     if (keyboard.input.shootLeft) {
       fireSide(player.weapon, player, 'left');
     }
     if (keyboard.input.shootRight) {
       fireSide(player.weapon, player, 'right');
     }
+    if (player.weapon.nextId > sideId) void audio.play('cannon_broadside');
     player.weapon.projectiles.slice(shotCount).forEach(effects.shot);
   }
 
@@ -235,6 +256,7 @@ export function startGameLoop(
     if (destroyedEnemies > 0) {
       score += destroyedEnemies;
       onScoreChange(score);
+      void audio.play('score_point', 0.2);
     }
   }
 
@@ -245,14 +267,27 @@ export function startGameLoop(
     }
     if (player.health !== previousHealth) {
       effects.impact(player);
-      onHealthChange(player.health);
+      void audio.play('ship_collision');
+      reportPlayerDamage(previousHealth);
     }
+  }
+
+  function playImpact(position: { x: number; y: number }) {
+    effects.impact(position);
+    void audio.play('ship_wood_hit_1', 0.18);
+  }
+
+  function reportPlayerDamage(previousHealth: number) {
+    onHealthChange(player.health);
+    if (previousHealth > 2 && player.health <= 2 && player.health > 0)
+      void audio.play('health_low');
   }
 
   function removeDestroyedEnemies() {
     arena.enemies = arena.enemies.filter(({ state, renderer }) => {
       if (state.health > 0) return true;
       explosions.play(state.position);
+      void audio.play('ship_explosion_1', 0.25);
       renderer.destroy();
       return false;
     });
@@ -276,6 +311,7 @@ export function startGameLoop(
   if (document.hidden) pauseControls.pause();
 
   function destroy() {
+    audio.destroy();
     pauseControls.destroy();
     app.stop();
     app.ticker.remove(update);

@@ -7,6 +7,7 @@ import { createOptionsSnapshot, type GameOptions } from './game/options';
 import { loadOptions, saveOptions } from './storage/options';
 import titleImage from '../assets/png/retina/ui/menu/title_pirate_battle.png';
 import playerImage from '../assets/png/default/ships/ship_1.png';
+import { playInterfaceSound } from './game/audio';
 
 type Screen =
   | { kind: 'menu' }
@@ -23,6 +24,7 @@ export function App() {
   }
 
   function startGame() {
+    playInterfaceSound('game_start');
     setScreen({ kind: 'game', options: createOptionsSnapshot(options) });
   }
 
@@ -33,6 +35,9 @@ export function App() {
   }
 
   const finishGame = useCallback((result: MatchResult) => {
+    playInterfaceSound(
+      result.endReason === 'death' ? 'game_over' : 'game_complete',
+    );
     setScreen({ kind: 'result', result });
   }, []);
 
@@ -91,7 +96,13 @@ export function App() {
   }
 
   return (
-    <main className={screen.kind === 'game' ? 'playing' : undefined}>
+    <main
+      className={screen.kind === 'game' ? 'playing' : undefined}
+      onClickCapture={(event) => {
+        if ((event.target as HTMLElement).closest('button'))
+          playInterfaceSound('ui_click');
+      }}
+    >
       {renderScreen()}
     </main>
   );
