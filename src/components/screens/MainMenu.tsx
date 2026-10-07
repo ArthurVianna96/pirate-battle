@@ -4,9 +4,11 @@ import playerImage from '../../../assets/png/default/ships/ship_1.png';
 export function MainMenu({
   onPlay,
   onOptions,
+  onLastResult,
 }: {
   onPlay: () => void;
   onOptions: () => void;
+  onLastResult?: () => void;
 }) {
   return (
     <section aria-label="Main menu" className="menu main-menu">
@@ -19,6 +21,7 @@ export function MainMenu({
           Play
         </button>
         <button onClick={onOptions}>Options</button>
+        {onLastResult && <button onClick={onLastResult}>Last Result</button>}
       </div>
       <img className="menu-ship" src={playerImage} alt="" />
       <p>Navigate the islands. Survive the battle.</p>

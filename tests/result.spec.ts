@@ -64,4 +64,47 @@ test('the result renders and Main Menu restores keyboard focus', async ({
     page.getByRole('button', { name: 'Play', exact: true }),
   ).toBeFocused();
   await expect(result).toHaveCount(0);
+  await page.reload();
+  await page.getByRole('button', { name: 'Last Result', exact: true }).click();
+  await expect(result.getByText('Score: 0', { exact: true })).toBeVisible();
+  await expect(
+    result.getByText('Ship destroyed.', { exact: true }),
+  ).toBeVisible();
+});
+
+test('abandoning a match preserves the previous result', async ({ page }) => {
+  await page.goto('/');
+  await page.evaluate(() => {
+    localStorage.setItem(
+      'pirate-battle.last-result',
+      JSON.stringify({
+        score: 7,
+        elapsedSeconds: 60,
+        endReason: 'time',
+      }),
+    );
+  });
+  await page.reload();
+  await page.getByRole('button', { name: 'Play', exact: true }).click();
+  await expect(page.getByRole('status')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Pause', exact: true }).click();
+  await page.getByRole('button', { name: 'Main Menu', exact: true }).click();
+  await page.reload();
+  await page.getByRole('button', { name: 'Last Result', exact: true }).click();
+  await expect(page.getByText('Score: 7', { exact: true })).toBeVisible();
+  await expect(page.getByText('Time expired.', { exact: true })).toBeVisible();
+});
+
+test('malformed saved results leave the menu usable', async ({ page }) => {
+  await page.goto('/');
+  await page.evaluate(() =>
+    localStorage.setItem('pirate-battle.last-result', '{broken'),
+  );
+  await page.reload();
+  await expect(
+    page.getByRole('button', { name: 'Last Result', exact: true }),
+  ).toHaveCount(0);
+  await expect(
+    page.getByRole('button', { name: 'Play', exact: true }),
+  ).toBeVisible();
 });
