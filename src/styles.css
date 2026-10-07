@@ -30,11 +30,30 @@ h2 {
   background: #1b3640;
   border-radius: 12px;
 }
-.result-actions {
+.menu-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 16px;
   margin-top: 24px;
+}
+.options-form,
+.option-field {
+  display: grid;
+  gap: 12px;
+}
+.options-form {
+  margin-top: 24px;
+  gap: 24px;
+}
+input {
+  width: 100%;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid #e4bb75;
+  border-radius: 6px;
+  font: inherit;
+  color: #f4ead7;
+  background: #10242d;
 }
 button {
   font: inherit;
@@ -49,7 +68,8 @@ button {
 button:hover {
   background: #f1cf96;
 }
-button:focus-visible {
+button:focus-visible,
+input:focus-visible {
   outline: 3px solid #fff;
   outline-offset: 4px;
 }

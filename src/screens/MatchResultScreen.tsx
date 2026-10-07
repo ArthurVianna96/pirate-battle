@@ -19,7 +19,7 @@ export function MatchResultScreen({
       </p>
       <p>Score: {result.score}</p>
       <p>Time played: {result.elapsedSeconds.toFixed(1)}s</p>
-      <div className="result-actions">
+      <div className="menu-actions">
         <button autoFocus onClick={onPlayAgain}>
           Play Again
         </button>

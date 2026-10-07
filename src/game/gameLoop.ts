@@ -3,6 +3,7 @@ import { createExplosion } from './arena/explosions';
 import { createHealthBar } from './arena/healthBar';
 import { createProjectile } from './arena/projectiles';
 import type { ArenaView } from './arena/types';
+import type { GameOptions } from './options';
 import { createPauseControls } from './pause';
 import { resolveChaserImpact, updateChaser } from './mechanics/chaser';
 import {
@@ -45,6 +46,7 @@ export interface GameLoopController {
 export function startGameLoop(
   app: Application,
   arena: ArenaView,
+  options: GameOptions,
   {
     onScoreChange,
     onHealthChange,
@@ -57,7 +59,7 @@ export function startGameLoop(
   const keyboard = createKeyboardInput();
   const enemyProjectilesState = createEnemyProjectilesState();
   const spawner = createSpawnerState();
-  const match = createMatchState();
+  const match = createMatchState(options.sessionDuration);
   const pauseControls = createPauseControls({
     match,
     stop: () => app.stop(),
@@ -120,7 +122,11 @@ export function startGameLoop(
   }
 
   function updateSpawns(deltaSeconds: number) {
-    const spawnCount = updateSpawner(spawner, deltaSeconds);
+    const spawnCount = updateSpawner(
+      spawner,
+      deltaSeconds,
+      options.enemySpawnInterval,
+    );
     for (let attempt = 0; attempt < spawnCount; attempt++) {
       const position = findEnemySpawn(
         player,

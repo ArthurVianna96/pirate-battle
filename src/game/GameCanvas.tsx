@@ -7,12 +7,14 @@ import {
   type GameLoopController,
 } from './gameLoop';
 import { COMBAT_CONFIG } from './mechanics/combat';
-import { MATCH_CONFIG, type MatchResult } from './mechanics/match';
+import type { MatchResult } from './mechanics/match';
+import type { GameOptions } from './options';
 
 function mountArena(
   app: Application,
   host: HTMLDivElement,
   textures: Awaited<ReturnType<typeof loadArenaAssets>>,
+  options: GameOptions,
   callbacks: GameLoopCallbacks,
 ) {
   const arena = createArena(textures, app.screen.width, app.screen.height);
@@ -21,13 +23,15 @@ function mountArena(
   app.canvas.setAttribute('role', 'img');
   host.appendChild(app.canvas);
   app.render();
-  return startGameLoop(app, arena, callbacks);
+  return startGameLoop(app, arena, options, callbacks);
 }
 
 export function GameCanvas({
   onMatchEnd,
+  options,
 }: {
   onMatchEnd: (result: MatchResult) => void;
+  options: GameOptions;
 }) {
   const hostRef = useRef<HTMLDivElement>(null);
   const gameLoopRef = useRef<GameLoopController | null>(null);
@@ -39,7 +43,7 @@ export function GameCanvas({
   const [score, setScore] = useState(0);
   const [health, setHealth] = useState<number>(COMBAT_CONFIG.playerHealth);
   const [remainingSeconds, setRemainingSeconds] = useState<number>(
-    MATCH_CONFIG.duration,
+    options.sessionDuration,
   );
   const [paused, setPaused] = useState(false);
 
@@ -83,7 +87,7 @@ export function GameCanvas({
           return;
         }
 
-        gameLoop = mountArena(app, host, textures, {
+        gameLoop = mountArena(app, host, textures, options, {
           onScoreChange: setScore,
           onHealthChange: setHealth,
           onTimeChange: setRemainingSeconds,
@@ -109,7 +113,7 @@ export function GameCanvas({
       cancelled = true;
       destroy();
     };
-  }, [attempt, onMatchEnd]);
+  }, [attempt, onMatchEnd, options]);
 
   function retry() {
     setStatus('loading');
