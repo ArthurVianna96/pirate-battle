@@ -10,7 +10,8 @@ import {
 import { loadOptions, saveOptions } from './storage/options';
 import { MainMenu } from './components/screens/MainMenu';
 import { playInterfaceSound } from './game/support/audio';
-import { loadLastResult, saveLastResult } from './storage/result';
+import { saveLastResult } from './storage/result';
+import { loadPlayer } from './storage/player';
 
 type Screen =
   | { kind: 'menu' }
@@ -21,7 +22,7 @@ type Screen =
 export function App() {
   const [screen, setScreen] = useState<Screen>({ kind: 'menu' });
   const [options, setOptions] = useState(loadOptions);
-  const [lastResult, setLastResult] = useState(loadLastResult);
+  const [player] = useState(loadPlayer);
   const [resultSaveFailed, setResultSaveFailed] = useState(false);
 
   function leaveGame() {
@@ -48,7 +49,6 @@ export function App() {
   }
 
   const finishGame = useCallback((result: MatchResult) => {
-    setLastResult(result);
     setResultSaveFailed(!saveLastResult(result));
     playInterfaceSound(
       result.endReason === 'death' ? 'game_over' : 'game_complete',
@@ -91,13 +91,11 @@ export function App() {
     }
     return (
       <MainMenu
+        options={options}
+        playerId={player.id}
+        playerName={player.name}
         onPlay={startGame}
         onOptions={openOptions}
-        onLastResult={
-          lastResult
-            ? () => setScreen({ kind: 'result', result: lastResult })
-            : undefined
-        }
       />
     );
   }

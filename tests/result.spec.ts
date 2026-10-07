@@ -65,11 +65,10 @@ test('the result renders and Main Menu restores keyboard focus', async ({
   ).toBeFocused();
   await expect(result).toHaveCount(0);
   await page.reload();
-  await page.getByRole('button', { name: 'Last Result', exact: true }).click();
-  await expect(result.getByText('Score: 0', { exact: true })).toBeVisible();
-  await expect(
-    result.getByText('Ship destroyed.', { exact: true }),
-  ).toBeVisible();
+  const saved = await page.evaluate(() =>
+    JSON.parse(localStorage.getItem('pirate-battle.last-result')!),
+  );
+  expect(saved).toMatchObject({ score: 0, endReason: 'death' });
 });
 
 test('abandoning a match preserves the previous result', async ({ page }) => {
@@ -90,9 +89,10 @@ test('abandoning a match preserves the previous result', async ({ page }) => {
   await page.getByRole('button', { name: 'Pause', exact: true }).click();
   await page.getByRole('button', { name: 'Main Menu', exact: true }).click();
   await page.reload();
-  await page.getByRole('button', { name: 'Last Result', exact: true }).click();
-  await expect(page.getByText('Score: 7', { exact: true })).toBeVisible();
-  await expect(page.getByText('Time expired.', { exact: true })).toBeVisible();
+  const saved = await page.evaluate(() =>
+    JSON.parse(localStorage.getItem('pirate-battle.last-result')!),
+  );
+  expect(saved).toEqual({ score: 7, elapsedSeconds: 60, endReason: 'time' });
 });
 
 test('malformed saved results leave the menu usable', async ({ page }) => {

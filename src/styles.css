@@ -67,6 +67,233 @@ h2 {
   gap: 12px;
   margin-top: 12px;
 }
+.main-menu {
+  width: min(100%, 780px);
+  min-height: 720px;
+  padding: 32px 32px 8px;
+  border-style: solid;
+  border-width: 40px 32px;
+  border-color: transparent;
+  border-image: url('../assets/png/retina/ui/menu/panel_menu.png') 80 64 fill
+    stretch;
+  background: none;
+  gap: 18px;
+}
+.main-menu .game-title {
+  width: min(100%, 500px);
+}
+.main-menu .menu-actions {
+  margin: 0;
+  gap: 14px;
+}
+.main-menu .menu-actions > button {
+  width: 328px;
+  min-height: 82px;
+  font-size: 1.7rem;
+}
+
+.main-menu .menu-ship {
+  width: 48px;
+  margin: 0 auto;
+}
+.main-menu > p:not(.tagline) {
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+.log-links,
+.log-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 28px;
+}
+.log-links button {
+  width: 216px;
+  min-height: 58px;
+  font-size: 0.9rem;
+  padding: 12px 16px;
+}
+.secondary-button,
+.secondary-button:hover {
+  background-image: url('../assets/png/retina/ui/menu/button_secondary_normal.png');
+  color: #ffeac0;
+}
+.secondary-button:active {
+  background-image: url('../assets/png/retina/ui/menu/button_secondary_pressed.png');
+}
+.captains-log {
+  width: min(100%, 1400px);
+  min-height: 740px;
+  padding: 4px 38px 10px;
+  border-style: solid;
+  border-width: 40px 32px;
+  border-color: transparent;
+  border-image: url('../assets/png/retina/ui/menu/panel_menu.png') 80 64 fill
+    stretch;
+  background: none;
+  justify-content: flex-start;
+  gap: 14px;
+}
+.log-tabs button {
+  width: 236px;
+  min-height: 58px;
+  padding: 12px 16px;
+}
+.log-subtitle {
+  color: #bfced3;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+.log-panel {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+  flex: 1;
+  align-content: start;
+}
+.table-scroll {
+  overflow-x: auto;
+}
+.log-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 8px;
+  text-align: left;
+}
+.log-table th {
+  color: #b5c9d1;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  padding: 6px 14px;
+}
+.log-table td {
+  padding: 16px 14px;
+  background: #10222ebf;
+  border-right: 1px solid #ffffff05;
+  font-weight: 700;
+}
+.log-table td:first-child {
+  border-radius: 8px 0 0 8px;
+}
+.log-table td:last-child {
+  border-radius: 0 8px 8px 0;
+}
+.log-table .highlighted-row td {
+  background: #b3943540;
+  box-shadow:
+    inset 0 1px #b3943550,
+    inset 0 -1px #b3943550;
+}
+.points {
+  color: #ffd47b;
+}
+.muted,
+.played-date {
+  color: #adc3cd;
+  font-size: 0.85rem;
+  font-weight: 400;
+}
+.ranking-star {
+  width: 26px;
+  height: 26px;
+  vertical-align: middle;
+  margin-right: 12px;
+}
+.you-badge {
+  margin-left: 10px;
+  padding: 2px 5px;
+  border-radius: 3px;
+  background: #b3943550;
+  border: 1px solid #b3943580;
+  color: #ffdb80;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+}
+.result-defeated,
+.result-time {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+}
+.result-defeated {
+  color: #ffb5a2;
+}
+.result-time {
+  color: #bddcae;
+}
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+.pagination .round-button {
+  width: 36px;
+  height: 36px;
+  min-height: 36px;
+  padding: 0;
+}
+.pagination .round-button::after {
+  inset: 9px;
+  width: 18px;
+  height: 18px;
+}
+.pagination .previous-page::after {
+  background-image: url('../assets/png/retina/ui/controls/icon_turn_left.png');
+}
+.pagination .next-page::after {
+  background-image: url('../assets/png/retina/ui/controls/icon_turn_right.png');
+}
+.pagination span {
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  color: #bfced3;
+  font-weight: 700;
+}
+.log-back-button {
+  width: 280px;
+  min-height: 70px;
+  align-self: center;
+  margin-top: 8px;
+}
+@media (max-width: 600px) {
+  .menu.main-menu {
+    padding: 2px 0 0;
+    min-height: 640px;
+  }
+  .main-menu .menu-actions > button {
+    width: 260px;
+    min-height: 66px;
+    font-size: 1.25rem;
+  }
+  .log-links,
+  .log-tabs {
+    gap: 12px;
+  }
+  .log-links button,
+  .log-tabs button {
+    width: 50%;
+    min-height: 48px;
+    font-size: 0.75rem;
+    padding: 10px;
+  }
+  .menu.captains-log {
+    padding: 0 0 4px;
+    min-height: 620px;
+  }
+  .captains-log h2 {
+    font-size: 1.8rem;
+  }
+  .log-table {
+    min-width: 530px;
+  }
+  .log-table td {
+    padding: 14px 10px;
+  }
+  .log-panel {
+    gap: 18px;
+  }
+}
 .options-form,
 .option-field {
   display: grid;
