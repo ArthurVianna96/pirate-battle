@@ -2,7 +2,6 @@ import type { Application, Ticker } from 'pixi.js';
 import { createExplosion, EXPLOSION_CONFIG } from './arena/explosions';
 import { createCombatEffects } from './arena/combatEffects';
 import { createShipAppearance } from './arena/shipAppearance';
-import { createHealthBar } from './arena/healthBar';
 import { createProjectile } from './arena/projectiles';
 import type { ArenaView } from './arena/types';
 import type { GameOptions } from './options';
@@ -80,7 +79,6 @@ export function startGameLoop(
     arena.container,
     arena.projectileTexture,
   );
-  const playerHealth = createHealthBar(arena.container, ship.height);
   const explosions = createExplosion(arena.container, arena.explosionTextures);
   const effects = createCombatEffects(
     arena.container,
@@ -144,7 +142,6 @@ export function startGameLoop(
       const result = createMatchResult(match, score);
       if (endReason === 'death') {
         ship.visible = false;
-        playerHealth.bar.visible = false;
         explosions.play(player);
         pendingResult = result;
         endingAnimationRemaining = EXPLOSION_CONFIG.duration;
@@ -272,15 +269,6 @@ export function startGameLoop(
   function syncPlayer() {
     ship.position.set(player.x, player.y);
     ship.rotation = player.heading + Math.PI;
-    const halfHeight =
-      (Math.abs(Math.cos(player.heading)) * shipSize.height +
-        Math.abs(Math.sin(player.heading)) * shipSize.width) /
-      2;
-    playerHealth.bar.position.set(
-      player.x - 24,
-      Math.max(4, player.y - halfHeight - 12),
-    );
-    playerHealth.health.scale.x = player.health / player.maxHealth;
   }
 
   app.ticker.add(update);
@@ -295,7 +283,6 @@ export function startGameLoop(
     playerProjectiles.destroy();
     enemyProjectiles.destroy();
     arena.enemies.forEach(({ renderer }) => renderer.destroy());
-    playerHealth.bar.destroy({ children: true });
     explosions.destroy();
     effects.destroy();
     playerAppearance.destroy();

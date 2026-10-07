@@ -11,7 +11,13 @@ export interface ShipTextures {
   critical: Texture;
 }
 
+export interface HealthBarTextures {
+  frame: Texture;
+  fill: Texture;
+}
+
 export interface ArenaAssets {
+  enemyHealth: HealthBarTextures;
   playerShip: ShipTextures;
   chaser: ShipTextures;
   shooter: ShipTextures;
@@ -55,6 +61,7 @@ export interface IslandOptions extends ArenaSize {
 }
 
 export interface EnemyOptions extends ArenaSize {
+  healthBar: HealthBarTextures;
   ship: Sprite;
   shipTextures: ShipTextures;
   arena: Container;

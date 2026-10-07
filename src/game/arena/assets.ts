@@ -1,3 +1,5 @@
+import enemyHealthFrameUrl from '../../../assets/png/default/ui/hud/enemy_health_frame.png';
+import enemyHealthFillUrl from '../../../assets/png/default/ui/hud/enemy_health_fill_red.png';
 import playerDamagedUrl from '../../../assets/png/default/ships/ship_7.png';
 import playerCriticalUrl from '../../../assets/png/default/ships/ship_13.png';
 import chaserUrl from '../../../assets/png/default/ships/ship_3.png';
@@ -48,6 +50,8 @@ export async function loadArenaAssets(): Promise<ArenaAssets> {
     chaser,
     shooter,
     fire,
+    healthFrame,
+    healthFill,
   ] = await Promise.all([
     loadShipTextures([playerShipUrl, playerDamagedUrl, playerCriticalUrl]),
     Assets.load<Texture>(waterUrl),
@@ -61,9 +65,12 @@ export async function loadArenaAssets(): Promise<ArenaAssets> {
     loadShipTextures([chaserUrl, chaserDamagedUrl, chaserCriticalUrl]),
     loadShipTextures([shooterUrl, shooterDamagedUrl, shooterCriticalUrl]),
     Promise.all([fire1Url, fire2Url].map((url) => Assets.load<Texture>(url))),
+    Assets.load<Texture>(enemyHealthFrameUrl),
+    Assets.load<Texture>(enemyHealthFillUrl),
   ]);
 
   return {
+    enemyHealth: { frame: healthFrame, fill: healthFill },
     playerShip,
     water,
     island,

@@ -29,6 +29,7 @@ export function createArena(
 
   arena.addChild(water, island, ship);
   const enemyOptions = {
+    healthBar: textures.enemyHealth,
     ship,
     width,
     height,

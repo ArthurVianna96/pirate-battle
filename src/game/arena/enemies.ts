@@ -1,4 +1,4 @@
-import type { ShipTextures } from './types';
+import type { ShipTextures, HealthBarTextures } from './types';
 import { createShipAppearance } from './shipAppearance';
 import { Container, Sprite, type Texture } from 'pixi.js';
 import type { EnemyState } from '../mechanics/combat';
@@ -13,6 +13,7 @@ export function createEnemy(
     position?: PlayerState;
     tint?: number;
     shipTextures: ShipTextures;
+    healthBar: HealthBarTextures;
     fire: Texture[];
   },
 ) {
@@ -27,7 +28,11 @@ export function createEnemy(
   group.position.set(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
   group.addChild(ship);
 
-  const { bar, health } = createHealthBar(group, bounds.height);
+  const { bar, update: updateHealthBar } = createHealthBar(
+    group,
+    bounds.height,
+    options.healthBar,
+  );
   parent.addChild(group);
   const appearance = createShipAppearance(
     group,
@@ -45,8 +50,8 @@ export function createEnemy(
   }
 
   function syncHealth() {
-    health.scale.x = enemy.health / enemy.maxHealth;
-    bar.y = -bounds.height / 2 - 12;
+    updateHealthBar(enemy.health / enemy.maxHealth);
+    bar.y = -bounds.height / 2 - 24;
   }
 
   return {
