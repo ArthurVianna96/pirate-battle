@@ -1,3 +1,6 @@
+import { Hud } from './Hud';
+import { PauseScreen } from './PauseScreen';
+import { OptionsScreen } from '../screens/OptionsScreen';
 import { Application } from 'pixi.js';
 import { useEffect, useRef, useState } from 'react';
 import { createArena, loadArenaAssets } from './arena/index';
@@ -29,9 +32,15 @@ function mountArena(
 export function GameCanvas({
   onMatchEnd,
   options,
+  savedOptions,
+  onSaveOptions,
+  onMainMenu,
 }: {
   onMatchEnd: (result: MatchResult) => void;
   options: GameOptions;
+  savedOptions: GameOptions;
+  onSaveOptions: (options: GameOptions) => void;
+  onMainMenu: () => void;
 }) {
   const hostRef = useRef<HTMLDivElement>(null);
   const gameLoopRef = useRef<GameLoopController | null>(null);
@@ -46,6 +55,7 @@ export function GameCanvas({
     options.sessionDuration,
   );
   const [paused, setPaused] = useState(false);
+  const [showOptions, setShowOptions] = useState(false);
 
   useEffect(() => {
     const host = hostRef.current;
@@ -127,30 +137,48 @@ export function GameCanvas({
 
   return (
     <>
-      <div className="hud">
-        <p className="hud-counter score-counter" aria-live="polite">
-          Score: {score}
-        </p>
-        <p className="hud-counter health-counter" aria-live="polite">
-          Health: {health}/{COMBAT_CONFIG.playerHealth}
-        </p>
-        <p className="hud-counter time-counter">Time: {remainingSeconds}s</p>
-        <button
-          ref={pauseButtonRef}
-          onClick={togglePause}
-          disabled={status !== 'ready'}
-        >
-          {paused ? 'Resume' : 'Pause'}
-        </button>
+      <div className="arena-stage" inert={paused}>
+        <Hud
+          score={score}
+          health={health}
+          maxHealth={COMBAT_CONFIG.playerHealth}
+          remainingSeconds={remainingSeconds}
+          paused={paused}
+          ready={status === 'ready'}
+          onTogglePause={togglePause}
+          pauseButtonRef={pauseButtonRef}
+        />
+        <div ref={hostRef} className="arena" />
       </div>
-      <div ref={hostRef} className="arena" />
       {paused && (
-        <div className="pause-notice">
-          <h2>Paused</h2>
-          <p role="status">Game paused. Select Resume to continue.</p>
-        </div>
+        <PauseScreen>
+          {showOptions ? (
+            <OptionsScreen
+              options={savedOptions}
+              onSave={(nextOptions) => {
+                onSaveOptions(nextOptions);
+                setShowOptions(false);
+              }}
+            />
+          ) : (
+            <section className="menu pause-menu">
+              <h2>Paused</h2>
+              <p>Ready when you are.</p>
+              <p className="sr-only" role="status">
+                Game paused. Select Resume to continue.
+              </p>
+              <div className="menu-actions">
+                <button autoFocus onClick={togglePause}>
+                  Resume
+                </button>
+                <button onClick={() => setShowOptions(true)}>Options</button>
+                <button onClick={onMainMenu}>Main Menu</button>
+              </div>
+            </section>
+          )}
+        </PauseScreen>
       )}
-      <p className="controls-help">
+      <p className="controls-help gameplay-help">
         Hold W or ↑ to move forward. A/D or ←/→ to turn. Space to fire forward.
         Q/E to fire left/right.
       </p>

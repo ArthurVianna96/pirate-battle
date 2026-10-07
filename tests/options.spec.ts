@@ -31,25 +31,26 @@ test('each match receives a validated, independent options snapshot', () => {
   ).toThrow();
 });
 
-test('invalid fields stay editable, and cancellation discards edits', async ({
+test('invalid fields stay editable until both values are valid', async ({
   page,
 }) => {
   await page.goto('/');
   await page.getByRole('button', { name: 'Options', exact: true }).click();
-  const duration = page.getByLabel('Game session time');
-  const spawn = page.getByLabel('Enemy spawn time');
+  const duration = page.getByLabel('Game session time', { exact: true });
+  const spawn = page.getByLabel('Enemy spawn time', { exact: true });
   await duration.fill('59');
   await spawn.fill('0');
-  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await page.getByRole('button', { name: 'Main Menu', exact: true }).click();
   await expect(page.getByRole('alert')).toHaveCount(2);
   await expect(duration).toBeFocused();
   await duration.fill('90');
-  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await page.getByRole('button', { name: 'Main Menu', exact: true }).click();
   await expect(spawn).toBeFocused();
+  await spawn.fill('2');
   await page.getByRole('button', { name: 'Main Menu', exact: true }).click();
   await page.getByRole('button', { name: 'Options', exact: true }).click();
-  await expect(duration).toHaveValue('60');
-  await expect(spawn).toHaveValue('4');
+  await expect(duration).toHaveValue('90');
+  await expect(spawn).toHaveValue('2');
 });
 
 test('saved options survive reload and control new matches', async ({
@@ -59,13 +60,17 @@ test('saved options survive reload and control new matches', async ({
   await page.clock.install({ time: new Date('2026-01-01T00:00:00Z') });
   await page.goto('/');
   await page.getByRole('button', { name: 'Options', exact: true }).click();
-  await page.getByLabel('Game session time').fill('90');
-  await page.getByLabel('Enemy spawn time').fill('2');
-  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await page.getByLabel('Game session time', { exact: true }).fill('90');
+  await page.getByLabel('Enemy spawn time', { exact: true }).fill('2');
+  await page.getByRole('button', { name: 'Main Menu', exact: true }).click();
   await page.reload();
   await page.getByRole('button', { name: 'Options', exact: true }).click();
-  await expect(page.getByLabel('Game session time')).toHaveValue('90');
-  await expect(page.getByLabel('Enemy spawn time')).toHaveValue('2');
+  await expect(
+    page.getByLabel('Game session time', { exact: true }),
+  ).toHaveValue('90');
+  await expect(
+    page.getByLabel('Enemy spawn time', { exact: true }),
+  ).toHaveValue('2');
   await page
     .locator('main')
     .screenshot({ path: testInfo.outputPath('options.png') });
@@ -74,6 +79,9 @@ test('saved options survive reload and control new matches', async ({
   await expect(page.getByRole('status')).toHaveCount(0);
   await expect(page.getByText('Time: 90s', { exact: true })).toBeVisible();
   await page.clock.pauseAt(new Date('2026-01-01T00:00:10Z'));
+  await page
+    .locator('main')
+    .screenshot({ path: testInfo.outputPath('hud.png') });
   await page.keyboard.down('e');
   await page.clock.runFor(32);
   await page.keyboard.up('e');
@@ -94,8 +102,12 @@ test('corrupt stored options fall back to defaults', async ({ page }) => {
   );
   await page.goto('/');
   await page.getByRole('button', { name: 'Options', exact: true }).click();
-  await expect(page.getByLabel('Game session time')).toHaveValue('60');
-  await expect(page.getByLabel('Enemy spawn time')).toHaveValue('4');
+  await expect(
+    page.getByLabel('Game session time', { exact: true }),
+  ).toHaveValue('60');
+  await expect(
+    page.getByLabel('Enemy spawn time', { exact: true }),
+  ).toHaveValue('4');
 });
 
 test('storage failure keeps the form open with an error', async ({ page }) => {
@@ -106,11 +118,43 @@ test('storage failure keeps the form open with an error', async ({ page }) => {
   });
   await page.goto('/');
   await page.getByRole('button', { name: 'Options', exact: true }).click();
-  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await page.getByRole('button', { name: 'Main Menu', exact: true }).click();
   await expect(page.getByRole('alert')).toHaveText(
     'Unable to save options. Try again.',
   );
   await expect(
     page.getByRole('region', { name: 'Options', exact: true }),
   ).toBeVisible();
+});
+
+test('round buttons adjust seconds and respect the limits', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Options', exact: true }).click();
+  await expect(
+    page.getByRole('button', {
+      name: 'Decrease game session time',
+      exact: true,
+    }),
+  ).toBeDisabled();
+  await page
+    .getByRole('button', { name: 'Increase game session time', exact: true })
+    .click();
+  await expect(
+    page.getByLabel('Game session time', { exact: true }),
+  ).toHaveValue('61');
+  await page
+    .getByRole('button', { name: 'Decrease enemy spawn time', exact: true })
+    .click();
+  await expect(
+    page.getByLabel('Enemy spawn time', { exact: true }),
+  ).toHaveValue('3');
+  await page.getByLabel('Enemy spawn time', { exact: true }).fill('30');
+  await expect(
+    page.getByRole('button', {
+      name: 'Increase enemy spawn time',
+      exact: true,
+    }),
+  ).toBeDisabled();
 });

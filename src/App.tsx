@@ -40,24 +40,26 @@ export function App() {
     if (screen.kind === 'game') {
       return (
         <section aria-label="Game" className="game-screen">
-          <div className="toolbar">
-            <h2>Arena</h2>
-            <button autoFocus onClick={leaveGame}>
-              Main Menu
-            </button>
-          </div>
-          <GameCanvas options={screen.options} onMatchEnd={finishGame} />
+          <button
+            className="round-button home-button"
+            aria-label="Main Menu"
+            onClick={leaveGame}
+          />
+          <GameCanvas
+            options={screen.options}
+            savedOptions={options}
+            onSaveOptions={(nextOptions) => {
+              saveOptions(nextOptions);
+              setOptions(nextOptions);
+            }}
+            onMainMenu={leaveGame}
+            onMatchEnd={finishGame}
+          />
         </section>
       );
     }
     if (screen.kind === 'options') {
-      return (
-        <OptionsScreen
-          options={options}
-          onSave={saveGameOptions}
-          onMainMenu={leaveGame}
-        />
-      );
+      return <OptionsScreen options={options} onSave={saveGameOptions} />;
     }
     if (screen.kind === 'result') {
       return (

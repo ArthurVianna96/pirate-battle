@@ -26,7 +26,6 @@ test('pause freezes gameplay and resume requires fresh movement and firing input
   const pausedTime = await page.getByText(/^Time: /).textContent();
   const pausedArena = await page.locator('canvas').screenshot();
   const shipRegion = { x: 430, y: 200, width: 100, height: 130 };
-  const pausedShip = await arenaScreenshot(page, shipRegion);
   await page.clock.runFor(10_000);
   expect(await page.getByText(/^Time: /).textContent()).toBe(pausedTime);
   expect((await page.locator('canvas').screenshot()).equals(pausedArena)).toBe(
@@ -37,6 +36,7 @@ test('pause freezes gameplay and resume requires fresh movement and firing input
 
   await page.getByRole('button', { name: 'Resume', exact: true }).click();
   await expect(page.getByRole('status')).toHaveCount(0);
+  const pausedShip = await arenaScreenshot(page, shipRegion);
   // A repeat from a key held before pausing must not restart movement.
   await page.keyboard.down('w');
   await page.clock.runFor(600);
@@ -100,3 +100,39 @@ for (const cause of ['blur', 'hidden'] as const) {
     await expect(page.getByText('Time: 59s', { exact: true })).toBeVisible();
   });
 }
+
+test('fullscreen pause options preserve the match and configure the next one', async ({
+  page,
+}, testInfo) => {
+  await startGame(page);
+  const viewport = page.viewportSize()!;
+  const canvas = await page.locator('canvas').boundingBox();
+  expect(canvas).toEqual({
+    x: 0,
+    y: 0,
+    width: viewport.width,
+    height: viewport.height,
+  });
+  await page.getByRole('button', { name: 'Pause', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: 'Paused game' });
+  await expect(
+    dialog.getByRole('button', { name: 'Resume', exact: true }),
+  ).toBeFocused();
+  await page.keyboard.press('Shift+Tab');
+  await expect(
+    dialog.getByRole('button', { name: 'Main Menu', exact: true }),
+  ).toBeFocused();
+  await page.screenshot({ path: testInfo.outputPath('pause.png') });
+  await dialog.getByRole('button', { name: 'Options', exact: true }).click();
+  await page.getByLabel('Game session time', { exact: true }).fill('90');
+  await dialog.getByRole('button', { name: 'Main Menu', exact: true }).click();
+  await expect(
+    dialog.getByRole('button', { name: 'Resume', exact: true }),
+  ).toBeVisible();
+  await dialog.getByRole('button', { name: 'Resume', exact: true }).click();
+  await expect(page.getByText('Time: 60s', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Main Menu', exact: true }).click();
+  await page.getByRole('button', { name: 'Play', exact: true }).click();
+  await expect(page.getByRole('status')).toHaveCount(0);
+  await expect(page.getByText('Time: 90s', { exact: true })).toBeVisible();
+});
