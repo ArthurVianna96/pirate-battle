@@ -8,6 +8,8 @@ import type { GameLoopController } from '../../game/gameLoop';
 import { COMBAT_CONFIG } from '../../game/mechanics/combat';
 import type { MatchResult } from '../../game/mechanics/match';
 import type { GameOptions } from '../../game/support/options';
+import { usePortraitPrompt } from '../../hooks/usePortraitPrompt';
+import { RotatePrompt } from '../screens/RotatePrompt';
 
 interface GameCanvasProps {
   onMatchEnd: (result: MatchResult) => void;
@@ -38,6 +40,13 @@ export function GameCanvas({
   );
   const [paused, setPaused] = useState(false);
   const [input, setInput] = useState(createInputState);
+  const { shouldPrompt, allowPortrait } = usePortraitPrompt();
+
+  useEffect(() => {
+    if (shouldPrompt && status === 'ready') {
+      gameSessionRef.current?.pause();
+    }
+  }, [shouldPrompt, status]);
 
   useEffect(() => {
     const host = hostRef.current;
@@ -85,7 +94,7 @@ export function GameCanvas({
 
   return (
     <>
-      <div className="arena-stage" inert={paused}>
+      <div className="arena-stage" inert={paused || shouldPrompt}>
         <Hud
           score={score}
           health={health}
@@ -105,7 +114,10 @@ export function GameCanvas({
           }
         />
       </div>
-      {paused && (
+      {shouldPrompt && status === 'ready' && (
+        <RotatePrompt onContinue={allowPortrait} onMainMenu={onMainMenu} />
+      )}
+      {paused && !shouldPrompt && (
         <PauseMenu
           options={savedOptions}
           onSaveOptions={onSaveOptions}

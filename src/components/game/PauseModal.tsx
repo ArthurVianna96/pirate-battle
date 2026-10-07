@@ -1,6 +1,12 @@
 import { useRef, useEffect, type ReactNode, type KeyboardEvent } from 'react';
 
-export function PauseModal({ children }: { children: ReactNode }) {
+export function PauseModal({
+  children,
+  label = 'Paused game',
+}: {
+  children: ReactNode;
+  label?: string;
+}) {
   const dialog = useRef<HTMLDivElement>(null);
   useEffect(() => {
     dialog.current?.querySelector<HTMLButtonElement>('button')?.focus();
@@ -31,7 +37,7 @@ export function PauseModal({ children }: { children: ReactNode }) {
       className="pause-overlay"
       role="dialog"
       aria-modal="true"
-      aria-label="Paused game"
+      aria-label={label}
       onKeyDown={trapFocus}
     >
       {children}

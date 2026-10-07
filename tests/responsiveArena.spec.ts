@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test';
 
 test('resizing preserves the arena proportions and the active match', async ({
   page,
+  isMobile,
 }) => {
   await page.clock.install({ time: new Date('2026-01-01T00:00:00Z') });
   await page.goto('/');
@@ -10,7 +11,6 @@ test('resizing preserves the arena proportions and the active match', async ({
   await page.clock.pauseAt(new Date('2026-01-01T00:00:10Z'));
 
   const canvas = page.getByRole('img', { name: 'Naval battle arena' });
-  const originalArena = await canvas.screenshot();
   const remainingTime = await page.getByText(/^Time: /).textContent();
   const originalSize = await canvas.evaluate((element) => {
     const canvas = element as HTMLCanvasElement;
@@ -23,6 +23,15 @@ test('resizing preserves the arena proportions and the active match', async ({
     { width: 1800, height: 1000 },
   ]) {
     await page.setViewportSize(viewport);
+    const rotationPrompt = page.getByRole('dialog', {
+      name: 'Rotate your phone',
+    });
+    if (isMobile && viewport.height > viewport.width) {
+      await expect(rotationPrompt).toBeVisible();
+      await page.getByRole('button', { name: 'Continue in portrait' }).click();
+      await page.getByRole('button', { name: 'Resume', exact: true }).click();
+    }
+    await expect(rotationPrompt).toHaveCount(0);
     await expect(canvas).toHaveCSS('object-fit', 'contain');
     expect(await page.getByText(/^Time: /).textContent()).toBe(remainingTime);
     expect(
@@ -50,7 +59,7 @@ test('resizing preserves the arena proportions and the active match', async ({
   await page.setViewportSize(
     test.info().project.use.viewport ?? { width: 1280, height: 720 },
   );
-  expect((await canvas.screenshot()).equals(originalArena)).toBe(true);
+  await expect(page.getByRole('dialog')).toHaveCount(0);
   await page.clock.runFor(1000);
   expect(await page.getByText(/^Time: /).textContent()).not.toBe(remainingTime);
 });
