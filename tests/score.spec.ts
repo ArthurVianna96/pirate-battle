@@ -105,6 +105,7 @@ for (const attack of ['front', 'side'] as const) {
     await page.clock.runFor(1000);
     await page.keyboard.up(key);
     await expect(page.getByText('Score: 1', { exact: true })).toBeVisible();
+    await page.getByRole('button', { name: 'Pause', exact: true }).click();
     await page.getByRole('button', { name: 'Main Menu', exact: true }).click();
     await page.getByRole('button', { name: 'Play', exact: true }).click();
     await expect(page.getByRole('status')).toHaveCount(0);

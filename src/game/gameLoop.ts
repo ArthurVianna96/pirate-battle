@@ -10,7 +10,7 @@ import {
   createEnemyProjectilesState,
   updateEnemyProjectiles,
 } from './mechanics/enemyProjectiles';
-import { createKeyboardInput } from './mechanics/input';
+import { createKeyboardInput, type GameInput } from './mechanics/input';
 import { createPlayerState } from './mechanics/player';
 import { updateShooter, updateShooterAttack } from './mechanics/shooter';
 import { MOVEMENT_CONFIG, updatePlayer } from './mechanics/simulation';
@@ -30,6 +30,7 @@ import {
 } from './mechanics/match';
 
 export interface GameLoopCallbacks {
+  onInputChange: (input: GameInput) => void;
   onScoreChange: (score: number) => void;
   onHealthChange: (health: number) => void;
   onTimeChange: (remainingSeconds: number) => void;
@@ -38,6 +39,7 @@ export interface GameLoopCallbacks {
 }
 
 export interface GameLoopController {
+  setControl: (action: keyof GameInput, active: boolean) => void;
   pause: () => void;
   resume: () => void;
   destroy: () => void;
@@ -53,10 +55,11 @@ export function startGameLoop(
     onTimeChange,
     onMatchEnd,
     onPauseChange,
+    onInputChange,
   }: GameLoopCallbacks,
 ): GameLoopController {
   const { ship, obstacles } = arena;
-  const keyboard = createKeyboardInput();
+  const keyboard = createKeyboardInput(onInputChange);
   const enemyProjectilesState = createEnemyProjectilesState();
   const spawner = createSpawnerState();
   const match = createMatchState(options.sessionDuration);
@@ -251,5 +254,10 @@ export function startGameLoop(
     explosions.destroy();
   }
 
-  return { pause: pauseControls.pause, resume: pauseControls.resume, destroy };
+  return {
+    pause: pauseControls.pause,
+    resume: pauseControls.resume,
+    setControl: keyboard.setAction,
+    destroy,
+  };
 }

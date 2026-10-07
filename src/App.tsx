@@ -40,11 +40,6 @@ export function App() {
     if (screen.kind === 'game') {
       return (
         <section aria-label="Game" className="game-screen">
-          <button
-            className="round-button home-button"
-            aria-label="Main Menu"
-            onClick={leaveGame}
-          />
           <GameCanvas
             options={screen.options}
             savedOptions={options}

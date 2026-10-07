@@ -131,6 +131,7 @@ test('fullscreen pause options preserve the match and configure the next one', a
   ).toBeVisible();
   await dialog.getByRole('button', { name: 'Resume', exact: true }).click();
   await expect(page.getByText('Time: 60s', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Pause', exact: true }).click();
   await page.getByRole('button', { name: 'Main Menu', exact: true }).click();
   await page.getByRole('button', { name: 'Play', exact: true }).click();
   await expect(page.getByRole('status')).toHaveCount(0);

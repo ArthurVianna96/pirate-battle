@@ -488,23 +488,6 @@ main.playing {
   border-radius: 0;
   aspect-ratio: auto;
 }
-.home-button {
-  position: absolute;
-  bottom: 16px;
-  right: 16px;
-  z-index: 2;
-}
-.home-button::after {
-  background-image: url('../assets/png/retina/ui/controls/icon_home.png');
-}
-.gameplay-help {
-  position: absolute;
-  bottom: 12px;
-  left: 72px;
-  right: 72px;
-  pointer-events: none;
-  text-shadow: 0 1px 3px #10242d;
-}
 .pause-overlay {
   position: fixed;
   inset: 0;
@@ -528,11 +511,7 @@ main.playing {
     min-height: 500px;
     padding: 48px 32px;
   }
-  .gameplay-help {
-    display: none;
-  }
 }
-.game-screen:has(.pause-overlay) > .home-button,
 .game-screen:has(.pause-overlay) .hud > button {
   visibility: hidden;
 }
@@ -547,5 +526,80 @@ main.playing {
   .pause-menu .menu-actions > button {
     min-height: 64px;
     font-size: 1.1rem;
+  }
+}
+.game-controls {
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  bottom: 24px;
+  display: grid;
+  grid-template-columns: 72px 72px 72px 1fr 72px 72px 72px;
+  grid-template-rows: 40px 64px;
+  column-gap: 8px;
+  justify-items: center;
+  pointer-events: none;
+}
+.game-controls .round-button {
+  width: 64px;
+  height: 64px;
+  min-height: 64px;
+  pointer-events: auto;
+  touch-action: none;
+  user-select: none;
+}
+.game-controls button[aria-pressed='true'] {
+  background-image: url('../assets/png/retina/ui/controls/button_round_pressed.png');
+  filter: brightness(1.15);
+}
+.control-forward {
+  grid-area: 1 / 2;
+}
+.control-turn-left {
+  grid-area: 2 / 1;
+}
+.control-turn-right {
+  grid-area: 2 / 3;
+}
+.control-fire-front {
+  grid-area: 1 / 6;
+}
+.control-fire-left {
+  grid-area: 2 / 5;
+}
+.control-fire-right {
+  grid-area: 2 / 7;
+}
+.control-forward::after {
+  background-image: url('../assets/png/retina/ui/controls/icon_forward.png');
+}
+.control-turn-left::after {
+  background-image: url('../assets/png/retina/ui/controls/icon_turn_left.png');
+}
+.control-turn-right::after {
+  background-image: url('../assets/png/retina/ui/controls/icon_turn_right.png');
+}
+.control-fire-front::after {
+  background-image: url('../assets/png/retina/ui/controls/icon_fire_front.png');
+}
+.control-fire-left::after {
+  background-image: url('../assets/png/retina/ui/controls/icon_fire_left.png');
+}
+.control-fire-right::after {
+  background-image: url('../assets/png/retina/ui/controls/icon_fire_right.png');
+}
+@media (max-width: 600px) {
+  .game-controls {
+    left: 10px;
+    right: 10px;
+    bottom: 16px;
+    grid-template-columns: 44px 44px 44px 1fr 44px 44px 44px;
+    grid-template-rows: 28px 44px;
+    column-gap: 4px;
+  }
+  .game-controls .round-button {
+    width: 44px;
+    height: 44px;
+    min-height: 44px;
   }
 }

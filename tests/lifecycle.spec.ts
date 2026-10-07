@@ -17,6 +17,7 @@ test('entering and leaving creates a single canvas without errors', async ({
     const bounds = await page.locator('canvas').boundingBox();
     expect(bounds?.width).toBeGreaterThan(0);
     expect(bounds?.height).toBeGreaterThan(0);
+    await page.getByRole('button', { name: 'Pause', exact: true }).click();
     await page.getByRole('button', { name: 'Main Menu' }).click();
     await expect(page.locator('canvas')).toHaveCount(0);
     await expect(
@@ -59,6 +60,7 @@ test('leaving soon after entry allows a fresh entry', async ({ page }) => {
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto('/');
   await page.getByRole('button', { name: 'Play', exact: true }).click();
+  await page.getByRole('button', { name: 'Pause', exact: true }).click();
   await page.getByRole('button', { name: 'Main Menu' }).click();
   await page.getByRole('button', { name: 'Play', exact: true }).click();
   await expect(page.locator('canvas')).toHaveCount(1);

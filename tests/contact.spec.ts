@@ -77,6 +77,7 @@ test('the pursuing Chaser damages the player without awarding points', async ({
   await page.keyboard.up('e');
   await expect(page.getByText('Health: 4/5', { exact: true })).toBeVisible();
   await expect(page.getByText('Score: 0', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Pause', exact: true }).click();
   await page.getByRole('button', { name: 'Main Menu', exact: true }).click();
   await page.getByRole('button', { name: 'Play', exact: true }).click();
   await expect(page.getByRole('status')).toHaveCount(0);

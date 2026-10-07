@@ -4,14 +4,14 @@ export interface MovementInput {
   turnRight: boolean;
 }
 
-interface KeyboardInput extends MovementInput {
+export interface GameInput extends MovementInput {
   shootFront: boolean;
   shootLeft: boolean;
   shootRight: boolean;
 }
 
-export function createKeyboardInput() {
-  const input: KeyboardInput = {
+export function createInputState(): GameInput {
+  return {
     forward: false,
     turnLeft: false,
     turnRight: false,
@@ -19,6 +19,13 @@ export function createKeyboardInput() {
     shootLeft: false,
     shootRight: false,
   };
+}
+
+export function createKeyboardInput(
+  onChange: (input: GameInput) => void = () => {},
+) {
+  const input = createInputState();
+  const pointerInput = createInputState();
   const pressed = new Set<string>();
   let enabled = true;
   const gameKeys = new Set([
@@ -34,12 +41,18 @@ export function createKeyboardInput() {
   ]);
 
   function syncInput() {
-    input.forward = pressed.has('KeyW') || pressed.has('ArrowUp');
-    input.turnLeft = pressed.has('KeyA') || pressed.has('ArrowLeft');
-    input.turnRight = pressed.has('KeyD') || pressed.has('ArrowRight');
-    input.shootFront = pressed.has('Space');
-    input.shootLeft = pressed.has('KeyQ');
-    input.shootRight = pressed.has('KeyE');
+    input.forward =
+      pointerInput.forward || pressed.has('KeyW') || pressed.has('ArrowUp');
+    input.turnLeft =
+      pointerInput.turnLeft || pressed.has('KeyA') || pressed.has('ArrowLeft');
+    input.turnRight =
+      pointerInput.turnRight ||
+      pressed.has('KeyD') ||
+      pressed.has('ArrowRight');
+    input.shootFront = pointerInput.shootFront || pressed.has('Space');
+    input.shootLeft = pointerInput.shootLeft || pressed.has('KeyQ');
+    input.shootRight = pointerInput.shootRight || pressed.has('KeyE');
+    onChange({ ...input });
   }
 
   function keyDown(event: KeyboardEvent) {
@@ -66,6 +79,7 @@ export function createKeyboardInput() {
 
   function reset() {
     pressed.clear();
+    Object.assign(pointerInput, createInputState());
     syncInput();
   }
 
@@ -76,6 +90,11 @@ export function createKeyboardInput() {
 
   return {
     input,
+    setAction(action: keyof GameInput, active: boolean) {
+      if (!enabled) return;
+      pointerInput[action] = active;
+      syncInput();
+    },
     setEnabled(value: boolean) {
       enabled = value;
       reset();

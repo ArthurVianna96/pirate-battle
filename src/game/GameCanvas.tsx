@@ -1,4 +1,6 @@
 import { Hud } from './Hud';
+import { GameControls } from './GameControls';
+import { createInputState } from './mechanics/input';
 import { PauseScreen } from './PauseScreen';
 import { OptionsScreen } from '../screens/OptionsScreen';
 import { Application } from 'pixi.js';
@@ -56,6 +58,7 @@ export function GameCanvas({
   );
   const [paused, setPaused] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
+  const [input, setInput] = useState(createInputState);
 
   useEffect(() => {
     const host = hostRef.current;
@@ -99,6 +102,7 @@ export function GameCanvas({
 
         gameLoop = mountArena(app, host, textures, options, {
           onScoreChange: setScore,
+          onInputChange: setInput,
           onHealthChange: setHealth,
           onTimeChange: setRemainingSeconds,
           onMatchEnd,
@@ -149,6 +153,13 @@ export function GameCanvas({
           pauseButtonRef={pauseButtonRef}
         />
         <div ref={hostRef} className="arena" />
+        <GameControls
+          input={input}
+          disabled={status !== 'ready' || paused}
+          onAction={(action, active) =>
+            gameLoopRef.current?.setControl(action, active)
+          }
+        />
       </div>
       {paused && (
         <PauseScreen>
@@ -178,10 +189,6 @@ export function GameCanvas({
           )}
         </PauseScreen>
       )}
-      <p className="controls-help gameplay-help">
-        Hold W or ↑ to move forward. A/D or ←/→ to turn. Space to fire forward.
-        Q/E to fire left/right.
-      </p>
       {status === 'loading' && <p role="status">Loading arena...</p>}
       {status === 'error' && (
         <div role="alert">
