@@ -1,10 +1,8 @@
 import { setupWorker } from 'msw/browser';
 import { createHandlers } from './handlers';
-import { createMatchStore } from './store';
-import { loadMockMatches, saveMockMatches } from './storage';
+import { store, networkScenario } from './state';
 
-const store = createMatchStore(loadMockMatches(), saveMockMatches);
-let worker = setupWorker(...createHandlers(store));
+let worker = setupWorker(...createHandlers(store, networkScenario));
 let activated = false;
 let startup: Promise<void> | undefined;
 
@@ -25,7 +23,7 @@ async function activateWorker() {
 function resetWorker() {
   worker.stop();
   activated = false;
-  worker = setupWorker(...createHandlers(store));
+  worker = setupWorker(...createHandlers(store, networkScenario));
 }
 
 export function startMocks(): Promise<void> {

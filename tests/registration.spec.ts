@@ -1,8 +1,8 @@
 import { expect, test, type Page } from '@playwright/test';
 
-async function completeMatch(page: Page) {
+async function completeMatch(page: Page, url = '/') {
   await page.clock.install({ time: new Date('2026-01-01T00:00:00Z') });
-  await page.goto('/');
+  await page.goto(url);
   await page.getByRole('button', { name: 'Play', exact: true }).click();
   await expect(page.getByRole('status')).toHaveCount(0);
   await page.clock.pauseAt(new Date('2026-01-01T00:00:10Z'));
@@ -33,6 +33,33 @@ test('completed matches update history and ranking and survive refresh', async (
   await page.getByRole('button', { name: 'Next', exact: true }).click();
   await expect(page.locator('.you-badge')).toBeVisible();
   await page.reload();
+  await page
+    .getByRole('button', { name: 'Match History', exact: true })
+    .click();
+  await expect(page.getByRole('row')).toHaveCount(2);
+  await expect(
+    page.getByRole('cell', { name: 'Defeated', exact: true }),
+  ).toBeVisible();
+});
+
+test('timeout after acceptance recovers after refresh without duplicating the match', async ({
+  page,
+}) => {
+  test.setTimeout(90_000);
+  await page.clock.setFixedTime(new Date('2026-01-01T00:00:00Z'));
+  await page.goto('/?network=accepted-timeout');
+  await page.getByRole('button', { name: 'Play', exact: true }).click();
+  await expect(page.getByRole('region', { name: 'Match result' })).toBeVisible({
+    timeout: 30_000,
+  });
+  await expect(page.getByRole('alert')).toContainText(
+    'Could not record this match.',
+    { timeout: 15_000 },
+  );
+  await page.reload();
+  await expect(
+    page.getByRole('complementary', { name: 'Pending registrations' }),
+  ).toHaveCount(0);
   await page
     .getByRole('button', { name: 'Match History', exact: true })
     .click();

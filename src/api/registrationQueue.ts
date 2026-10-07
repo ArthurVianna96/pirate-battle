@@ -91,5 +91,14 @@ export function createRegistrationQueue(
     return snapshot;
   }
 
-  return { submit, retryAll, subscribe, getSnapshot };
+  function clear() {
+    if (inFlight.size > 0) {
+      return false;
+    }
+    updatePending([]);
+    publish({ statuses: {} });
+    return true;
+  }
+
+  return { submit, retryAll, subscribe, getSnapshot, clear };
 }

@@ -21,5 +21,15 @@ export function createMatchStore(
     return [...records.values()];
   }
 
-  return { register, list };
+  function has(id: string) {
+    return records.has(id);
+  }
+
+  function reset() {
+    saveRecords?.([...MATCH_FIXTURES]);
+    records.clear();
+    MATCH_FIXTURES.forEach((record) => records.set(record.id, record));
+  }
+
+  return { register, list, has, reset };
 }

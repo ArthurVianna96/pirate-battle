@@ -9,6 +9,7 @@ import { parseOptions } from '../game/support/options';
 import { createMatchStore } from './store';
 import { parseMatchRecord } from '../api/validation';
 import { parsePage } from './validation';
+import { createNetworkScenario } from './network';
 
 function invalidRequest() {
   return HttpResponse.json<ApiErrorResponse>(
@@ -29,7 +30,10 @@ function paginate<Item>(
   };
 }
 
-export function createHandlers(store = createMatchStore()) {
+export function createHandlers(
+  store = createMatchStore(),
+  network = createNetworkScenario(),
+) {
   return [
     http.get('*/api/ranking', ({ request }) => {
       const params = new URL(request.url).searchParams;
@@ -41,23 +45,25 @@ export function createHandlers(store = createMatchStore()) {
       if (!page || !configuration) {
         return invalidRequest();
       }
-      const entries = store
-        .list()
-        .filter(
-          (record) =>
-            record.configuration.sessionDuration ===
-              configuration.sessionDuration &&
-            record.configuration.enemySpawnInterval ===
-              configuration.enemySpawnInterval,
-        )
-        .sort(
-          (a, b) =>
-            b.score - a.score ||
-            Date.parse(a.completedAt) - Date.parse(b.completedAt) ||
-            a.id.localeCompare(b.id),
-        )
-        .map((record, index) => ({ ...record, rank: index + 1 }));
-      return HttpResponse.json(paginate(entries, page));
+      return network.respond('ranking', { page: page.page }, () => {
+        const entries = network
+          .list(store.list())
+          .filter(
+            (record) =>
+              record.configuration.sessionDuration ===
+                configuration.sessionDuration &&
+              record.configuration.enemySpawnInterval ===
+                configuration.enemySpawnInterval,
+          )
+          .sort(
+            (a, b) =>
+              b.score - a.score ||
+              Date.parse(a.completedAt) - Date.parse(b.completedAt) ||
+              a.id.localeCompare(b.id),
+          )
+          .map((record, index) => ({ ...record, rank: index + 1 }));
+        return HttpResponse.json(paginate(entries, page));
+      });
     }),
     http.get('*/api/matches', ({ request }) => {
       const params = new URL(request.url).searchParams;
@@ -66,15 +72,17 @@ export function createHandlers(store = createMatchStore()) {
       if (!page || !playerId?.trim()) {
         return invalidRequest();
       }
-      const records = store
-        .list()
-        .filter((record) => record.player.id === playerId)
-        .sort(
-          (a, b) =>
-            Date.parse(b.completedAt) - Date.parse(a.completedAt) ||
-            a.id.localeCompare(b.id),
-        );
-      return HttpResponse.json(paginate(records, page));
+      return network.respond('history', { page: page.page }, () => {
+        const records = network
+          .list(store.list())
+          .filter((record) => record.player.id === playerId)
+          .sort(
+            (a, b) =>
+              Date.parse(b.completedAt) - Date.parse(a.completedAt) ||
+              a.id.localeCompare(b.id),
+          );
+        return HttpResponse.json(paginate(records, page));
+      });
     }),
     http.post<
       Record<string, string>,
@@ -91,19 +99,25 @@ export function createHandlers(store = createMatchStore()) {
       if (!record) {
         return invalidRequest();
       }
-      try {
-        return HttpResponse.json<RegisterMatchResponse>({
-          match: store.register(record),
-        });
-      } catch {
-        return HttpResponse.json<ApiErrorResponse>(
-          {
-            code: 'STORE_UNAVAILABLE',
-            message: 'Could not save the match. Try again.',
-          },
-          { status: 503 },
-        );
-      }
+      return network.respond(
+        'registration',
+        { alreadyAccepted: store.has(record.id) },
+        () => {
+          try {
+            return HttpResponse.json<RegisterMatchResponse>({
+              match: store.register(record),
+            });
+          } catch {
+            return HttpResponse.json<ApiErrorResponse>(
+              {
+                code: 'STORE_UNAVAILABLE',
+                message: 'Could not save the match. Try again.',
+              },
+              { status: 503 },
+            );
+          }
+        },
+      );
     }),
   ];
 }

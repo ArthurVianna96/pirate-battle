@@ -21,5 +21,10 @@ export function useRegisterMatch() {
     void queue.retryAll();
   }, [queue]);
 
-  return { ...snapshot, submit: queue.submit, retryAll: queue.retryAll };
+  return {
+    ...snapshot,
+    submit: queue.submit,
+    retryAll: queue.retryAll,
+    clear: queue.clear,
+  };
 }

@@ -15,6 +15,7 @@ import { loadPlayer } from './storage/player';
 import type { MatchRecord } from './api/contracts';
 import { useRegisterMatch } from './hooks/useRegisterMatch';
 import { PendingRegistrations } from './components/shared/PendingRegistrations';
+import { NetworkControls } from './components/shared/NetworkControls';
 
 type Screen =
   | { kind: 'menu' }
@@ -129,14 +130,22 @@ export function App() {
         onPlay={startGame}
         onOptions={openOptions}
         registrationNotice={
-          <PendingRegistrations
-            count={registration.pending.length}
-            sending={registration.pending.some(
-              (record) => registration.statuses[record.id] === 'pending',
-            )}
-            storageFailed={registration.storageFailed}
-            onRetry={() => void registration.retryAll()}
-          />
+          <>
+            <PendingRegistrations
+              count={registration.pending.length}
+              sending={registration.pending.some(
+                (record) => registration.statuses[record.id] === 'pending',
+              )}
+              storageFailed={registration.storageFailed}
+              onRetry={() => void registration.retryAll()}
+            />
+            <NetworkControls
+              sending={registration.pending.some(
+                (record) => registration.statuses[record.id] === 'pending',
+              )}
+              onResetPending={registration.clear}
+            />
+          </>
         }
       />
     );

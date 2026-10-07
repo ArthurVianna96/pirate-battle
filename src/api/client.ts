@@ -1,6 +1,6 @@
 import axios, { type InternalAxiosRequestConfig } from 'axios';
 
-export const HTTP_CONFIG = { timeout: 8_000 } as const;
+import { HTTP_CONFIG } from './config';
 
 export const apiClient = axios.create({
   baseURL: '/api',

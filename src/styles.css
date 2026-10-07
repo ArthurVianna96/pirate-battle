@@ -267,6 +267,37 @@ h2 {
   min-height: 48px;
   font-size: 0.8rem;
 }
+.network-controls {
+  font-size: 0.8rem;
+  color: #bfced3;
+}
+.network-controls summary {
+  cursor: pointer;
+  padding: 8px;
+}
+.network-controls[open] {
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+}
+.network-controls select {
+  width: min(100%, 300px);
+  padding: 10px;
+  border: 1px solid #b39435;
+  border-radius: 6px;
+  color: #ffeac0;
+  background: #10222e;
+  font: inherit;
+}
+.network-controls button {
+  min-height: 48px;
+  font-size: 0.8rem;
+}
+.network-controls select:focus-visible,
+.network-controls summary:focus-visible {
+  outline: 3px solid #fff2c8;
+  outline-offset: 3px;
+}
 @media (max-width: 600px) {
   .menu.main-menu {
     padding: 2px 0 0;
