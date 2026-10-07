@@ -127,21 +127,30 @@ export function GameCanvas({
 
   return (
     <>
-      <p aria-live="polite">Score: {score}</p>
-      <p aria-live="polite">
-        Health: {health}/{COMBAT_CONFIG.playerHealth}
-      </p>
-      <p>Time: {remainingSeconds}s</p>
-      <button
-        ref={pauseButtonRef}
-        onClick={togglePause}
-        disabled={status !== 'ready'}
-      >
-        {paused ? 'Resume' : 'Pause'}
-      </button>
+      <div className="hud">
+        <p className="hud-counter score-counter" aria-live="polite">
+          Score: {score}
+        </p>
+        <p className="hud-counter health-counter" aria-live="polite">
+          Health: {health}/{COMBAT_CONFIG.playerHealth}
+        </p>
+        <p className="hud-counter time-counter">Time: {remainingSeconds}s</p>
+        <button
+          ref={pauseButtonRef}
+          onClick={togglePause}
+          disabled={status !== 'ready'}
+        >
+          {paused ? 'Resume' : 'Pause'}
+        </button>
+      </div>
       <div ref={hostRef} className="arena" />
-      {paused && <p role="status">Game paused. Select Resume to continue.</p>}
-      <p>
+      {paused && (
+        <div className="pause-notice">
+          <h2>Paused</h2>
+          <p role="status">Game paused. Select Resume to continue.</p>
+        </div>
+      )}
+      <p className="controls-help">
         Hold W or ↑ to move forward. A/D or ←/→ to turn. Space to fire forward.
         Q/E to fire left/right.
       </p>
