@@ -49,7 +49,7 @@ test('the result renders and Main Menu restores keyboard focus', async ({
   await page.getByRole('button', { name: 'Play', exact: true }).click();
   await expect(page.getByRole('status')).toHaveCount(0);
   await page.clock.pauseAt(new Date('2026-01-01T00:00:10Z'));
-  await page.clock.runFor(9000);
+  await page.clock.runFor(10_000);
   const result = page.getByRole('region', { name: 'Match result' });
   await expect(result).toBeVisible();
   await expect(result.getByText('Score: 0', { exact: true })).toBeVisible();

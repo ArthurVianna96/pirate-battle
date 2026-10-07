@@ -5,8 +5,17 @@ import type { EnemyKind, MovingEnemyState } from '../mechanics/combat';
 import type { ShooterState } from '../mechanics/shooter';
 import type { PlayerState } from '../mechanics/simulation';
 
+export interface ShipTextures {
+  healthy: Texture;
+  damaged: Texture;
+  critical: Texture;
+}
+
 export interface ArenaAssets {
-  playerShip: Texture;
+  playerShip: ShipTextures;
+  chaser: ShipTextures;
+  shooter: ShipTextures;
+  fire: Texture[];
   water: Texture;
   island: Texture[];
   projectile: Texture;
@@ -19,6 +28,8 @@ export interface ArenaView {
   obstacles: Obstacle[];
   projectileTexture: Texture;
   explosionTextures: Texture[];
+  playerShipTextures: ShipTextures;
+  fireTextures: Texture[];
   enemies: EnemyView[];
   spawnEnemy: (kind: EnemyKind, position: PlayerState) => void;
 }
@@ -45,5 +56,7 @@ export interface IslandOptions extends ArenaSize {
 
 export interface EnemyOptions extends ArenaSize {
   ship: Sprite;
+  shipTextures: ShipTextures;
   arena: Container;
+  fire: Texture[];
 }

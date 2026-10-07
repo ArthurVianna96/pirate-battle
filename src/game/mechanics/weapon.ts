@@ -128,6 +128,7 @@ export function updateWeapon(
   arenaSize: { width: number; height: number },
   obstacles: readonly Obstacle[] = [],
   enemies: readonly EnemyState[] = [],
+  onImpact?: (position: { x: number; y: number }) => void,
 ) {
   weapon.cooldown = Math.max(0, weapon.cooldown - deltaSeconds);
   weapon.leftCooldown = Math.max(0, weapon.leftCooldown - deltaSeconds);
@@ -139,6 +140,7 @@ export function updateWeapon(
       deltaSeconds,
       obstacles,
       enemies,
+      onImpact,
     );
     if (isDestroyed) {
       destroyedEnemies++;
@@ -155,11 +157,13 @@ function updateProjectile(
   deltaSeconds: number,
   obstacles: readonly Obstacle[],
   enemies: readonly EnemyState[],
+  onImpact?: (position: { x: number; y: number }) => void,
 ): { isDestroyed: boolean } {
   const previousPosition = advanceProjectile(
     projectile,
     deltaSeconds,
     obstacles,
+    onImpact,
   );
   if (!previousPosition) return { isDestroyed: false };
   for (const enemy of enemies) {
@@ -174,6 +178,7 @@ function updateProjectile(
     ) {
       const { isDestroyed } = damageEnemy(enemy, projectile.damage);
       projectile.remainingLife = 0;
+      onImpact?.(projectile);
       return { isDestroyed };
     }
   }
@@ -184,6 +189,7 @@ export function advanceProjectile(
   projectile: ProjectileState,
   deltaSeconds: number,
   obstacles: readonly Obstacle[],
+  onImpact?: (position: { x: number; y: number }) => void,
 ) {
   if (projectile.remainingLife <= 0) return undefined;
   const previousPosition = { x: projectile.x, y: projectile.y };
@@ -202,6 +208,7 @@ export function advanceProjectile(
     )
   ) {
     projectile.remainingLife = 0;
+    onImpact?.(projectile);
     return undefined;
   }
   return previousPosition;

@@ -92,7 +92,7 @@ test('completion shows a frozen result and Play Again creates a fresh match', as
   await page.clock.runFor(1000);
   await expect(page.getByText('Time: 59s', { exact: true })).toBeVisible();
   await expect(page.getByText('Score: 1', { exact: true })).toBeVisible();
-  await page.clock.runFor(8000);
+  await page.clock.runFor(9000);
   await expect(
     page.getByRole('region', { name: 'Match result' }),
   ).toBeVisible();

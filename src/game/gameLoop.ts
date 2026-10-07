@@ -1,5 +1,7 @@
 import type { Application, Ticker } from 'pixi.js';
-import { createExplosion } from './arena/explosions';
+import { createExplosion, EXPLOSION_CONFIG } from './arena/explosions';
+import { createCombatEffects } from './arena/combatEffects';
+import { createShipAppearance } from './arena/shipAppearance';
 import { createHealthBar } from './arena/healthBar';
 import { createProjectile } from './arena/projectiles';
 import type { ArenaView } from './arena/types';
@@ -80,6 +82,16 @@ export function startGameLoop(
   );
   const playerHealth = createHealthBar(arena.container, ship.height);
   const explosions = createExplosion(arena.container, arena.explosionTextures);
+  const effects = createCombatEffects(
+    arena.container,
+    arena.explosionTextures[0],
+  );
+  const playerAppearance = createShipAppearance(
+    arena.container,
+    ship,
+    arena.playerShipTextures,
+    arena.fireTextures,
+  );
 
   const player = createPlayerState({
     x: ship.x,
@@ -91,11 +103,20 @@ export function startGameLoop(
   const world = { shipSize, arenaSize, obstacles };
   let score = 0;
   let displayedSeconds = match.duration;
+  let pendingResult: MatchResult | undefined;
+  let endingAnimationRemaining = 0;
 
   function update(ticker: Ticker) {
     if (match.paused) return;
     explosions.update(ticker.deltaMS / 1000);
+    effects.update(ticker.deltaMS / 1000);
     if (match.endReason) {
+      endingAnimationRemaining -= ticker.deltaMS / 1000;
+      if (pendingResult && endingAnimationRemaining <= 0) {
+        const result = pendingResult;
+        pendingResult = undefined;
+        onMatchEnd(result);
+      }
       return;
     }
 
@@ -107,7 +128,7 @@ export function startGameLoop(
     updateEnemyAttacks(deltaSeconds);
     updateContacts();
     removeDestroyedEnemies();
-    syncViews();
+    syncViews(deltaSeconds);
     updateMatchStatus();
   }
 
@@ -120,7 +141,14 @@ export function startGameLoop(
     const endReason = finishMatchIfNeeded(match, player.health);
     if (endReason) {
       keyboard.destroy();
-      onMatchEnd(createMatchResult(match, score));
+      const result = createMatchResult(match, score);
+      if (endReason === 'death') {
+        ship.visible = false;
+        playerHealth.bar.visible = false;
+        explosions.play(player);
+        pendingResult = result;
+        endingAnimationRemaining = EXPLOSION_CONFIG.duration;
+      } else onMatchEnd(result);
     }
   }
 
@@ -161,6 +189,7 @@ export function startGameLoop(
       arenaSize,
       obstacles,
       arena.enemies.map(({ state }) => state),
+      effects.impact,
     );
     updateScore(destroyedEnemies);
   }
@@ -169,19 +198,30 @@ export function startGameLoop(
     const previousHealth = player.health;
     for (const enemy of arena.enemies) {
       if (enemy.kind === 'shooter') {
+        const shotCount = enemyProjectilesState.projectiles.length;
         updateShooterAttack(
           enemy.state,
           player,
           deltaSeconds,
           enemyProjectilesState,
         );
+        enemyProjectilesState.projectiles
+          .slice(shotCount)
+          .forEach(effects.shot);
       }
     }
-    updateEnemyProjectiles(enemyProjectilesState, deltaSeconds, player, world);
+    updateEnemyProjectiles(
+      enemyProjectilesState,
+      deltaSeconds,
+      player,
+      world,
+      effects.impact,
+    );
     if (player.health !== previousHealth) onHealthChange(player.health);
   }
 
   function fireWeapons() {
+    const shotCount = player.weapon.projectiles.length;
     if (keyboard.input.shootFront) {
       fireFront(player.weapon, player);
     }
@@ -191,6 +231,7 @@ export function startGameLoop(
     if (keyboard.input.shootRight) {
       fireSide(player.weapon, player, 'right');
     }
+    player.weapon.projectiles.slice(shotCount).forEach(effects.shot);
   }
 
   function updateScore(destroyedEnemies: number) {
@@ -205,7 +246,10 @@ export function startGameLoop(
     for (const { kind, state } of arena.enemies) {
       if (kind === 'chaser') resolveChaserImpact(state, player, shipSize);
     }
-    if (player.health !== previousHealth) onHealthChange(player.health);
+    if (player.health !== previousHealth) {
+      effects.impact(player);
+      onHealthChange(player.health);
+    }
   }
 
   function removeDestroyedEnemies() {
@@ -217,9 +261,10 @@ export function startGameLoop(
     });
   }
 
-  function syncViews() {
+  function syncViews(deltaSeconds: number) {
     syncPlayer();
-    for (const { renderer } of arena.enemies) renderer.sync();
+    playerAppearance.update(player.health, player.maxHealth, deltaSeconds);
+    for (const { renderer } of arena.enemies) renderer.sync(deltaSeconds);
     playerProjectiles.sync(player.weapon.projectiles);
     enemyProjectiles.sync(enemyProjectilesState.projectiles);
   }
@@ -252,6 +297,8 @@ export function startGameLoop(
     arena.enemies.forEach(({ renderer }) => renderer.destroy());
     playerHealth.bar.destroy({ children: true });
     explosions.destroy();
+    effects.destroy();
+    playerAppearance.destroy();
   }
 
   return {

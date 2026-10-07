@@ -4,7 +4,7 @@ import { createEnemy } from './enemies';
 import type { EnemyOptions, EnemyView } from './types';
 
 export function renderShooter(
-  { ship, width, height, arena }: EnemyOptions,
+  { ship, width, height, arena, shipTextures, fire }: EnemyOptions,
   position: PlayerState = {
     x: width * 0.85,
     y: height * 0.85,
@@ -18,9 +18,10 @@ export function renderShooter(
     height: ship.height,
   });
   shooter.position.heading = position.heading;
-  const renderer = createEnemy(arena, ship.texture, shooter, {
+  const renderer = createEnemy(arena, shipTextures.healthy, shooter, {
+    shipTextures,
+    fire,
     position: shooter.position,
-    tint: 0x88bbff,
   });
   renderer.sync();
   return { kind: 'shooter', state: shooter, renderer };

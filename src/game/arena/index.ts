@@ -16,7 +16,11 @@ export function createArena(
 ): ArenaView {
   const arena = new Container();
   const water = new TilingSprite({ texture: textures.water, width, height });
-  const ship = renderPlayer({ texture: textures.playerShip, width, height });
+  const ship = renderPlayer({
+    texture: textures.playerShip.healthy,
+    width,
+    height,
+  });
   const { island, obstacles } = renderIsland({
     texture: textures.island,
     width,
@@ -24,13 +28,25 @@ export function createArena(
   });
 
   arena.addChild(water, island, ship);
-  const enemyOptions = { ship, width, height, arena };
+  const enemyOptions = {
+    ship,
+    width,
+    height,
+    arena,
+    fire: textures.fire,
+  };
 
   function spawnEnemy(kind: EnemyKind, position: PlayerState) {
     const enemy =
       kind === 'chaser'
-        ? renderChaser(enemyOptions, position)
-        : renderShooter(enemyOptions, position);
+        ? renderChaser(
+            { ...enemyOptions, shipTextures: textures.chaser },
+            position,
+          )
+        : renderShooter(
+            { ...enemyOptions, shipTextures: textures.shooter },
+            position,
+          );
     view.enemies.push(enemy);
   }
 
@@ -40,7 +56,12 @@ export function createArena(
     obstacles,
     projectileTexture: textures.projectile,
     explosionTextures: textures.explosion,
-    enemies: [renderChaser(enemyOptions), renderShooter(enemyOptions)],
+    playerShipTextures: textures.playerShip,
+    fireTextures: textures.fire,
+    enemies: [
+      renderChaser({ ...enemyOptions, shipTextures: textures.chaser }),
+      renderShooter({ ...enemyOptions, shipTextures: textures.shooter }),
+    ],
     spawnEnemy,
   };
   return view;

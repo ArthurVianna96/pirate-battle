@@ -32,6 +32,7 @@ export function updateEnemyProjectiles(
   deltaSeconds: number,
   player: PlayerCombatState,
   { arenaSize, shipSize, obstacles }: MovementWorld,
+  onImpact?: (position: { x: number; y: number }) => void,
 ) {
   const playerBounds = getShipBounds(player, shipSize);
   for (const projectile of projectiles.projectiles) {
@@ -39,6 +40,7 @@ export function updateEnemyProjectiles(
       projectile,
       deltaSeconds,
       obstacles,
+      onImpact,
     );
     if (!previousPosition || player.health === 0) continue;
     if (
@@ -51,6 +53,7 @@ export function updateEnemyProjectiles(
     ) {
       player.health = Math.max(0, player.health - projectile.damage);
       projectile.remainingLife = 0;
+      onImpact?.(projectile);
     }
   }
   projectiles.projectiles = projectiles.projectiles.filter((projectile) =>

@@ -1,3 +1,5 @@
+import type { ShipTextures } from './types';
+import { createShipAppearance } from './shipAppearance';
 import { Container, Sprite, type Texture } from 'pixi.js';
 import type { EnemyState } from '../mechanics/combat';
 import type { PlayerState } from '../mechanics/simulation';
@@ -7,12 +9,17 @@ export function createEnemy(
   parent: Container,
   texture: Texture,
   enemy: EnemyState,
-  options: { position?: PlayerState; tint?: number } = {},
+  options: {
+    position?: PlayerState;
+    tint?: number;
+    shipTextures: ShipTextures;
+    fire: Texture[];
+  },
 ) {
   const ship = new Sprite({
     texture,
     anchor: 0.5,
-    tint: options.tint ?? 0xff8888,
+    tint: options.tint ?? 0xffffff,
   });
   const { bounds } = enemy;
 
@@ -22,6 +29,12 @@ export function createEnemy(
 
   const { bar, health } = createHealthBar(group, bounds.height);
   parent.addChild(group);
+  const appearance = createShipAppearance(
+    group,
+    ship,
+    options.shipTextures,
+    options.fire,
+  );
 
   function syncPosition() {
     group.position.set(
@@ -37,7 +50,7 @@ export function createEnemy(
   }
 
   return {
-    sync() {
+    sync(deltaSeconds = 0) {
       if (group.destroyed) return;
       if (enemy.health === 0) {
         group.destroy({ children: true });
@@ -45,6 +58,7 @@ export function createEnemy(
       }
       syncPosition();
       syncHealth();
+      appearance.update(enemy.health, enemy.maxHealth, deltaSeconds);
     },
     destroy() {
       if (!group.destroyed) group.destroy({ children: true });
