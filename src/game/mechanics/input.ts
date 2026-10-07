@@ -20,6 +20,7 @@ export function createKeyboardInput() {
     shootRight: false,
   };
   const pressed = new Set<string>();
+  let enabled = true;
   const gameKeys = new Set([
     'KeyW',
     'ArrowUp',
@@ -43,6 +44,7 @@ export function createKeyboardInput() {
 
   function keyDown(event: KeyboardEvent) {
     if (
+      !enabled ||
       !gameKeys.has(event.code) ||
       event.ctrlKey ||
       event.metaKey ||
@@ -50,12 +52,13 @@ export function createKeyboardInput() {
     )
       return;
     event.preventDefault();
+    if (event.repeat) return;
     pressed.add(event.code);
     syncInput();
   }
 
   function keyUp(event: KeyboardEvent) {
-    if (!gameKeys.has(event.code)) return;
+    if (!enabled || !gameKeys.has(event.code)) return;
     event.preventDefault();
     pressed.delete(event.code);
     syncInput();
@@ -73,7 +76,12 @@ export function createKeyboardInput() {
 
   return {
     input,
+    setEnabled(value: boolean) {
+      enabled = value;
+      reset();
+    },
     destroy() {
+      enabled = false;
       window.removeEventListener('keydown', keyDown);
       window.removeEventListener('keyup', keyUp);
       window.removeEventListener('blur', reset);

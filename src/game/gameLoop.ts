@@ -3,6 +3,7 @@ import { createExplosion } from './arena/explosions';
 import { createHealthBar } from './arena/healthBar';
 import { createProjectile } from './arena/projectiles';
 import type { ArenaView } from './arena/types';
+import { createPauseControls } from './pause';
 import { resolveChaserImpact, updateChaser } from './mechanics/chaser';
 import {
   createEnemyProjectilesState,
@@ -31,6 +32,13 @@ export interface GameLoopCallbacks {
   onHealthChange: (health: number) => void;
   onTimeChange: (remainingSeconds: number) => void;
   onMatchEnd: (reason: MatchEndReason) => void;
+  onPauseChange: (paused: boolean) => void;
+}
+
+export interface GameLoopController {
+  pause: () => void;
+  resume: () => void;
+  destroy: () => void;
 }
 
 export function startGameLoop(
@@ -41,13 +49,21 @@ export function startGameLoop(
     onHealthChange,
     onTimeChange,
     onMatchEnd,
+    onPauseChange,
   }: GameLoopCallbacks,
-): () => void {
+): GameLoopController {
   const { ship, obstacles } = arena;
   const keyboard = createKeyboardInput();
   const enemyProjectilesState = createEnemyProjectilesState();
   const spawner = createSpawnerState();
   const match = createMatchState();
+  const pauseControls = createPauseControls({
+    match,
+    stop: () => app.stop(),
+    start: () => app.start(),
+    setInputEnabled: keyboard.setEnabled,
+    onPauseChange,
+  });
   const playerProjectiles = createProjectile(
     arena.container,
     arena.projectileTexture,
@@ -71,6 +87,7 @@ export function startGameLoop(
   let displayedSeconds = match.duration;
 
   function update(ticker: Ticker) {
+    if (match.paused) return;
     explosions.update(ticker.deltaMS / 1000);
     if (match.endReason) {
       return;
@@ -213,8 +230,10 @@ export function startGameLoop(
 
   app.ticker.add(update);
   app.start();
+  if (document.hidden) pauseControls.pause();
 
-  return () => {
+  function destroy() {
+    pauseControls.destroy();
     app.stop();
     app.ticker.remove(update);
     keyboard.destroy();
@@ -223,5 +242,7 @@ export function startGameLoop(
     arena.enemies.forEach(({ renderer }) => renderer.destroy());
     playerHealth.bar.destroy({ children: true });
     explosions.destroy();
-  };
+  }
+
+  return { pause: pauseControls.pause, resume: pauseControls.resume, destroy };
 }

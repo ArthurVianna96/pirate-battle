@@ -10,6 +10,7 @@ export interface MatchState {
   duration: number;
   remainingSeconds: number;
   endReason: MatchEndReason | null;
+  paused: boolean;
 }
 
 export function createMatchState(
@@ -22,7 +23,24 @@ export function createMatchState(
   ) {
     throw new Error('Match duration must be between 60 and 180 seconds.');
   }
-  return { duration, remainingSeconds: duration, endReason: null };
+  return {
+    duration,
+    remainingSeconds: duration,
+    endReason: null,
+    paused: false,
+  };
+}
+
+export function pauseMatch(match: MatchState): boolean {
+  if (match.endReason || match.paused) return false;
+  match.paused = true;
+  return true;
+}
+
+export function resumeMatch(match: MatchState): boolean {
+  if (match.endReason || !match.paused) return false;
+  match.paused = false;
+  return true;
 }
 
 /** Returns only the time still available for simulation, including a partial final frame. */
@@ -30,7 +48,7 @@ export function advanceMatchClock(
   match: MatchState,
   deltaSeconds: number,
 ): number {
-  if (match.endReason) return 0;
+  if (match.endReason || match.paused) return 0;
   const activeSeconds = Math.min(
     Math.max(0, deltaSeconds),
     match.remainingSeconds,

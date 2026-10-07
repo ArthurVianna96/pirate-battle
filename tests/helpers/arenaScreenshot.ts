@@ -4,6 +4,7 @@ export async function arenaScreenshot(
   page: Page,
   region = { x: 350, y: 0, width: 170, height: 350 },
 ) {
+  await page.locator('canvas').scrollIntoViewIfNeeded();
   const canvas = await page.locator('canvas').boundingBox();
   if (!canvas) throw new Error('Arena canvas is missing.');
   return page.screenshot({

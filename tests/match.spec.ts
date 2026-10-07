@@ -3,7 +3,29 @@ import {
   advanceMatchClock,
   createMatchState,
   finishMatchIfNeeded,
+  pauseMatch,
+  resumeMatch,
 } from '../src/game/mechanics/match';
+
+test('pause freezes match time until explicit resume', () => {
+  const match = createMatchState();
+  advanceMatchClock(match, 1);
+  expect(pauseMatch(match)).toBe(true);
+  expect(pauseMatch(match)).toBe(false);
+  expect(advanceMatchClock(match, 20)).toBe(0);
+  expect(match.remainingSeconds).toBe(59);
+  expect(resumeMatch(match)).toBe(true);
+  expect(resumeMatch(match)).toBe(false);
+  advanceMatchClock(match, 1);
+  expect(match.remainingSeconds).toBe(58);
+});
+
+test('ended matches cannot pause or resume', () => {
+  const match = createMatchState();
+  finishMatchIfNeeded(match, 0);
+  expect(pauseMatch(match)).toBe(false);
+  expect(resumeMatch(match)).toBe(false);
+});
 
 test('match duration defaults to 60 and accepts only the supported range', () => {
   expect(createMatchState().remainingSeconds).toBe(60);

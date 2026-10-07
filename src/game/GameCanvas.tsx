@@ -1,7 +1,11 @@
 import { Application } from 'pixi.js';
 import { useEffect, useRef, useState } from 'react';
 import { createArena, loadArenaAssets } from './arena/index';
-import { startGameLoop, type GameLoopCallbacks } from './gameLoop';
+import {
+  startGameLoop,
+  type GameLoopCallbacks,
+  type GameLoopController,
+} from './gameLoop';
 import { COMBAT_CONFIG } from './mechanics/combat';
 import { MATCH_CONFIG, type MatchEndReason } from './mechanics/match';
 
@@ -22,6 +26,8 @@ function mountArena(
 
 export function GameCanvas() {
   const hostRef = useRef<HTMLDivElement>(null);
+  const gameLoopRef = useRef<GameLoopController | null>(null);
+  const pauseButtonRef = useRef<HTMLButtonElement>(null);
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>(
     'loading',
   );
@@ -32,6 +38,7 @@ export function GameCanvas() {
     MATCH_CONFIG.duration,
   );
   const [endReason, setEndReason] = useState<MatchEndReason | null>(null);
+  const [paused, setPaused] = useState(false);
 
   useEffect(() => {
     const host = hostRef.current;
@@ -40,11 +47,12 @@ export function GameCanvas() {
     const app = new Application();
     let cancelled = false;
     let initialized = false;
-    let stopGameLoop: (() => void) | undefined;
+    let gameLoop: GameLoopController | undefined;
 
     function destroy() {
-      stopGameLoop?.();
-      stopGameLoop = undefined;
+      gameLoop?.destroy();
+      if (gameLoopRef.current === gameLoop) gameLoopRef.current = null;
+      gameLoop = undefined;
       if (!initialized) return;
       initialized = false;
       app.destroy({ removeView: true }, { children: true });
@@ -72,12 +80,17 @@ export function GameCanvas() {
           return;
         }
 
-        stopGameLoop = mountArena(app, host, textures, {
+        gameLoop = mountArena(app, host, textures, {
           onScoreChange: setScore,
           onHealthChange: setHealth,
           onTimeChange: setRemainingSeconds,
           onMatchEnd: setEndReason,
+          onPauseChange(value) {
+            setPaused(value);
+            requestAnimationFrame(() => pauseButtonRef.current?.focus());
+          },
         });
+        gameLoopRef.current = gameLoop;
         setStatus('ready');
       } catch (error) {
         if (initialized) destroy();
@@ -100,6 +113,11 @@ export function GameCanvas() {
     setAttempt((value) => value + 1);
   }
 
+  function togglePause() {
+    if (paused) gameLoopRef.current?.resume();
+    else gameLoopRef.current?.pause();
+  }
+
   return (
     <>
       <p aria-live="polite">Score: {score}</p>
@@ -107,12 +125,20 @@ export function GameCanvas() {
         Health: {health}/{COMBAT_CONFIG.playerHealth}
       </p>
       <p>Time: {remainingSeconds}s</p>
+      <button
+        ref={pauseButtonRef}
+        onClick={togglePause}
+        disabled={status !== 'ready' || endReason !== null}
+      >
+        {paused ? 'Resume' : 'Pause'}
+      </button>
       {endReason && (
         <p role="status">
           {endReason === 'death' ? 'Ship destroyed.' : 'Time expired.'}
         </p>
       )}
       <div ref={hostRef} className="arena" />
+      {paused && <p role="status">Game paused. Select Resume to continue.</p>}
       <p>
         Hold W or ↑ to move forward. A/D or ←/→ to turn. Space to fire forward.
         Q/E to fire left/right.
