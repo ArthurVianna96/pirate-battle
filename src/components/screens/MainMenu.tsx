@@ -1,10 +1,12 @@
-import { useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import titleImage from '../../../assets/png/retina/ui/menu/title_pirate_battle.png';
 import playerImage from '../../../assets/png/default/ships/ship_2.png';
 import type { GameOptions } from '../../game/support/options';
 import { CaptainsLog, type LogTab } from './CaptainsLog';
+import type { useArenaPreload } from '../../hooks/useArenaPreload';
 
 interface MainMenuProps {
+  preload: ReturnType<typeof useArenaPreload>;
   onPlay: () => void;
   onOptions: () => void;
   options: GameOptions;
@@ -14,6 +16,7 @@ interface MainMenuProps {
 }
 
 export function MainMenu({
+  preload,
   onPlay,
   onOptions,
   options,
@@ -22,6 +25,16 @@ export function MainMenu({
   registrationNotice,
 }: MainMenuProps) {
   const [logTab, setLogTab] = useState<LogTab | undefined>();
+  const playButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (
+      preload.status === 'ready' &&
+      document.activeElement === document.body
+    ) {
+      playButtonRef.current?.focus();
+    }
+  }, [preload.status]);
 
   if (logTab) {
     return (
@@ -44,11 +57,32 @@ export function MainMenu({
       </h1>
       <p className="tagline">Set sail. Take command.</p>
       <div className="menu-actions">
-        <button autoFocus onClick={onPlay}>
+        <button
+          autoFocus
+          ref={playButtonRef}
+          disabled={preload.status !== 'ready'}
+          onClick={onPlay}
+        >
           Play
         </button>
         <button onClick={onOptions}>Options</button>
       </div>
+      {preload.status === 'loading' && (
+        <div className="menu-loading" role="status">
+          <label htmlFor="arena-preload">
+            Loading game assets... {Math.round(preload.progress * 100)}%
+          </label>
+          <progress id="arena-preload" max={1} value={preload.progress} />
+        </div>
+      )}
+      {preload.status === 'error' && (
+        <div className="menu-loading" role="alert">
+          <p>Unable to load game assets. Try again.</p>
+          <button className="secondary-button" onClick={preload.retry}>
+            Retry
+          </button>
+        </div>
+      )}
       <img className="menu-ship" src={playerImage} alt="" />
       <p>Navigate the islands. Survive the battle.</p>
       <p className="controls-help">

@@ -1,11 +1,5 @@
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  type MouseEvent,
-} from 'react';
-import { loadArenaAssets } from './game/arena/assets';
+import { useCallback, useRef, useState, type MouseEvent } from 'react';
+import { useArenaPreload } from './hooks/useArenaPreload';
 import { GameCanvas } from './components/game/GameCanvas';
 import type { MatchResult } from './game/mechanics/match';
 import { MatchResultScreen } from './components/screens/MatchResultScreen';
@@ -16,7 +10,7 @@ import {
 } from './game/support/options';
 import { loadOptions, saveOptions } from './storage/options';
 import { MainMenu } from './components/screens/MainMenu';
-import { playInterfaceSound, preloadSounds } from './game/support/audio';
+import { playInterfaceSound } from './game/support/audio';
 import { saveLastResult } from './storage/result';
 import { loadPlayer } from './storage/player';
 import type { MatchRecord } from './api/contracts';
@@ -41,10 +35,7 @@ export function App() {
   const registration = useRegisterMatch();
   const { submit: submitMatch } = registration;
 
-  useEffect(() => {
-    void loadArenaAssets().catch(() => {});
-    preloadSounds();
-  }, []);
+  const arenaPreload = useArenaPreload();
 
   function leaveGame() {
     activeMatch.current = undefined;
@@ -52,6 +43,9 @@ export function App() {
   }
 
   function startGame() {
+    if (arenaPreload.status !== 'ready') {
+      return;
+    }
     const matchOptions = createOptionsSnapshot(options);
     activeMatch.current = { id: crypto.randomUUID(), options: matchOptions };
     playInterfaceSound('game_start');
@@ -136,6 +130,7 @@ export function App() {
     }
     return (
       <MainMenu
+        preload={arenaPreload}
         options={options}
         playerId={player.id}
         playerName={player.name}

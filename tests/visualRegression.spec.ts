@@ -17,6 +17,9 @@ test('menu, stable arena and completed match retain their appearance', async ({
   await page.goto('/?network=success&seed=0');
   await page.clock.pauseAt(new Date('2026-01-01T00:00:10Z'));
   await waitForScreenAssets(page);
+  await expect(
+    page.getByRole('button', { name: 'Play', exact: true }),
+  ).toBeEnabled();
   await expect(page.locator('main')).toHaveScreenshot('main-menu.png');
 
   await page.getByRole('button', { name: 'Play', exact: true }).click();

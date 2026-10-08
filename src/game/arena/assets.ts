@@ -28,7 +28,36 @@ const TERRAIN_ATLAS_CONFIG = {
 } as const;
 let sceneryTextures: ReturnType<typeof createSceneryTextures> | undefined;
 
-export async function loadArenaAssets(): Promise<ArenaAssets> {
+export async function loadArenaAssets(
+  onProgress?: (progress: number) => void,
+): Promise<ArenaAssets> {
+  await Assets.load(
+    [
+      playerShipUrl,
+      playerDamagedUrl,
+      playerCriticalUrl,
+      chaserUrl,
+      chaserDamagedUrl,
+      chaserCriticalUrl,
+      shooterUrl,
+      shooterDamagedUrl,
+      shooterCriticalUrl,
+      projectileUrl,
+      explosion1Url,
+      explosion2Url,
+      explosion3Url,
+      fire1Url,
+      fire2Url,
+      enemyHealthFrameUrl,
+      enemyHealthFillUrl,
+      playerHealthFillUrl,
+      {
+        src: terrainSheetUrl,
+        data: { resolution: TERRAIN_ATLAS_CONFIG.resolution },
+      },
+    ],
+    { onProgress },
+  );
   const [ships, scenery, effects, healthBars] = await Promise.all([
     loadShips(),
     loadScenery(),

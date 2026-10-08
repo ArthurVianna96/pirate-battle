@@ -698,6 +698,17 @@ main.playing {
   aspect-ratio: auto;
 }
 
+.menu-loading {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  font-size: 0.8rem;
+}
+.menu-loading progress {
+  width: min(100%, 240px);
+  accent-color: #ffd47f;
+}
+
 .arena-loading {
   position: absolute;
   inset: 0;

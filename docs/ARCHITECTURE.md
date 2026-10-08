@@ -9,7 +9,7 @@ covers:
 
 `App.tsx` owns navigation, saved options, player identity, and completed-match registration. React renders menus, HUD, controls, and dialogs in `src/components`. Screen components live in `components/screens`; game overlays live in `components/game`; reusable controls live in `components/shared`.
 
-`GameCanvas.tsx` mounts a session through `createGameSession.ts`. App preloads combat textures when the page opens. The session awaits those cached assets, initializes a private Pixi Application, creates the arena, and starts the simulation. A full-screen loading overlay covers the inactive HUD and controls until initialization completes. Its controller exposes pause, resume, input actions, and destroy. Cancellation guards prevent an asynchronous initialization from mounting after React cleanup. Initialization errors expose Retry.
+`GameCanvas.tsx` mounts a session through `createGameSession.ts`. `useArenaPreload` loads combat textures when the page opens, tracks per-asset progress, and exposes readiness and retry to the menu. Play remains disabled until textures are ready. The session awaits those cached assets, initializes a private Pixi Application, creates the arena, and starts the simulation. A full-screen loading overlay covers the inactive HUD and controls until initialization completes. Its controller exposes pause, resume, input actions, and destroy. Cancellation guards prevent an asynchronous initialization from mounting after React cleanup. Initialization errors expose Retry.
 
 The renderer fills the canvas host. World dimensions adapt to the viewport aspect ratio, while HUD and touch controls remain attached to screen edges. Resizing preserves the match and moves ships proportionally into the new bounds.
 
@@ -49,7 +49,7 @@ Manual pause, window blur, and hidden-page events stop the ticker, disable input
 
 Session teardown destroys feedback views, input listeners, pause listeners, ticker callbacks, scene children, and the Application canvas. Projectile views remove inactive sprites and trails. Enemy destruction removes its view group. Textures loaded through Assets remain cached for later matches; sprite destruction preserves shared textures.
 
-App preloads sound files without starting playback. Audio uses a lazily unlocked AudioContext, cached file data and decoded buffers, and per-session channels. Channels track loops and active voices, cap voice count, and invalidate pending playback when stopped or destroyed. A separate interface channel plays menu sounds. Browser audio failures do not prevent gameplay.
+After texture loading completes, `useArenaPreload` starts sound-file preloading without delaying Play or starting playback. Audio uses a lazily unlocked AudioContext, cached file data and decoded buffers, and per-session channels. Channels track loops and active voices, cap voice count, and invalidate pending playback when stopped or destroyed. A separate interface channel plays menu sounds. Browser audio failures do not prevent gameplay.
 
 ## Local persistence
 

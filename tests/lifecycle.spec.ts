@@ -4,6 +4,12 @@ test('textures preload from the menu and slow loading stays visible', async ({
   page,
   context,
 }) => {
+  const soundRequests: string[] = [];
+  context.on('request', (request) => {
+    if (request.resourceType() !== 'script' && request.url().includes('.wav')) {
+      soundRequests.push(request.url());
+    }
+  });
   let releaseAsset!: () => void;
   const assetBlocked = new Promise<void>((resolve) => {
     releaseAsset = resolve;
@@ -23,14 +29,26 @@ test('textures preload from the menu and slow loading stays visible', async ({
   });
   await page.goto('/');
   await textureRequested;
-  await page.getByRole('button', { name: 'Play', exact: true }).click();
-  await expect(page.getByRole('status')).toHaveText('Loading arena...');
-  await expect(page.getByRole('status')).toBeInViewport();
-  await expect(page.locator('canvas')).toHaveCount(0);
   await expect(
-    page.getByRole('button', { name: 'Pause', exact: true }),
+    page.getByRole('button', { name: 'Play', exact: true }),
   ).toBeDisabled();
+  await expect(page.getByRole('status')).toContainText(
+    'Loading game assets...',
+  );
+  await expect(page.getByRole('status')).toBeInViewport();
+  await expect(page.getByRole('progressbar')).toBeVisible();
+  await expect
+    .poll(async () =>
+      Number(await page.getByRole('progressbar').getAttribute('value')),
+    )
+    .toBeGreaterThan(0);
+  expect(soundRequests).toEqual([]);
+  await expect(page.locator('canvas')).toHaveCount(0);
   releaseAsset();
+  await expect(
+    page.getByRole('button', { name: 'Play', exact: true }),
+  ).toBeEnabled();
+  await page.getByRole('button', { name: 'Play', exact: true }).click();
   await expect(page.locator('canvas')).toHaveCount(1);
   await expect(page.getByRole('status')).toHaveCount(0);
 });
@@ -76,7 +94,6 @@ for (const asset of ['ship_1.png', 'tiles_vector.svg']) {
         : route.abort(),
     );
     await page.goto('/');
-    await page.getByRole('button', { name: 'Play', exact: true }).click();
     await expect(page.getByRole('alert')).toContainText(
       'Unable to load game assets',
     );
@@ -85,6 +102,7 @@ for (const asset of ['ship_1.png', 'tiles_vector.svg']) {
     await context.unroute(`**/${asset}*`);
     await page.getByRole('button', { name: 'Retry' }).click();
     await expect(page.getByRole('alert')).toHaveCount(0);
+    await page.getByRole('button', { name: 'Play', exact: true }).click();
     await expect(page.locator('canvas')).toHaveCount(1, { timeout: 15_000 });
     await expect(page.getByRole('status')).toHaveCount(0);
     await page
