@@ -8,4 +8,10 @@ test-results/
 package-lock.json
 public/mockServiceWorker.js
 *.md
+!docs/*.md
+!README.md
 !profiling/report.md
+
+reports/
+
+docs/CHALLENGE_INSTRUCTIONS.md

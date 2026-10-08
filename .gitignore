@@ -19,9 +19,12 @@ dist/
 skills-lock.json
 
 *.md
+!/docs/*.md
+!/README.md
 !/profiling/report.md
 
 # Playwright artifacts
 /playwright-report/
 /test-results/
 /public/mockServiceWorker.js
+.vercel/
