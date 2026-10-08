@@ -14,16 +14,19 @@ import fire2Url from '../../../assets/png/default/effects/fire_2.png';
 import { Assets, Rectangle, Texture } from 'pixi.js';
 import projectileUrl from '../../../assets/png/default/ship_parts/cannon_ball.png';
 import playerShipUrl from '../../../assets/png/default/ships/ship_1.png';
-import terrainSheetUrl from '../../../assets/tilesheet/tiles_sheet_retina.png';
-import palmUrl from '../../../assets/png/default/tiles/tile_71.png';
-import rockUrl from '../../../assets/png/default/tiles/tile_66.png';
-import waterUrl from '../../../assets/png/default/tiles/tile_73.png';
+import terrainSheetUrl from '../../../assets/vector/tiles_vector.svg';
 import type { ArenaAssets, IslandTextures, ShipTextures } from './types';
 import explosion1Url from '../../../assets/png/default/effects/explosion_1.png';
 import explosion2Url from '../../../assets/png/default/effects/explosion_2.png';
 import explosion3Url from '../../../assets/png/default/effects/explosion_3.png';
 
-let islandTextures: IslandTextures | undefined;
+const TERRAIN_ATLAS_CONFIG = {
+  tileSize: 64,
+  gap: 10,
+  resolution: 2,
+  frameInset: 0.25,
+} as const;
+let sceneryTextures: ReturnType<typeof createSceneryTextures> | undefined;
 
 export async function loadArenaAssets(): Promise<ArenaAssets> {
   const [ships, scenery, effects, healthBars] = await Promise.all([
@@ -45,34 +48,60 @@ async function loadShips() {
 }
 
 async function loadScenery() {
-  const [water, island, decorations] = await Promise.all([
-    Assets.load<Texture>(waterUrl),
-    loadIslandTextures(),
-    loadTextures([palmUrl, rockUrl]),
-  ]);
-  return { water, island, decorations };
-}
-
-async function loadIslandTextures(): Promise<IslandTextures> {
   const sheet = await Assets.load<Texture>({
     src: terrainSheetUrl,
-    data: { resolution: 2 },
+    data: { resolution: TERRAIN_ATLAS_CONFIG.resolution },
   });
-  islandTextures ??= {
-    sand: new Texture({
-      source: sheet.source,
-      frame: new Rectangle(0.25, 0.25, 191.5, 191.5),
-    }),
-    grass: new Texture({
-      source: sheet.source,
-      frame: new Rectangle(384.25, 64.25, 127.5, 127.5),
-    }),
-    shoreline: new Texture({
-      source: sheet.source,
-      frame: new Rectangle(576.25, 0.25, 191.5, 191.5),
-    }),
+  sceneryTextures ??= createSceneryTextures(sheet);
+  return sceneryTextures;
+}
+
+function createSceneryTextures(sheet: Texture) {
+  const land = createTileGrid(sheet, 418, 44, 4, 4);
+  const island: IslandTextures = {
+    land,
   };
-  return islandTextures;
+  return {
+    water: createTileTexture(sheet, 639, 340, 65),
+    island,
+    decorations: [
+      createTileTexture(sheet, 492, 340),
+      createTileTexture(sheet, 122, 340),
+    ],
+  };
+}
+
+function createTileGrid(
+  sheet: Texture,
+  x: number,
+  y: number,
+  columns: number,
+  rows: number,
+) {
+  const stride = TERRAIN_ATLAS_CONFIG.tileSize + TERRAIN_ATLAS_CONFIG.gap;
+  return Array.from({ length: rows }, (_, row) =>
+    Array.from({ length: columns }, (_, column) =>
+      createTileTexture(sheet, x + column * stride, y + row * stride),
+    ),
+  );
+}
+
+function createTileTexture(
+  sheet: Texture,
+  x: number,
+  y: number,
+  width: number = TERRAIN_ATLAS_CONFIG.tileSize,
+) {
+  const { frameInset, tileSize } = TERRAIN_ATLAS_CONFIG;
+  return new Texture({
+    source: sheet.source,
+    frame: new Rectangle(
+      x + frameInset,
+      y + frameInset,
+      width - frameInset * 2,
+      tileSize - frameInset * 2,
+    ),
+  });
 }
 
 async function loadEffects() {

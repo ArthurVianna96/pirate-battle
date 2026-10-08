@@ -30,7 +30,7 @@ test('entering and leaving creates a single canvas without errors', async ({
   expect(errors).toEqual([]);
 });
 
-for (const asset of ['ship_1.png', 'tile_73.png']) {
+for (const asset of ['ship_1.png', 'tiles_vector.svg']) {
   test(`${asset} loading failure can be retried`, async ({
     page,
     context,

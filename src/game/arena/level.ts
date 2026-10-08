@@ -15,11 +15,6 @@ export interface IslandLayout {
 
 export const ISLAND_CONFIG = {
   tileSize: 64,
-  grassCoverage: 0.65,
-  grassCornerRadius: 24,
-  shorelinePadding: 32,
-  shorelineTint: 0xc9eadb,
-  shorelineOpacity: 1,
 } as const;
 
 export function createIslandLayout(
@@ -27,7 +22,7 @@ export function createIslandLayout(
   height: number,
 ): IslandLayout[] {
   return [
-    createLand(width / 4 - 96, height / 2 - 224, 3, 5, [
+    createLand(32, height / 2 - 224, 3, 5, [
       { kind: 'palm', x: 0.5, y: 0.3 },
       { kind: 'rock', x: 0.65, y: 0.58 },
       { kind: 'palm', x: 0.38, y: 0.8 },

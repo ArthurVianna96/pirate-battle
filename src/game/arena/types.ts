@@ -17,9 +17,7 @@ export interface HealthBarTextures {
 }
 
 export interface IslandTextures {
-  sand: Texture;
-  grass: Texture;
-  shoreline: Texture;
+  land: Texture[][];
 }
 
 export interface ArenaAssets {
