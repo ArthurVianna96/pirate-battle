@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { Texture } from 'pixi.js';
+import { Texture, TextureSource } from 'pixi.js';
 import { createIslandLayout } from '../src/game/arena/level';
 import { renderIsland } from '../src/game/arena/island';
 import { overlapsObstacle } from '../src/game/mechanics/collisions';
@@ -13,7 +13,17 @@ test('terrain sprites and collision bounds share the island layout', () => {
   const layout = createIslandLayout(arena.width, arena.height);
   const terrain = renderIsland({
     ...arena,
-    texture: Array.from({ length: 9 }, () => Texture.WHITE),
+    texture: {
+      sand: new Texture({
+        source: new TextureSource({ width: 256, height: 256 }),
+      }),
+      grass: new Texture({
+        source: new TextureSource({ width: 128, height: 128 }),
+      }),
+      shoreline: new Texture({
+        source: new TextureSource({ width: 192, height: 192 }),
+      }),
+    },
     decorations: [Texture.WHITE, Texture.WHITE],
   });
   expect(terrain.obstacles).toEqual(layout.map(({ bounds }) => bounds));
@@ -22,9 +32,7 @@ test('terrain sprites and collision bounds share the island layout', () => {
     const rendered = terrain.island.children[index];
     expect(rendered.position.x).toBe(land.bounds.x);
     expect(rendered.position.y).toBe(land.bounds.y);
-    expect(rendered.children).toHaveLength(
-      land.columns * land.rows + land.decorations.length,
-    );
+    expect(rendered.children).toHaveLength(4 + land.decorations.length);
   });
   terrain.island.destroy({ children: true });
 });

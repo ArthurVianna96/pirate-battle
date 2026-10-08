@@ -11,37 +11,19 @@ import shooterDamagedUrl from '../../../assets/png/default/ships/ship_11.png';
 import shooterCriticalUrl from '../../../assets/png/default/ships/ship_17.png';
 import fire1Url from '../../../assets/png/default/effects/fire_1.png';
 import fire2Url from '../../../assets/png/default/effects/fire_2.png';
-import { Assets, type Texture } from 'pixi.js';
+import { Assets, Rectangle, Texture } from 'pixi.js';
 import projectileUrl from '../../../assets/png/default/ship_parts/cannon_ball.png';
 import playerShipUrl from '../../../assets/png/default/ships/ship_1.png';
-import islandTopLeftUrl from '../../../assets/png/default/tiles/tile_6.png';
-import islandTopUrl from '../../../assets/png/default/tiles/tile_7.png';
-import islandTopRightUrl from '../../../assets/png/default/tiles/tile_9.png';
-import islandLeftUrl from '../../../assets/png/default/tiles/tile_22.png';
-import islandCenterUrl from '../../../assets/png/default/tiles/tile_23.png';
-import islandRightUrl from '../../../assets/png/default/tiles/tile_25.png';
-import islandBottomLeftUrl from '../../../assets/png/default/tiles/tile_54.png';
-import islandBottomUrl from '../../../assets/png/default/tiles/tile_55.png';
-import islandBottomRightUrl from '../../../assets/png/default/tiles/tile_57.png';
+import terrainSheetUrl from '../../../assets/tilesheet/tiles_sheet_retina.png';
 import palmUrl from '../../../assets/png/default/tiles/tile_71.png';
 import rockUrl from '../../../assets/png/default/tiles/tile_66.png';
 import waterUrl from '../../../assets/png/default/tiles/tile_73.png';
-import type { ArenaAssets, ShipTextures } from './types';
+import type { ArenaAssets, IslandTextures, ShipTextures } from './types';
 import explosion1Url from '../../../assets/png/default/effects/explosion_1.png';
 import explosion2Url from '../../../assets/png/default/effects/explosion_2.png';
 import explosion3Url from '../../../assets/png/default/effects/explosion_3.png';
 
-const islandTileUrls = [
-  islandTopLeftUrl,
-  islandTopUrl,
-  islandTopRightUrl,
-  islandLeftUrl,
-  islandCenterUrl,
-  islandRightUrl,
-  islandBottomLeftUrl,
-  islandBottomUrl,
-  islandBottomRightUrl,
-];
+let islandTextures: IslandTextures | undefined;
 
 export async function loadArenaAssets(): Promise<ArenaAssets> {
   const [ships, scenery, effects, healthBars] = await Promise.all([
@@ -65,10 +47,32 @@ async function loadShips() {
 async function loadScenery() {
   const [water, island, decorations] = await Promise.all([
     Assets.load<Texture>(waterUrl),
-    loadTextures(islandTileUrls),
+    loadIslandTextures(),
     loadTextures([palmUrl, rockUrl]),
   ]);
   return { water, island, decorations };
+}
+
+async function loadIslandTextures(): Promise<IslandTextures> {
+  const sheet = await Assets.load<Texture>({
+    src: terrainSheetUrl,
+    data: { resolution: 2 },
+  });
+  islandTextures ??= {
+    sand: new Texture({
+      source: sheet.source,
+      frame: new Rectangle(0.25, 0.25, 191.5, 191.5),
+    }),
+    grass: new Texture({
+      source: sheet.source,
+      frame: new Rectangle(384.25, 64.25, 127.5, 127.5),
+    }),
+    shoreline: new Texture({
+      source: sheet.source,
+      frame: new Rectangle(576.25, 0.25, 191.5, 191.5),
+    }),
+  };
+  return islandTextures;
 }
 
 async function loadEffects() {

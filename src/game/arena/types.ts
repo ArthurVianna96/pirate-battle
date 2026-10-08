@@ -16,6 +16,12 @@ export interface HealthBarTextures {
   fill: Texture;
 }
 
+export interface IslandTextures {
+  sand: Texture;
+  grass: Texture;
+  shoreline: Texture;
+}
+
 export interface ArenaAssets {
   enemyHealth: HealthBarTextures;
   playerHealth: HealthBarTextures;
@@ -24,7 +30,7 @@ export interface ArenaAssets {
   shooter: ShipTextures;
   fire: Texture[];
   water: Texture;
-  island: Texture[];
+  island: IslandTextures;
   decorations: Texture[];
   projectile: Texture;
   explosion: Texture[];
@@ -62,7 +68,7 @@ export interface PlayerOptions extends ArenaSize {
 }
 
 export interface IslandOptions extends ArenaSize {
-  texture: Texture[];
+  texture: IslandTextures;
   decorations: Texture[];
 }
 

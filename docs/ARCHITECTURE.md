@@ -33,7 +33,7 @@ React state changes when input or displayed score, health, time, and pause statu
 
 A ResizeObserver tracks the canvas host. `game/arena/viewport.ts` calculates a uniform scale from a 960 × 540 reference and world dimensions that fill the viewport. The renderer uses device dimensions; the stage uses the calculated scale. Resizing updates the water, terrain, movement bounds, ship positions, and active projectile positions without recreating the match.
 
-The island layout in `game/arena/level.ts` supplies terrain dimensions, decoration positions, and collision rectangles. The renderer tiles shoreline corners and edges around grass interiors, then adds palms and rocks. Three islands leave the center open; decorations belong to land and add no separate collision shapes.
+The island layout in `game/arena/level.ts` supplies terrain dimensions, decoration positions, and collision rectangles. The renderer layers the complete sand patch, a grass interior with a rounded graphics mask, and the white shoreline mask from the retina terrain sheet. The tinted shoreline sits beneath land; grass and decorations render above sand. Atlas frames inset their edges by half a source pixel to avoid sampling neighboring artwork. Three islands leave the center open; decorations belong to land and add no separate collision shapes.
 
 Player movement uses heading zero as up, with X movement from sine and Y movement from negative cosine. Turning while moving follows an arc. Simulation divides movement into steps of at most 1/60 second before enforcing arena and island bounds.
 

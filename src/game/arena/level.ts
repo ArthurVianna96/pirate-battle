@@ -13,7 +13,14 @@ export interface IslandLayout {
   decorations: readonly Decoration[];
 }
 
-export const ISLAND_CONFIG = { tileSize: 64 } as const;
+export const ISLAND_CONFIG = {
+  tileSize: 64,
+  grassCoverage: 0.65,
+  grassCornerRadius: 24,
+  shorelinePadding: 32,
+  shorelineTint: 0xc9eadb,
+  shorelineOpacity: 1,
+} as const;
 
 export function createIslandLayout(
   width: number,

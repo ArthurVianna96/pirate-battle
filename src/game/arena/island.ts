@@ -1,5 +1,5 @@
-import { Container, Sprite, type Texture } from 'pixi.js';
-import type { IslandOptions } from './types';
+import { Container, Graphics, Sprite, type Texture } from 'pixi.js';
+import type { IslandOptions, IslandTextures } from './types';
 import { createIslandLayout, ISLAND_CONFIG, type IslandLayout } from './level';
 
 export function renderIsland({
@@ -20,33 +20,67 @@ export function renderIsland({
 
 function createIsland(
   land: IslandLayout,
-  textures: Texture[],
+  textures: IslandTextures,
   decorations: Texture[],
 ) {
   const island = new Container();
   island.position.set(land.bounds.x, land.bounds.y);
-  addTerrain(island, land, textures);
+  addShoreline(island, land, textures.shoreline);
+  addTerrain(island, land, textures.sand);
+  addGrass(island, land, textures);
   addDecorations(island, land, decorations);
   return island;
 }
 
+function createTerrainPatch(texture: Texture, width: number, height: number) {
+  const patch = new Sprite(texture);
+  patch.width = width;
+  patch.height = height;
+  return patch;
+}
+
+function addShoreline(
+  island: Container,
+  { bounds }: IslandLayout,
+  texture: Texture,
+) {
+  const padding = ISLAND_CONFIG.shorelinePadding;
+  const shoreline = createTerrainPatch(
+    texture,
+    bounds.width + padding * 2,
+    bounds.height + padding * 2,
+  );
+  shoreline.position.set(-padding, -padding);
+  shoreline.tint = ISLAND_CONFIG.shorelineTint;
+  shoreline.alpha = ISLAND_CONFIG.shorelineOpacity;
+  island.addChild(shoreline);
+}
+
 function addTerrain(
   island: Container,
-  { columns, rows }: IslandLayout,
-  textures: Texture[],
+  { bounds }: IslandLayout,
+  texture: Texture,
 ) {
-  for (let row = 0; row < rows; row++) {
-    for (let column = 0; column < columns; column++) {
-      const edgeRow = row === 0 ? 0 : row === rows - 1 ? 2 : 1;
-      const edgeColumn = column === 0 ? 0 : column === columns - 1 ? 2 : 1;
-      const tile = new Sprite(textures[edgeRow * 3 + edgeColumn]);
-      tile.position.set(
-        column * ISLAND_CONFIG.tileSize,
-        row * ISLAND_CONFIG.tileSize,
-      );
-      island.addChild(tile);
-    }
-  }
+  island.addChild(createTerrainPatch(texture, bounds.width, bounds.height));
+}
+
+function addGrass(
+  island: Container,
+  { bounds }: IslandLayout,
+  textures: IslandTextures,
+) {
+  const width = bounds.width * ISLAND_CONFIG.grassCoverage;
+  const height = bounds.height * ISLAND_CONFIG.grassCoverage;
+  const grass = createTerrainPatch(textures.grass, width, height);
+  const mask = new Graphics()
+    .roundRect(0, 0, width, height, ISLAND_CONFIG.grassCornerRadius)
+    .fill(0xffffff);
+  const x = (bounds.width - width) / 2;
+  const y = (bounds.height - height) / 2;
+  grass.position.set(x, y);
+  mask.position.set(x, y);
+  island.addChild(grass, mask);
+  grass.mask = mask;
 }
 
 function addDecorations(
