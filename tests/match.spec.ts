@@ -98,7 +98,9 @@ test('completion shows a frozen result and Play Again creates a fresh match', as
   await expect(
     page.getByRole('region', { name: 'Match result' }),
   ).toBeVisible();
-  await expect(page.getByRole('status')).toHaveText('Ship destroyed.');
+  await expect(
+    page.getByRole('status').filter({ hasText: 'Ship destroyed.' }),
+  ).toBeVisible();
   await expect(page.locator('canvas')).toHaveCount(0);
   const playedTime = await page.getByText(/^Time played: /).textContent();
   for (const key of ['w', 'ArrowRight', 'q', 'e']) {

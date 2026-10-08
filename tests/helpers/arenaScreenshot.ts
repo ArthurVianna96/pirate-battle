@@ -9,12 +9,15 @@ export async function arenaScreenshot(
   if (!canvas) {
     throw new Error('Arena canvas is missing.');
   }
+  const scale = Math.min(canvas.width / 960, canvas.height / 540);
+  const arenaLeft = canvas.x + (canvas.width - 960 * scale) / 2;
+  const arenaTop = canvas.y + (canvas.height - 540 * scale) / 2;
   return page.screenshot({
     clip: {
-      x: canvas.x + (region.x / 960) * canvas.width,
-      y: canvas.y + (region.y / 540) * canvas.height,
-      width: (region.width / 960) * canvas.width,
-      height: (region.height / 540) * canvas.height,
+      x: arenaLeft + region.x * scale,
+      y: arenaTop + region.y * scale,
+      width: region.width * scale,
+      height: region.height * scale,
     },
   });
 }
