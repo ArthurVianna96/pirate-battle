@@ -19,6 +19,7 @@ dist/
 skills-lock.json
 
 *.md
+!/profiling/report.md
 
 # Playwright artifacts
 /playwright-report/

@@ -13,7 +13,9 @@
     "lint": "eslint .",
     "test:e2e": "playwright test",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "profile": "node scripts/profile.mjs",
+    "profile:memory": "node scripts/memory-profile.mjs"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.104.1",

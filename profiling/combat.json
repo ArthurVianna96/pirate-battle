@@ -1,0 +1,102 @@
+{
+  "date": "2026-10-08T00:47:45.168Z",
+  "browser": "153.0.8010.12",
+  "environment": {
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+    "devicePixelRatio": 1,
+    "viewport": {
+      "width": 1280,
+      "height": 720
+    },
+    "canvas": {
+      "width": 960,
+      "height": 540
+    },
+    "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Pro, Unspecified Version)"
+  },
+  "configuration": {
+    "sessionDuration": 180,
+    "enemySpawnInterval": 2
+  },
+  "combat": {
+    "frames": 10796,
+    "seconds": 180.0684,
+    "fps": 59.95499487972348,
+    "p95Milliseconds": 17.59999999999127,
+    "worstMilliseconds": 50.89999999999418,
+    "framesOver33Milliseconds": 5
+  },
+  "outcome": "Score: 61",
+  "entitySamples": [
+    {
+      "seconds": 30.294,
+      "enemies": 3,
+      "projectiles": 8
+    },
+    {
+      "seconds": 60.683,
+      "enemies": 3,
+      "projectiles": 7
+    },
+    {
+      "seconds": 90.023,
+      "enemies": 3,
+      "projectiles": 4
+    },
+    {
+      "seconds": 120.388,
+      "enemies": 3,
+      "projectiles": 4
+    },
+    {
+      "seconds": 150.744,
+      "enemies": 3,
+      "projectiles": 2
+    }
+  ],
+  "memory": [
+    {
+      "cycle": 0,
+      "heapBytes": 7561812,
+      "documents": 1,
+      "nodes": 64,
+      "jsEventListeners": 186
+    },
+    {
+      "cycle": 1,
+      "heapBytes": 7739124,
+      "documents": 1,
+      "nodes": 64,
+      "jsEventListeners": 185
+    },
+    {
+      "cycle": 2,
+      "heapBytes": 7828592,
+      "documents": 1,
+      "nodes": 64,
+      "jsEventListeners": 185
+    },
+    {
+      "cycle": 3,
+      "heapBytes": 7898516,
+      "documents": 1,
+      "nodes": 64,
+      "jsEventListeners": 185
+    },
+    {
+      "cycle": 4,
+      "heapBytes": 7990100,
+      "documents": 1,
+      "nodes": 64,
+      "jsEventListeners": 185
+    },
+    {
+      "cycle": 5,
+      "heapBytes": 8022968,
+      "documents": 1,
+      "nodes": 64,
+      "jsEventListeners": 185
+    }
+  ],
+  "errors": []
+}
