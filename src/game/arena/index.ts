@@ -54,25 +54,32 @@ export function createArena(
     view.enemies.push(enemy);
   }
 
+  function resize(width: number, height: number) {
+    replaceTerrain(width, height);
+    water.width = width;
+    water.height = height;
+    Object.assign(view.size, { width, height });
+  }
+
+  function replaceTerrain(width: number, height: number) {
+    const next = renderIsland({
+      texture: textures.island,
+      decorations: textures.decorations,
+      width,
+      height,
+    });
+    const layerIndex = arena.getChildIndex(island);
+    arena.removeChild(island);
+    island.destroy({ children: true });
+    island = next.island;
+    arena.addChildAt(island, layerIndex);
+    obstacles.splice(0, obstacles.length, ...next.obstacles);
+  }
+
   const view: ArenaView = {
     container: arena,
     size: { width, height },
-    resize(width, height) {
-      const next = renderIsland({
-        texture: textures.island,
-        decorations: textures.decorations,
-        width,
-        height,
-      });
-      arena.removeChild(island);
-      island.destroy({ children: true });
-      island = next.island;
-      arena.addChildAt(island, 1);
-      obstacles.splice(0, obstacles.length, ...next.obstacles);
-      water.width = width;
-      water.height = height;
-      Object.assign(view.size, { width, height });
-    },
+    resize,
     ship,
     obstacles,
     projectileTexture: textures.projectile,

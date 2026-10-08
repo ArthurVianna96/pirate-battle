@@ -7,42 +7,54 @@ import {
   type GameLoopController,
 } from './gameLoop';
 import type { GameOptions } from './support/options';
+import type { Size } from './mechanics/collisions';
 
 interface GameSessionCallbacks extends GameLoopCallbacks {
   onReady: () => void;
   onError: (error: unknown) => void;
 }
 
+export type GameSessionController = Omit<GameLoopController, 'resize'>;
+
 export function createGameSession(
   host: HTMLDivElement,
   options: GameOptions,
   callbacks: GameSessionCallbacks,
-): GameLoopController {
+): GameSessionController {
   const app = new Application();
+  const observer = new ResizeObserver(resize);
+
   let gameLoop: GameLoopController | undefined;
   let initialized = false;
   let cancelled = false;
-  const observer = new ResizeObserver(resize);
-  let viewportWidth = 0;
-  let viewportHeight = 0;
+  let viewportSize = { width: 0, height: 0 };
 
   function resize() {
     if (!initialized || !gameLoop) {
       return;
     }
+    const size = readViewportSize();
     if (
-      host.clientWidth === viewportWidth &&
-      host.clientHeight === viewportHeight
+      size.width === viewportSize.width &&
+      size.height === viewportSize.height
     ) {
       return;
     }
-    viewportWidth = host.clientWidth;
-    viewportHeight = host.clientHeight;
-    const viewport = calculateArenaViewport(host.getBoundingClientRect());
-    app.renderer.resize(host.clientWidth, host.clientHeight);
-    app.stage.scale.set(viewport.scale);
-    gameLoop.resize?.(viewport);
+    const viewport = resizeRenderer(size);
+    gameLoop.resize(viewport);
     app.render();
+  }
+
+  function readViewportSize() {
+    return { width: host.clientWidth, height: host.clientHeight };
+  }
+
+  function resizeRenderer(size: Size) {
+    const viewport = calculateArenaViewport(size);
+    app.renderer.resize(size.width, size.height);
+    app.stage.scale.set(viewport.scale);
+    viewportSize = size;
+    return viewport;
   }
 
   function releaseResources() {
@@ -57,17 +69,14 @@ export function createGameSession(
   }
 
   function mountArena(textures: Awaited<ReturnType<typeof loadArenaAssets>>) {
-    const viewport = calculateArenaViewport(host.getBoundingClientRect());
+    const viewport = resizeRenderer(readViewportSize());
     const arena = createArena(textures, viewport.width, viewport.height);
-    app.stage.scale.set(viewport.scale);
     app.stage.addChild(arena.container);
     app.canvas.setAttribute('aria-label', 'Naval battle arena');
     app.canvas.setAttribute('role', 'img');
     host.appendChild(app.canvas);
     app.render();
     gameLoop = startGameLoop(app, arena, options, callbacks);
-    viewportWidth = host.clientWidth;
-    viewportHeight = host.clientHeight;
     observer.observe(host);
   }
 

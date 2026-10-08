@@ -1,4 +1,8 @@
-import { relocateShip } from './mechanics/resize';
+import {
+  createResizeScale,
+  resizePosition,
+  relocateShip,
+} from './mechanics/resize';
 import { getShipBounds, type Size } from './mechanics/collisions';
 import { MOVEMENT_CONFIG } from './config';
 import type { Application, Ticker } from 'pixi.js';
@@ -41,7 +45,7 @@ export interface GameLoopCallbacks {
 }
 
 export interface GameLoopController {
-  resize?: (size: Size) => void;
+  resize: (size: Size) => void;
   setControl: (action: keyof GameInput, active: boolean) => void;
   pause: () => void;
   resume: () => void;
@@ -110,12 +114,7 @@ export function startGameLoop(
     updateEnemyAttacks(deltaSeconds);
     updateContacts();
     removeDestroyedEnemies();
-    feedback.syncViews(
-      player,
-      player.weapon.projectiles,
-      enemyProjectilesState.projectiles,
-      deltaSeconds,
-    );
+    syncViews(deltaSeconds);
     updateMatchStatus();
   }
 
@@ -311,11 +310,13 @@ export function startGameLoop(
     const previousSize = { ...arenaSize };
     arena.resize(size.width, size.height);
     Object.assign(arenaSize, size);
-    feedback.resizeProjectiles(
-      size.width / previousSize.width,
-      size.height / previousSize.height,
-    );
     relocateShip(player, previousSize, world);
+    relocateEnemies(previousSize);
+    resizeProjectiles(previousSize);
+    syncViews(0);
+  }
+
+  function relocateEnemies(previousSize: Size) {
     for (const { state } of arena.enemies) {
       relocateShip(state.position, previousSize, {
         ...world,
@@ -326,18 +327,24 @@ export function startGameLoop(
         getShipBounds(state.position, state.shipSize),
       );
     }
-    for (const shot of [
+  }
+
+  function resizeProjectiles(previousSize: Size) {
+    const scale = createResizeScale(previousSize, arenaSize);
+    feedback.resizeProjectiles(scale.x, scale.y);
+    const projectiles = [
       ...player.weapon.projectiles,
       ...enemyProjectilesState.projectiles,
-    ]) {
-      shot.x *= size.width / previousSize.width;
-      shot.y *= size.height / previousSize.height;
-    }
+    ];
+    projectiles.forEach((projectile) => resizePosition(projectile, scale));
+  }
+
+  function syncViews(deltaSeconds: number) {
     feedback.syncViews(
       player,
       player.weapon.projectiles,
       enemyProjectilesState.projectiles,
-      0,
+      deltaSeconds,
     );
   }
 

@@ -3,9 +3,11 @@ import { Hud } from './Hud';
 import { GameControls } from './GameControls';
 import { createInputState } from '../../game/mechanics/input';
 import { PauseMenu } from '../screens/PauseMenu';
-import { createGameSession } from '../../game/createGameSession';
+import {
+  createGameSession,
+  type GameSessionController,
+} from '../../game/createGameSession';
 import { useEffect, useRef, useState } from 'react';
-import type { GameLoopController } from '../../game/gameLoop';
 
 import type { MatchResult } from '../../game/mechanics/match';
 import type { GameOptions } from '../../game/support/options';
@@ -28,7 +30,7 @@ export function GameCanvas({
   onMainMenu,
 }: GameCanvasProps) {
   const hostRef = useRef<HTMLDivElement>(null);
-  const gameSessionRef = useRef<GameLoopController | null>(null);
+  const gameSessionRef = useRef<GameSessionController | null>(null);
   const pauseButtonRef = useRef<HTMLButtonElement>(null);
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>(
     'loading',

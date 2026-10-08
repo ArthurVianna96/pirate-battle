@@ -2,22 +2,62 @@ import {
   constrainPlayerToArena,
   getShipBounds,
   overlapsObstacle,
+  type Obstacle,
   type Size,
 } from './collisions';
 import type { MovementWorld, PlayerState } from './simulation';
+
+type Position = Pick<PlayerState, 'x' | 'y'>;
+
+interface ResizeScale {
+  x: number;
+  y: number;
+}
+
+export function createResizeScale(
+  previousSize: Size,
+  nextSize: Size,
+): ResizeScale {
+  return {
+    x: nextSize.width / previousSize.width,
+    y: nextSize.height / previousSize.height,
+  };
+}
+
+export function resizePosition(position: Position, scale: ResizeScale) {
+  position.x *= scale.x;
+  position.y *= scale.y;
+}
 
 export function relocateShip(
   position: PlayerState,
   previousSize: Size,
   world: MovementWorld,
 ) {
-  position.x *= world.arenaSize.width / previousSize.width;
-  position.y *= world.arenaSize.height / previousSize.height;
+  resizePosition(position, createResizeScale(previousSize, world.arenaSize));
   constrainPlayerToArena(position, world.shipSize, world.arenaSize);
-  if (isClear(position, world)) {
+  if (isValidShipPosition(position, world)) {
     return;
   }
 
+  const destination = findNearestClearPosition(position, world);
+  if (destination) {
+    Object.assign(position, destination);
+  }
+}
+
+function findNearestClearPosition(position: PlayerState, world: MovementWorld) {
+  const candidates = createRelocationCandidates(position, world);
+  candidates.sort(
+    (a, b) => distanceFrom(a, position) - distanceFrom(b, position),
+  );
+  return candidates.find((candidate) => isValidShipPosition(candidate, world));
+}
+
+function createRelocationCandidates(
+  position: PlayerState,
+  world: MovementWorld,
+) {
   const bounds = getShipBounds(position, world.shipSize);
   const halfWidth = bounds.width / 2;
   const halfHeight = bounds.height / 2;
@@ -32,26 +72,25 @@ export function relocateShip(
     x: world.arenaSize.width / 2,
     y: world.arenaSize.height / 2,
   });
-  candidates.sort(
-    (a, b) =>
-      Math.hypot(a.x - position.x, a.y - position.y) -
-      Math.hypot(b.x - position.x, b.y - position.y),
-  );
-  const destination = candidates.find((candidate) => isClear(candidate, world));
-  if (destination) {
-    Object.assign(position, destination);
-  }
+  return candidates;
 }
 
-function isClear(position: PlayerState, world: MovementWorld) {
+function distanceFrom(position: Position, origin: Position) {
+  return Math.hypot(position.x - origin.x, position.y - origin.y);
+}
+
+function isValidShipPosition(position: PlayerState, world: MovementWorld) {
   const bounds = getShipBounds(position, world.shipSize);
-  return (
-    bounds.x >= 0 &&
-    bounds.y >= 0 &&
-    bounds.x + bounds.width <= world.arenaSize.width &&
-    bounds.y + bounds.height <= world.arenaSize.height &&
-    !world.obstacles.some((obstacle) =>
-      overlapsObstacle(position, world.shipSize, obstacle),
-    )
+  const overlapsLand = world.obstacles.some((obstacle) =>
+    overlapsObstacle(position, world.shipSize, obstacle),
   );
+  return isInsideArena(bounds, world.arenaSize) && !overlapsLand;
+}
+
+function isInsideArena(bounds: Obstacle, arenaSize: Size) {
+  const fitsHorizontally =
+    bounds.x >= 0 && bounds.x + bounds.width <= arenaSize.width;
+  const fitsVertically =
+    bounds.y >= 0 && bounds.y + bounds.height <= arenaSize.height;
+  return fitsHorizontally && fitsVertically;
 }
