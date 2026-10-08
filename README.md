@@ -55,7 +55,7 @@ Options change the duration and spawn interval for the next match. Each match ke
 
 Chasers approach and damage the player on contact. Shooters approach firing range and shoot when aimed at the player. Enemies alternate when spawned. Destroying an enemy with a player projectile awards one point; firing and enemy contact destruction award no points. A match ends when time expires or the player dies.
 
-Combat textures preload when the page opens. The menu shows loading progress and enables Play after textures are ready. Failed texture loading offers Retry. Sound files preload afterward without delaying Play. Arena initialization has a full-screen loading state; sound playback begins only after a user gesture.
+Menu, ranking, and history images preload first, including button states and pagination controls. Combat textures load afterward. The menu shows loading progress and enables Play after textures are ready. Failed texture loading offers Retry. Sound files preload afterward without delaying Play. Arena initialization has a full-screen loading state; sound playback begins only after a user gesture.
 
 Health changes ship sprites in three stages. Hits, muzzle flashes, trails, explosions, and sounds provide combat feedback. Enemy health appears above enemy ships; player health appears above the ship and in the HUD.
 

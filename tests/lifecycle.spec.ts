@@ -53,6 +53,49 @@ test('textures preload from the menu and slow loading stays visible', async ({
   await expect(page.getByRole('status')).toHaveCount(0);
 });
 
+test('menu images finish before combat textures start', async ({
+  page,
+  context,
+}) => {
+  let releaseMenu!: () => void;
+  const menuBlocked = new Promise<void>((resolve) => {
+    releaseMenu = resolve;
+  });
+  const combatRequests: string[] = [];
+  context.on('request', (request) => {
+    if (
+      request.resourceType() !== 'script' &&
+      request.url().includes('tiles_vector.svg')
+    ) {
+      combatRequests.push(request.url());
+    }
+  });
+  await context.route('**/button_secondary_pressed.png*', async (route) => {
+    if (route.request().resourceType() === 'script') {
+      await route.continue();
+      return;
+    }
+    await menuBlocked;
+    await route.continue();
+  });
+  await page.goto('/');
+  await expect(page.getByRole('status')).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: 'Play', exact: true }),
+  ).toBeDisabled();
+  await page.getByRole('button', { name: 'Ranking', exact: true }).click();
+  await expect(
+    page.getByRole('heading', { name: "Captain's Log" }),
+  ).toBeVisible();
+  expect(combatRequests).toEqual([]);
+  releaseMenu();
+  await page.getByRole('button', { name: 'Main Menu' }).click();
+  await expect(
+    page.getByRole('button', { name: 'Play', exact: true }),
+  ).toBeEnabled();
+  expect(combatRequests.length).toBeGreaterThan(0);
+});
+
 test('entering and leaving creates a single canvas without errors', async ({
   page,
 }) => {

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { loadArenaAssets } from '../game/arena/assets';
 import { preloadSounds } from '../game/support/audio';
+import { loadMenuAssets } from '../components/assets';
 
 export function useArenaPreload() {
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>(
@@ -14,6 +15,10 @@ export function useArenaPreload() {
 
     async function preload() {
       try {
+        await loadMenuAssets();
+        if (cancelled) {
+          return;
+        }
         await loadArenaAssets((value) => {
           if (!cancelled) {
             setProgress(value);
