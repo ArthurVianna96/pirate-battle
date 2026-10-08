@@ -1,24 +1,10 @@
+import { SHOOTER_CONFIG, SHOOTER_WEAPON_CONFIG } from '../config';
 import type { Obstacle } from './collisions';
 import { createMovingEnemyState, type MovingEnemyState } from './combat';
 import { updateEnemyMovement, type EnemyMovementWorld } from './enemyMovement';
 import type { MovementConfig, PlayerState } from './simulation';
 import type { PlayerCombatState } from './combat';
 import { fireEnemyFront, type EnemyProjectilesState } from './enemyProjectiles';
-import { FRONT_WEAPON_CONFIG } from './weapon';
-
-export const SHOOTER_CONFIG = {
-  speed: 45,
-  rotationSpeed: Math.PI / 2,
-  attackRange: 200,
-  aimTolerance: 0.1,
-} as const;
-
-export const SHOOTER_WEAPON_CONFIG = {
-  ...FRONT_WEAPON_CONFIG,
-  speed: 220,
-  lifetime: 3,
-  cooldown: 1.2,
-} as const;
 
 export interface ShooterConfig extends MovementConfig {
   attackRange: number;

@@ -5,7 +5,7 @@ import type { FeedbackAudio, FeedbackViews } from './types';
 export function createCombatFeedback(
   arena: ArenaView,
   audio: FeedbackAudio,
-  { effects, explosions }: FeedbackViews,
+  { effects, explosions, playerHealth }: FeedbackViews,
 ) {
   function impact(position: { x: number; y: number }) {
     effects.impact(position);
@@ -39,6 +39,7 @@ export function createCombatFeedback(
     },
     playerDestroyed(position: { x: number; y: number }) {
       arena.ship.visible = false;
+      playerHealth.bar.visible = false;
       explosions.play(position);
       void audio.play('ship_explosion_1');
     },

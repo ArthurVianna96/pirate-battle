@@ -1,4 +1,5 @@
-import { COMBAT_CONFIG, type PlayerCombatState } from './combat';
+import { COMBAT_CONFIG } from '../config';
+import { type PlayerCombatState } from './combat';
 import type { PlayerState } from './simulation';
 import { createWeaponState, type WeaponState } from './weapon';
 

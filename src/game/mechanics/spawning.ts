@@ -1,12 +1,7 @@
+import { SPAWN_CONFIG } from '../config';
 import { overlapsObstacle, type Obstacle, type Size } from './collisions';
 import type { EnemyKind, EnemyState } from './combat';
 import type { MovementWorld, PlayerState } from './simulation';
-
-export const SPAWN_CONFIG = {
-  interval: 4,
-  minPlayerDistance: 220,
-  enemyOrder: ['chaser', 'shooter'] satisfies EnemyKind[],
-} as const;
 
 interface SpawnerState {
   elapsed: number;
@@ -71,13 +66,10 @@ export function findEnemySpawn(
 }
 
 function getSpawnPositions(arenaSize: Size) {
-  return [
-    { x: arenaSize.width * 0.75, y: arenaSize.height / 2 },
-    { x: arenaSize.width * 0.85, y: arenaSize.height * 0.25 },
-    { x: arenaSize.width * 0.85, y: arenaSize.height * 0.8 },
-    { x: arenaSize.width * 0.1, y: arenaSize.height * 0.2 },
-    { x: arenaSize.width * 0.1, y: arenaSize.height * 0.8 },
-  ];
+  return SPAWN_CONFIG.positions.map(({ x, y }) => ({
+    x: arenaSize.width * x,
+    y: arenaSize.height * y,
+  }));
 }
 
 function isInsideArena(

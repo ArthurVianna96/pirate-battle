@@ -1,12 +1,11 @@
+import { MATCH_CONFIG, OPTIONS_CONFIG } from '../../game/config';
 import { SecondsControl } from '../shared/SecondsControl';
 import { useRef, useState, type FormEvent } from 'react';
 import {
   isDurationValid,
   isSpawnIntervalValid,
-  OPTIONS_CONFIG,
   type GameOptions,
 } from '../../game/support/options';
-import { MATCH_CONFIG } from '../../game/mechanics/match';
 
 interface OptionsProps {
   options: GameOptions;

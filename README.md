@@ -3,12 +3,13 @@ covers:
   - src/**
   - package.json
   - playwright.config.ts
-  - vercel.json
 ---
 
 # Pirate Battle
 
 A naval survival game built with React, TypeScript, and PixiJS 8. This is the solution guide; the original challenge is in [CHALLENGE_INSTRUCTIONS.md](docs/CHALLENGE_INSTRUCTIONS.md).
+
+Play the [deployed game](https://pirate-battle-pearl.vercel.app/).
 
 See [architecture](docs/ARCHITECTURE.md) and the [performance report](profiling/report.md).
 
@@ -43,16 +44,16 @@ Losing focus or hiding the tab pauses the game. Returning requires Resume and fr
 
 Options change the duration and spawn interval for the next match. Each match keeps the configuration captured when Play was selected.
 
-| Setting              |          Default | Allowed values                                         |
-| -------------------- | ---------------: | ------------------------------------------------------ |
-| Match duration       |       60 seconds | Whole seconds from 60 to 180                           |
-| Enemy spawn interval |        4 seconds | Whole seconds from 1 to 30                             |
-| Player/enemy health  |            5 / 3 | Source configuration in `src/game/mechanics/combat.ts` |
-| Player speed         | 120 units/second | Source configuration in `simulation.ts`                |
+| Setting              |          Default | Allowed values                               |
+| -------------------- | ---------------: | -------------------------------------------- |
+| Match duration       |       60 seconds | Whole seconds from 60 to 180                 |
+| Enemy spawn interval |        4 seconds | Whole seconds from 1 to 30                   |
+| Player/enemy health  |            5 / 3 | Source configuration in `src/game/config.ts` |
+| Player speed         | 120 units/second | Source configuration in `src/game/config.ts` |
 
 Chasers approach and damage the player on contact. Shooters approach firing range and shoot when aimed at the player. Enemies alternate when spawned. Destroying an enemy with a player projectile awards one point; firing and enemy contact destruction award no points. A match ends when time expires or the player dies.
 
-Health changes ship sprites in three stages. Hits, muzzle flashes, trails, explosions, and sounds provide combat feedback. Enemy health appears above enemy ships; player health appears only in the HUD.
+Health changes ship sprites in three stages. Hits, muzzle flashes, trails, explosions, and sounds provide combat feedback. Enemy health appears above enemy ships; player health appears above the ship and in the HUD.
 
 ## Ranking and history
 
@@ -107,7 +108,7 @@ npm run test:e2e
 npx playwright show-report
 ```
 
-Playwright runs Chromium desktop and Pixel 7 touch emulation in landscape. Dedicated tests cover portrait and resizing. HTML reports go to `playwright-report/`; failure traces and other artifacts go to `test-results/`. These generated directories are ignored by Git. Tests use isolated browser contexts, pure mechanics modules, keyboard/pointer input, and HTTP mocks. The game has no test-state bridge. Versioned visual snapshots are currently deferred.
+Playwright runs Chromium desktop and Pixel 7 touch emulation in landscape. Dedicated tests cover portrait and resizing. HTML reports go to `playwright-report/`; failure traces and other artifacts go to `test-results/`. These generated directories are ignored by Git. The delivered [HTML test report](reports/playwright/index.html) is versioned separately; open it with `npx playwright show-report reports/playwright`. Tests use isolated browser contexts, pure mechanics modules, keyboard/pointer input, and HTTP mocks. The game has no test-state bridge. Versioned visual snapshots are currently deferred.
 
 For profiling, serve a production build on port 4173, then run:
 
@@ -127,7 +128,7 @@ Profiler-only variables select a visible browser and spawn interval. They are no
 
 ## Deploy
 
-Vercel configuration builds with `npm run build` and publishes `dist`. The build generates the MSW worker so production ranking, history, and registration run without a backend.
+For Vercel, use build command `npm run build` and output directory `dist`. The build generates the MSW worker so production ranking, history, and registration run without a backend.
 
 With a signed-in Vercel CLI:
 

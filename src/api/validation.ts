@@ -1,9 +1,6 @@
+import { MATCH_CONFIG } from '../game/config';
 import type { MatchRecord, PlayerIdentity } from './contracts';
-import {
-  MATCH_CONFIG,
-  type MatchResult,
-  type MatchEndReason,
-} from '../game/mechanics/match';
+import { type MatchResult, type MatchEndReason } from '../game/mechanics/match';
 import { parseOptions } from '../game/support/options';
 
 function isObject(value: unknown): value is Record<string, unknown> {

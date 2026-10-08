@@ -1,8 +1,4 @@
-export const MATCH_CONFIG = {
-  duration: 60,
-  minDuration: 60,
-  maxDuration: 180,
-} as const;
+import { MATCH_CONFIG } from '../config';
 
 export type MatchEndReason = 'time' | 'death';
 
@@ -27,7 +23,9 @@ export function createMatchState(
     duration < MATCH_CONFIG.minDuration ||
     duration > MATCH_CONFIG.maxDuration
   ) {
-    throw new Error('Match duration must be between 60 and 180 seconds.');
+    throw new Error(
+      `Match duration must be between ${MATCH_CONFIG.minDuration} and ${MATCH_CONFIG.maxDuration} seconds.`,
+    );
   }
   return {
     duration,

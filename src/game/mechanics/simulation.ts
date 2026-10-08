@@ -6,8 +6,6 @@ import {
 } from './collisions';
 import type { MovementInput } from './input';
 
-export const MOVEMENT_CONFIG = { speed: 120, rotationSpeed: Math.PI } as const;
-
 export interface MovementConfig {
   readonly speed: number;
   readonly rotationSpeed: number;

@@ -1,9 +1,7 @@
+import { MOVEMENT_CONFIG } from '../src/game/config';
 import { arenaScreenshot } from './helpers/arenaScreenshot';
 import { expect, test } from '@playwright/test';
-import {
-  MOVEMENT_CONFIG,
-  applyPlayerMovement,
-} from '../src/game/mechanics/simulation';
+import { applyPlayerMovement } from '../src/game/mechanics/simulation';
 
 test('turning while advancing follows the same arc at 30 and 60 FPS', () => {
   function advance(frames: number) {

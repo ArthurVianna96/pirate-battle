@@ -1,3 +1,4 @@
+import { SHOOTER_WEAPON_CONFIG } from '../src/game/config';
 import { expect, test } from '@playwright/test';
 import { createPlayerState } from '../src/game/mechanics/player';
 import {
@@ -7,7 +8,6 @@ import {
 } from '../src/game/mechanics/enemyProjectiles';
 import {
   createShooterState,
-  SHOOTER_WEAPON_CONFIG,
   updateShooterAttack,
 } from '../src/game/mechanics/shooter';
 

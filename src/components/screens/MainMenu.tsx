@@ -51,7 +51,7 @@ export function MainMenu({
       </div>
       <img className="menu-ship" src={playerImage} alt="" />
       <p>Navigate the islands. Survive the battle.</p>
-      <p className="sr-only">
+      <p className="controls-help">
         W or Up move. A or D turn. Space fires forward. Q or E fire left or
         right.
       </p>

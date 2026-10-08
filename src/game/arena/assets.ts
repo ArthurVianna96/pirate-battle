@@ -1,5 +1,6 @@
 import enemyHealthFrameUrl from '../../../assets/png/default/ui/hud/enemy_health_frame.png';
 import enemyHealthFillUrl from '../../../assets/png/default/ui/hud/enemy_health_fill_red.png';
+import playerHealthFillUrl from '../../../assets/png/default/ui/hud/enemy_health_fill_green.png';
 import playerDamagedUrl from '../../../assets/png/default/ships/ship_7.png';
 import playerCriticalUrl from '../../../assets/png/default/ships/ship_13.png';
 import chaserUrl from '../../../assets/png/default/ships/ship_3.png';
@@ -41,13 +42,13 @@ const islandTileUrls = [
 ];
 
 export async function loadArenaAssets(): Promise<ArenaAssets> {
-  const [ships, scenery, effects, enemyHealth] = await Promise.all([
+  const [ships, scenery, effects, healthBars] = await Promise.all([
     loadShips(),
     loadScenery(),
     loadEffects(),
-    loadEnemyHealth(),
+    loadHealthBars(),
   ]);
-  return { ...ships, ...scenery, ...effects, enemyHealth };
+  return { ...ships, ...scenery, ...effects, ...healthBars };
 }
 
 async function loadShips() {
@@ -76,12 +77,16 @@ async function loadEffects() {
   return { projectile, explosion, fire };
 }
 
-async function loadEnemyHealth() {
-  const [frame, fill] = await loadTextures([
+async function loadHealthBars() {
+  const [frame, enemyFill, playerFill] = await loadTextures([
     enemyHealthFrameUrl,
     enemyHealthFillUrl,
+    playerHealthFillUrl,
   ]);
-  return { frame, fill };
+  return {
+    enemyHealth: { frame, fill: enemyFill },
+    playerHealth: { frame, fill: playerFill },
+  };
 }
 
 function loadTextures(urls: readonly string[]) {

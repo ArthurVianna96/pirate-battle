@@ -1,3 +1,4 @@
+import { MOVEMENT_CONFIG } from './config';
 import type { Application, Ticker } from 'pixi.js';
 import { createGameFeedback } from './feedback/index';
 import { EXPLOSION_CONFIG } from './arena/explosions';
@@ -12,7 +13,7 @@ import {
 import { createGameInput, type GameInput } from './mechanics/input';
 import { createPlayerState } from './mechanics/player';
 import { updateShooter, updateShooterAttack } from './mechanics/shooter';
-import { MOVEMENT_CONFIG, updatePlayer } from './mechanics/simulation';
+import { updatePlayer } from './mechanics/simulation';
 import {
   createSpawnerState,
   findEnemySpawn,

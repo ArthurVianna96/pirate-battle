@@ -50,8 +50,8 @@ for (const asset of ['ship_1.png', 'tile_73.png']) {
     await context.unroute(`**/${asset}*`);
     await page.getByRole('button', { name: 'Retry' }).click();
     await expect(page.getByRole('alert')).toHaveCount(0);
+    await expect(page.locator('canvas')).toHaveCount(1, { timeout: 15_000 });
     await expect(page.getByRole('status')).toHaveCount(0);
-    await expect(page.locator('canvas')).toHaveCount(1);
     await page
       .locator('canvas')
       .screenshot({ path: testInfo.outputPath('arena.png') });

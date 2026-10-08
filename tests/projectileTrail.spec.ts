@@ -1,13 +1,11 @@
+import { FRONT_WEAPON_CONFIG } from '../src/game/config';
 import { expect, test } from '@playwright/test';
 import { Container, Graphics, Sprite, Texture } from 'pixi.js';
 import {
   createProjectile,
   PROJECTILE_TRAIL_CONFIG,
 } from '../src/game/arena/projectiles';
-import {
-  createFrontProjectile,
-  FRONT_WEAPON_CONFIG,
-} from '../src/game/mechanics/weapon';
+import { createFrontProjectile } from '../src/game/mechanics/weapon';
 
 test('trails grow from the muzzle, cap their length and disappear with the shot', () => {
   const parent = new Container();

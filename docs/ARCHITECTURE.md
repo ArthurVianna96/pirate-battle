@@ -88,6 +88,6 @@ Restored pending records retry on startup. Manual retry is also available. A ser
 
 The shipped configuration uses player health 5, enemy health 3, 60-second matches, and alternating spawns every 4 seconds. Options support 60–180 seconds and 1–30-second spawn intervals. Each match captures options at its start, including the configuration attached to its ranking entry.
 
-Player speed is 120 units/second; chasers use 60 and shooters 45. Shooter aiming tolerance and attack range limit when enemies fire. Movement, weapon, spawn, combat, and match constants live beside their respective rules.
+Player speed is 120 units/second; chasers use 60 and shooters 45. Shooter aiming tolerance and attack range limit when enemies fire. Gameplay settings are centralized in `src/game/config.ts`: match limits, spawn timing, normalized spawn positions, enemy order, health, movement, damage, projectile speed and lifetime, cooldowns, and shooter range. Settings use TypeScript types, including the mechanics configuration interfaces. Systems and tests import these constants directly; tuning values does not change simulation logic.
 
 The performance record uses a separate 500/8 health workload and a 2-second spawn interval. It does not validate the shipped balance. Collision approximations, direct enemy steering, browser-local ranking, deferred visual baselines, and unverified physical mobile performance are current limits.

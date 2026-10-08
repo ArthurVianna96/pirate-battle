@@ -58,6 +58,7 @@ export function createArena(
     projectileTexture: textures.projectile,
     explosionTextures: textures.explosion,
     playerShipTextures: textures.playerShip,
+    playerHealthTextures: textures.playerHealth,
     fireTextures: textures.fire,
     enemies: [
       renderChaser({ ...enemyOptions, shipTextures: textures.chaser }),

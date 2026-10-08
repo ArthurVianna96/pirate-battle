@@ -1,3 +1,4 @@
+import { COMBAT_CONFIG } from '../../game/config';
 import { Hud } from './Hud';
 import { GameControls } from './GameControls';
 import { createInputState } from '../../game/mechanics/input';
@@ -5,7 +6,7 @@ import { PauseMenu } from '../screens/PauseMenu';
 import { createGameSession } from '../../game/createGameSession';
 import { useEffect, useRef, useState } from 'react';
 import type { GameLoopController } from '../../game/gameLoop';
-import { COMBAT_CONFIG } from '../../game/mechanics/combat';
+
 import type { MatchResult } from '../../game/mechanics/match';
 import type { GameOptions } from '../../game/support/options';
 import { usePortraitPrompt } from '../../hooks/usePortraitPrompt';

@@ -1,7 +1,6 @@
+import { COMBAT_CONFIG } from '../config';
 import type { Obstacle, Size } from './collisions';
 import type { PlayerState } from './simulation';
-
-export const COMBAT_CONFIG = { playerHealth: 5, enemyHealth: 3 } as const;
 
 export type EnemyKind = 'chaser' | 'shooter';
 

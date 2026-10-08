@@ -1,7 +1,7 @@
+import { SHOOTER_CONFIG } from '../src/game/config';
 import { expect, test } from '@playwright/test';
 import {
   createShooterState,
-  SHOOTER_CONFIG,
   updateShooter,
 } from '../src/game/mechanics/shooter';
 import { damageEnemy } from '../src/game/mechanics/combat';

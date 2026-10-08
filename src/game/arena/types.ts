@@ -18,6 +18,7 @@ export interface HealthBarTextures {
 
 export interface ArenaAssets {
   enemyHealth: HealthBarTextures;
+  playerHealth: HealthBarTextures;
   playerShip: ShipTextures;
   chaser: ShipTextures;
   shooter: ShipTextures;
@@ -35,6 +36,7 @@ export interface ArenaView {
   projectileTexture: Texture;
   explosionTextures: Texture[];
   playerShipTextures: ShipTextures;
+  playerHealthTextures: HealthBarTextures;
   fireTextures: Texture[];
   enemies: EnemyView[];
   spawnEnemy: (kind: EnemyKind, position: PlayerState) => void;

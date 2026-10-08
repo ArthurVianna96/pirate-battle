@@ -1,3 +1,4 @@
+import { SIDE_WEAPON_CONFIG } from '../src/game/config';
 import { arenaScreenshot } from './helpers/arenaScreenshot';
 import { expect, test } from '@playwright/test';
 import { createEnemyState } from '../src/game/mechanics/combat';
@@ -5,7 +6,6 @@ import {
   createWeaponState,
   fireFront,
   fireSide,
-  SIDE_WEAPON_CONFIG,
   updateWeapon,
 } from '../src/game/mechanics/weapon';
 

@@ -1,10 +1,10 @@
+import { FRONT_WEAPON_CONFIG } from '../src/game/config';
 import { arenaScreenshot } from './helpers/arenaScreenshot';
 import { expect, test } from '@playwright/test';
 import {
   createWeaponState,
   fireFront,
   updateWeapon,
-  FRONT_WEAPON_CONFIG,
 } from '../src/game/mechanics/weapon';
 
 test('an island removes a projectile even when one frame crosses it entirely', () => {
@@ -107,10 +107,11 @@ test('Space renders a projectile and its removal restores the arena', async ({
 }) => {
   await page.clock.install({ time: new Date('2026-01-01T00:00:00Z') });
   await page.goto('/');
+  await page.clock.pauseAt(new Date('2026-01-01T00:00:10Z'));
   await page.getByRole('button', { name: 'Play', exact: true }).click();
   await expect(page.locator('canvas')).toHaveCount(1);
   await expect(page.getByRole('status')).toHaveCount(0);
-  await page.clock.pauseAt(new Date('2026-01-01T00:00:10Z'));
+  await page.clock.runFor(16);
   const initial = await arenaScreenshot(page);
   await page.keyboard.down('Space');
   await page.clock.runFor(32);

@@ -24,6 +24,7 @@ for (const viewport of [
   }) => {
     await page.setViewportSize(viewport);
     await page.goto('/');
+    await expect(page.locator('.controls-help')).toBeVisible();
     await expectInsideScreen(
       page.locator('.main-menu'),
       viewport.width,

@@ -1,9 +1,7 @@
+import { MOVEMENT_CONFIG } from '../src/game/config';
 import { expect, test } from '@playwright/test';
 import { overlapsObstacle } from '../src/game/mechanics/collisions';
-import {
-  MOVEMENT_CONFIG,
-  updatePlayer,
-} from '../src/game/mechanics/simulation';
+import { updatePlayer } from '../src/game/mechanics/simulation';
 
 const obstacle = { x: 144, y: 174, width: 192, height: 192 };
 const world = {

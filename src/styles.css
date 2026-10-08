@@ -100,6 +100,12 @@ h2 {
   font-size: 0.9rem;
   font-weight: 700;
 }
+.main-menu .controls-help {
+  font-size: 0.8rem;
+  line-height: 1.4;
+  max-width: 440px;
+  align-self: center;
+}
 .log-links,
 .log-tabs {
   display: flex;
@@ -842,6 +848,10 @@ main.playing {
   }
   .main-menu .menu-ship {
     width: 24px;
+  }
+  .main-menu .controls-help {
+    font-size: 0.75rem;
+    max-width: 100%;
   }
   .main-menu .log-links button {
     min-height: 44px;

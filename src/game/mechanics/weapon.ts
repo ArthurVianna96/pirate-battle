@@ -1,3 +1,4 @@
+import { FRONT_WEAPON_CONFIG, SIDE_WEAPON_CONFIG } from '../config';
 import {
   projectilePathHitsObstacle,
   type Obstacle,
@@ -5,22 +6,6 @@ import {
 } from './collisions';
 import { damageEnemy, type EnemyState } from './combat';
 import type { PlayerState } from './simulation';
-
-export const FRONT_WEAPON_CONFIG = {
-  speed: 320,
-  lifetime: 2,
-  cooldown: 0.4,
-  muzzleOffset: 64,
-  radius: 5,
-  damage: 1,
-} as const;
-
-export const SIDE_WEAPON_CONFIG = {
-  ...FRONT_WEAPON_CONFIG,
-  cooldown: 0.8,
-  muzzleOffset: 38,
-  spacing: 28,
-} as const;
 
 export interface ProjectileState {
   id: number;

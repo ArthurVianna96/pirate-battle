@@ -1,3 +1,4 @@
+import { CHASER_CONFIG } from '../config';
 import { overlapsObstacle, type Obstacle, type Size } from './collisions';
 import {
   createMovingEnemyState,
@@ -6,12 +7,6 @@ import {
 } from './combat';
 import { updateEnemyMovement, type EnemyMovementWorld } from './enemyMovement';
 import type { PlayerState, MovementConfig } from './simulation';
-
-export const CHASER_CONFIG = {
-  speed: 60,
-  rotationSpeed: Math.PI / 2,
-  impactDamage: 1,
-} as const;
 
 export interface ChaserConfig extends MovementConfig {
   impactDamage: number;

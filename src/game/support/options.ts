@@ -1,15 +1,9 @@
-import { MATCH_CONFIG } from '../mechanics/match';
-import { SPAWN_CONFIG } from '../mechanics/spawning';
+import { MATCH_CONFIG, SPAWN_CONFIG, OPTIONS_CONFIG } from '../config';
 
 export interface GameOptions {
   readonly sessionDuration: number;
   readonly enemySpawnInterval: number;
 }
-
-export const OPTIONS_CONFIG = {
-  minSpawnInterval: 1,
-  maxSpawnInterval: 30,
-} as const;
 
 export const DEFAULT_OPTIONS: GameOptions = {
   sessionDuration: MATCH_CONFIG.duration,

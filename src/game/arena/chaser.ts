@@ -1,4 +1,5 @@
 import { createChaserState } from '../mechanics/chaser';
+import { SPAWN_CONFIG } from '../config';
 import { createEnemy } from './enemies';
 import type { EnemyOptions, EnemyView } from './types';
 import type { PlayerState } from '../mechanics/simulation';
@@ -6,8 +7,8 @@ import type { PlayerState } from '../mechanics/simulation';
 export function renderChaser(
   { ship, width, height, arena, shipTextures, fire, healthBar }: EnemyOptions,
   position: PlayerState = {
-    x: width * 0.75,
-    y: height / 2,
+    x: width * SPAWN_CONFIG.initialChaser.x,
+    y: height * SPAWN_CONFIG.initialChaser.y,
     heading: -Math.PI / 2,
   },
 ): EnemyView {

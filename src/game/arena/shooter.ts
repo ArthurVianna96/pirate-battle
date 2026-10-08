@@ -1,4 +1,5 @@
 import { createShooterState } from '../mechanics/shooter';
+import { SPAWN_CONFIG } from '../config';
 import type { PlayerState } from '../mechanics/simulation';
 import { createEnemy } from './enemies';
 import type { EnemyOptions, EnemyView } from './types';
@@ -6,9 +7,12 @@ import type { EnemyOptions, EnemyView } from './types';
 export function renderShooter(
   { ship, width, height, arena, shipTextures, fire, healthBar }: EnemyOptions,
   position: PlayerState = {
-    x: width * 0.85,
-    y: height * 0.85,
-    heading: Math.atan2(ship.x - width * 0.85, height * 0.85 - ship.y),
+    x: width * SPAWN_CONFIG.initialShooter.x,
+    y: height * SPAWN_CONFIG.initialShooter.y,
+    heading: Math.atan2(
+      ship.x - width * SPAWN_CONFIG.initialShooter.x,
+      height * SPAWN_CONFIG.initialShooter.y - ship.y,
+    ),
   },
 ): EnemyView {
   const shooter = createShooterState({
