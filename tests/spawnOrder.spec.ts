@@ -14,6 +14,8 @@ async function turn(page: Page, direction: 'ArrowRight' | 'ArrowLeft') {
   await page.keyboard.up(direction);
 }
 
+test.use({ viewport: { width: 960, height: 540 } });
+
 test('recurring spawns include a Shooter that can damage the player', async ({
   page,
 }, testInfo) => {

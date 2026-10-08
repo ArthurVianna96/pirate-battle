@@ -13,6 +13,8 @@ import {
 
 const shipSize = { width: 66, height: 113 };
 
+test.use({ viewport: { width: 960, height: 540 } });
+
 test('contact deals damage once and removes the Chaser from combat', () => {
   const player = createPlayerState({ x: 480, y: 270, heading: 0 });
   const chaser = createChaserState({ x: 500, y: 213.5, ...shipSize });

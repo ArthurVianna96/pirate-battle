@@ -83,6 +83,12 @@ export function createProjectile(parent: Container, texture: Texture) {
   }
 
   return {
+    resize(scaleX: number, scaleY: number) {
+      for (const { origin } of sprites.values()) {
+        origin.x *= scaleX;
+        origin.y *= scaleY;
+      }
+    },
     sync(projectiles: readonly ProjectileState[], deltaSeconds = 0) {
       removeInactiveSprites(projectiles);
       projectiles.forEach((projectile) => syncSprite(projectile, deltaSeconds));

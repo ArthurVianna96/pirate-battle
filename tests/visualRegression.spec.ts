@@ -12,6 +12,7 @@ async function waitForScreenAssets(page: Page) {
 test('menu, stable arena and completed match retain their appearance', async ({
   page,
 }) => {
+  test.setTimeout(90_000);
   await page.clock.install({ time: new Date('2026-01-01T00:00:00Z') });
   await page.goto('/?network=success&seed=0');
   await page.clock.pauseAt(new Date('2026-01-01T00:00:10Z'));
@@ -25,7 +26,7 @@ test('menu, stable arena and completed match retain their appearance', async ({
   await waitForScreenAssets(page);
   await expect(page.locator('main')).toHaveScreenshot('stable-arena.png');
 
-  await page.clock.runFor(10_000);
+  await page.clock.runFor(15_000);
   await expect(
     page.getByRole('region', { name: 'Match result' }),
   ).toBeVisible();

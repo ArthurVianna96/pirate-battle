@@ -11,7 +11,7 @@ covers:
 
 `GameCanvas.tsx` mounts a session through `createGameSession.ts`. The session loads textures, initializes a private Pixi Application, creates the arena, and starts the simulation. Its controller exposes pause, resume, input actions, and destroy. Cancellation guards prevent an asynchronous initialization from mounting after React cleanup. Initialization errors expose Retry.
 
-The renderer uses a fixed logical arena of 960 × 540. CSS preserves its proportions during resizing, while HUD and touch controls remain attached to viewport edges. Resizing does not recreate the simulation or change match coordinates.
+The renderer fills the canvas host. World dimensions adapt to the viewport aspect ratio, while HUD and touch controls remain attached to screen edges. Resizing preserves the match and moves ships proportionally into the new bounds.
 
 ## Simulation routine
 
@@ -30,6 +30,10 @@ React state changes when input or displayed score, health, time, and pause statu
 `game/mechanics` contains simulation state and rules without sprite rendering. `game/arena` creates and synchronizes Pixi views. `game/feedback` groups visual and sound actions by combat, movement, and match events. `game/support` contains audio, option validation, and pause utilities. Session and loop entry points remain at the game root.
 
 ## Movement and collisions
+
+A ResizeObserver tracks the canvas host. `game/arena/viewport.ts` calculates a uniform scale from a 960 × 540 reference and world dimensions that fill the viewport. The renderer uses device dimensions; the stage uses the calculated scale. Resizing updates the water, terrain, movement bounds, ship positions, and active projectile positions without recreating the match.
+
+The island layout in `game/arena/level.ts` supplies terrain dimensions, decoration positions, and collision rectangles. The renderer tiles shoreline corners and edges around grass interiors, then adds palms and rocks. Three islands leave the center open; decorations belong to land and add no separate collision shapes.
 
 Player movement uses heading zero as up, with X movement from sine and Y movement from negative cosine. Turning while moving follows an arc. Simulation divides movement into steps of at most 1/60 second before enforcing arena and island bounds.
 

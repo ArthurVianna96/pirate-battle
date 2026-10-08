@@ -66,6 +66,10 @@ export function createViewFeedback(arena: ArenaView) {
   }
 
   return {
+    resizeProjectiles(scaleX: number, scaleY: number) {
+      playerProjectiles.resize(scaleX, scaleY);
+      enemyProjectiles.resize(scaleX, scaleY);
+    },
     updateEffects,
     syncViews,
     destroy,

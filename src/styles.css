@@ -445,7 +445,6 @@ input:focus-visible {
   display: block;
   width: 100% !important;
   height: 100% !important;
-  object-fit: contain;
 }
 .controls-help {
   font-size: 0.8rem;

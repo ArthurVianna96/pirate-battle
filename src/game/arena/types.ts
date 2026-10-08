@@ -25,6 +25,7 @@ export interface ArenaAssets {
   fire: Texture[];
   water: Texture;
   island: Texture[];
+  decorations: Texture[];
   projectile: Texture;
   explosion: Texture[];
 }
@@ -39,6 +40,8 @@ export interface ArenaView {
   playerHealthTextures: HealthBarTextures;
   fireTextures: Texture[];
   enemies: EnemyView[];
+  size: ArenaSize;
+  resize: (width: number, height: number) => void;
   spawnEnemy: (kind: EnemyKind, position: PlayerState) => void;
 }
 
@@ -60,6 +63,7 @@ export interface PlayerOptions extends ArenaSize {
 
 export interface IslandOptions extends ArenaSize {
   texture: Texture[];
+  decorations: Texture[];
 }
 
 export interface EnemyOptions extends ArenaSize {

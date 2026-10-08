@@ -1,3 +1,4 @@
+import { calculateArenaViewport } from './arena/viewport';
 import { Application } from 'pixi.js';
 import { createArena, loadArenaAssets } from './arena';
 import {
@@ -21,8 +22,31 @@ export function createGameSession(
   let gameLoop: GameLoopController | undefined;
   let initialized = false;
   let cancelled = false;
+  const observer = new ResizeObserver(resize);
+  let viewportWidth = 0;
+  let viewportHeight = 0;
+
+  function resize() {
+    if (!initialized || !gameLoop) {
+      return;
+    }
+    if (
+      host.clientWidth === viewportWidth &&
+      host.clientHeight === viewportHeight
+    ) {
+      return;
+    }
+    viewportWidth = host.clientWidth;
+    viewportHeight = host.clientHeight;
+    const viewport = calculateArenaViewport(host.getBoundingClientRect());
+    app.renderer.resize(host.clientWidth, host.clientHeight);
+    app.stage.scale.set(viewport.scale);
+    gameLoop.resize?.(viewport);
+    app.render();
+  }
 
   function releaseResources() {
+    observer.disconnect();
     gameLoop?.destroy();
     gameLoop = undefined;
     if (!initialized) {
@@ -33,13 +57,18 @@ export function createGameSession(
   }
 
   function mountArena(textures: Awaited<ReturnType<typeof loadArenaAssets>>) {
-    const arena = createArena(textures, app.screen.width, app.screen.height);
+    const viewport = calculateArenaViewport(host.getBoundingClientRect());
+    const arena = createArena(textures, viewport.width, viewport.height);
+    app.stage.scale.set(viewport.scale);
     app.stage.addChild(arena.container);
     app.canvas.setAttribute('aria-label', 'Naval battle arena');
     app.canvas.setAttribute('role', 'img');
     host.appendChild(app.canvas);
     app.render();
     gameLoop = startGameLoop(app, arena, options, callbacks);
+    viewportWidth = host.clientWidth;
+    viewportHeight = host.clientHeight;
+    observer.observe(host);
   }
 
   async function initialize() {
@@ -49,8 +78,8 @@ export function createGameSession(
         return;
       }
       await app.init({
-        width: 960,
-        height: 540,
+        width: host.clientWidth,
+        height: host.clientHeight,
         background: '#126b86',
         preference: 'webgl',
         resolution: window.devicePixelRatio || 1,

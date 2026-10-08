@@ -1,3 +1,5 @@
+import { relocateShip } from './mechanics/resize';
+import { getShipBounds, type Size } from './mechanics/collisions';
 import { MOVEMENT_CONFIG } from './config';
 import type { Application, Ticker } from 'pixi.js';
 import { createGameFeedback } from './feedback/index';
@@ -39,6 +41,7 @@ export interface GameLoopCallbacks {
 }
 
 export interface GameLoopController {
+  resize?: (size: Size) => void;
   setControl: (action: keyof GameInput, active: boolean) => void;
   pause: () => void;
   resume: () => void;
@@ -81,7 +84,7 @@ export function startGameLoop(
     heading: ship.rotation - Math.PI,
   });
   const shipSize = { width: ship.width, height: ship.height };
-  const arenaSize = { width: app.screen.width, height: app.screen.height };
+  const arenaSize = { ...arena.size };
   const world = { shipSize, arenaSize, obstacles };
   let score = 0;
   let displayedSeconds = match.duration;
@@ -304,7 +307,42 @@ export function startGameLoop(
     controls.destroy();
   }
 
+  function resize(size: Size) {
+    const previousSize = { ...arenaSize };
+    arena.resize(size.width, size.height);
+    Object.assign(arenaSize, size);
+    feedback.resizeProjectiles(
+      size.width / previousSize.width,
+      size.height / previousSize.height,
+    );
+    relocateShip(player, previousSize, world);
+    for (const { state } of arena.enemies) {
+      relocateShip(state.position, previousSize, {
+        ...world,
+        shipSize: state.shipSize,
+      });
+      Object.assign(
+        state.bounds,
+        getShipBounds(state.position, state.shipSize),
+      );
+    }
+    for (const shot of [
+      ...player.weapon.projectiles,
+      ...enemyProjectilesState.projectiles,
+    ]) {
+      shot.x *= size.width / previousSize.width;
+      shot.y *= size.height / previousSize.height;
+    }
+    feedback.syncViews(
+      player,
+      player.weapon.projectiles,
+      enemyProjectilesState.projectiles,
+      0,
+    );
+  }
+
   return {
+    resize,
     pause: pauseControls.pause,
     resume: pauseControls.resume,
     setControl: controls.setAction,

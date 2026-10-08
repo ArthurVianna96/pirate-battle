@@ -21,12 +21,15 @@ export function createArena(
     width,
     height,
   });
-  const { island, obstacles } = renderIsland({
+  const terrain = renderIsland({
     texture: textures.island,
+    decorations: textures.decorations,
     width,
     height,
   });
 
+  let island = terrain.island;
+  const obstacles = terrain.obstacles;
   arena.addChild(water, island, ship);
   const enemyOptions = {
     healthBar: textures.enemyHealth,
@@ -53,6 +56,23 @@ export function createArena(
 
   const view: ArenaView = {
     container: arena,
+    size: { width, height },
+    resize(width, height) {
+      const next = renderIsland({
+        texture: textures.island,
+        decorations: textures.decorations,
+        width,
+        height,
+      });
+      arena.removeChild(island);
+      island.destroy({ children: true });
+      island = next.island;
+      arena.addChildAt(island, 1);
+      obstacles.splice(0, obstacles.length, ...next.obstacles);
+      water.width = width;
+      water.height = height;
+      Object.assign(view.size, { width, height });
+    },
     ship,
     obstacles,
     projectileTexture: textures.projectile,

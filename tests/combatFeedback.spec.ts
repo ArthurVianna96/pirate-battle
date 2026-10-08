@@ -3,6 +3,8 @@ import { Container, Sprite, Texture } from 'pixi.js';
 import { createShipAppearance } from '../src/game/arena/shipAppearance';
 import { createCombatEffects } from '../src/game/arena/combatEffects';
 
+test.use({ viewport: { width: 960, height: 540 } });
+
 test('damage flashes, replaces the damaged sail and animates fire without resizing collisions', () => {
   const parent = new Container();
   const normal = new Texture({ source: Texture.EMPTY.source });

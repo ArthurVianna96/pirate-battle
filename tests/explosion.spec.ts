@@ -6,6 +6,8 @@ import {
 } from '../src/game/arena/explosions';
 import { arenaScreenshot } from './helpers/arenaScreenshot';
 
+test.use({ viewport: { width: 960, height: 540 } });
+
 test('explosions advance frames, fade, and preserve shared textures on cleanup', () => {
   const parent = new Container();
   const textures = Array.from(

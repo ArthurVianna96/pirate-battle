@@ -23,6 +23,7 @@ export function createGameFeedback(arena: ArenaView) {
     ...match,
     updateEffects: views.updateEffects,
     syncViews: views.syncViews,
+    resizeProjectiles: views.resizeProjectiles,
     destroy,
   };
 }

@@ -9,6 +9,8 @@ async function startGame(page: Page) {
   await page.clock.pauseAt(new Date('2026-01-01T00:00:10Z'));
 }
 
+test.use({ viewport: { width: 960, height: 540 } });
+
 test('pause freezes gameplay and resume requires fresh movement and firing input', async ({
   page,
 }) => {

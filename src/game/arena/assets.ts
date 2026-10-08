@@ -14,15 +14,17 @@ import fire2Url from '../../../assets/png/default/effects/fire_2.png';
 import { Assets, type Texture } from 'pixi.js';
 import projectileUrl from '../../../assets/png/default/ship_parts/cannon_ball.png';
 import playerShipUrl from '../../../assets/png/default/ships/ship_1.png';
-import islandTopLeftUrl from '../../../assets/png/default/tiles/tile_1.png';
-import islandLeftUrl from '../../../assets/png/default/tiles/tile_17.png';
-import islandCenterUrl from '../../../assets/png/default/tiles/tile_18.png';
-import islandRightUrl from '../../../assets/png/default/tiles/tile_19.png';
-import islandTopUrl from '../../../assets/png/default/tiles/tile_2.png';
-import islandTopRightUrl from '../../../assets/png/default/tiles/tile_3.png';
-import islandBottomLeftUrl from '../../../assets/png/default/tiles/tile_33.png';
-import islandBottomUrl from '../../../assets/png/default/tiles/tile_34.png';
-import islandBottomRightUrl from '../../../assets/png/default/tiles/tile_35.png';
+import islandTopLeftUrl from '../../../assets/png/default/tiles/tile_6.png';
+import islandTopUrl from '../../../assets/png/default/tiles/tile_7.png';
+import islandTopRightUrl from '../../../assets/png/default/tiles/tile_9.png';
+import islandLeftUrl from '../../../assets/png/default/tiles/tile_22.png';
+import islandCenterUrl from '../../../assets/png/default/tiles/tile_23.png';
+import islandRightUrl from '../../../assets/png/default/tiles/tile_25.png';
+import islandBottomLeftUrl from '../../../assets/png/default/tiles/tile_54.png';
+import islandBottomUrl from '../../../assets/png/default/tiles/tile_55.png';
+import islandBottomRightUrl from '../../../assets/png/default/tiles/tile_57.png';
+import palmUrl from '../../../assets/png/default/tiles/tile_71.png';
+import rockUrl from '../../../assets/png/default/tiles/tile_66.png';
 import waterUrl from '../../../assets/png/default/tiles/tile_73.png';
 import type { ArenaAssets, ShipTextures } from './types';
 import explosion1Url from '../../../assets/png/default/effects/explosion_1.png';
@@ -61,11 +63,12 @@ async function loadShips() {
 }
 
 async function loadScenery() {
-  const [water, island] = await Promise.all([
+  const [water, island, decorations] = await Promise.all([
     Assets.load<Texture>(waterUrl),
     loadTextures(islandTileUrls),
+    loadTextures([palmUrl, rockUrl]),
   ]);
-  return { water, island };
+  return { water, island, decorations };
 }
 
 async function loadEffects() {

@@ -10,8 +10,8 @@ export async function arenaScreenshot(
     throw new Error('Arena canvas is missing.');
   }
   const scale = Math.min(canvas.width / 960, canvas.height / 540);
-  const arenaLeft = canvas.x + (canvas.width - 960 * scale) / 2;
-  const arenaTop = canvas.y + (canvas.height - 540 * scale) / 2;
+  const arenaLeft = canvas.x + canvas.width / 2 - 480 * scale;
+  const arenaTop = canvas.y + canvas.height / 2 - 270 * scale;
   return page.screenshot({
     clip: {
       x: arenaLeft + region.x * scale,

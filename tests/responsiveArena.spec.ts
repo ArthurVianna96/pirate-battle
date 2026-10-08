@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-test('resizing preserves the arena proportions and the active match', async ({
+test('resizing fills the viewport and preserves the active match', async ({
   page,
   isMobile,
 }) => {
@@ -12,10 +12,6 @@ test('resizing preserves the arena proportions and the active match', async ({
 
   const canvas = page.getByRole('img', { name: 'Naval battle arena' });
   const remainingTime = await page.getByText(/^Time: /).textContent();
-  const originalSize = await canvas.evaluate((element) => {
-    const canvas = element as HTMLCanvasElement;
-    return { width: canvas.width, height: canvas.height };
-  });
 
   for (const viewport of [
     { width: 393, height: 727 },
@@ -32,14 +28,22 @@ test('resizing preserves the arena proportions and the active match', async ({
       await page.getByRole('button', { name: 'Resume', exact: true }).click();
     }
     await expect(rotationPrompt).toHaveCount(0);
-    await expect(canvas).toHaveCSS('object-fit', 'contain');
+    await expect
+      .poll(async () =>
+        canvas.evaluate((element) => {
+          const canvas = element as HTMLCanvasElement;
+          return { width: canvas.width, height: canvas.height };
+        }),
+      )
+      .toEqual({
+        width: Math.round(
+          viewport.width * (await page.evaluate(() => devicePixelRatio)),
+        ),
+        height: Math.round(
+          viewport.height * (await page.evaluate(() => devicePixelRatio)),
+        ),
+      });
     expect(await page.getByText(/^Time: /).textContent()).toBe(remainingTime);
-    expect(
-      await canvas.evaluate((element) => {
-        const canvas = element as HTMLCanvasElement;
-        return { width: canvas.width, height: canvas.height };
-      }),
-    ).toEqual(originalSize);
 
     for (const button of await page
       .locator('.game-controls button, .hud button')

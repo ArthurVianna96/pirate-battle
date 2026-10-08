@@ -14,6 +14,8 @@ async function startWithoutChaser(page: Page) {
   await expect(page.getByText('Score: 1', { exact: true })).toBeVisible();
 }
 
+test.use({ viewport: { width: 960, height: 540 } });
+
 test('the Shooter approaches, renders its shot and damages the player', async ({
   page,
 }, testInfo) => {
