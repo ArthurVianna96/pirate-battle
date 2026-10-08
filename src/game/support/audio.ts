@@ -30,6 +30,14 @@ interface AudioLoop {
 
 let context: AudioContext | undefined;
 const buffers = new Map<SoundName, Promise<AudioBuffer>>();
+const soundFiles = new Map<SoundName, Promise<ArrayBuffer>>();
+
+export function preloadSounds() {
+  for (const path of Object.keys(SOUND_URLS)) {
+    const name = path.split('/').pop()!.replace('.wav', '') as SoundName;
+    void loadSoundFile(name).catch(() => {});
+  }
+}
 
 export function unlockAudio() {
   try {
@@ -40,15 +48,31 @@ export function unlockAudio() {
   }
 }
 
-async function fetchSound(name: SoundName, audioContext: AudioContext) {
+async function fetchSoundFile(name: SoundName) {
   const response = await fetch(
     SOUND_URLS[`../../../assets/sounds/${name}.wav`],
   );
   if (!response.ok) {
     throw new Error('Unable to load sound');
   }
-  const data = await response.arrayBuffer();
-  return audioContext.decodeAudioData(data);
+  return response.arrayBuffer();
+}
+
+function loadSoundFile(name: SoundName) {
+  let file = soundFiles.get(name);
+  if (!file) {
+    file = fetchSoundFile(name).catch((error: unknown) => {
+      soundFiles.delete(name);
+      throw error;
+    });
+    soundFiles.set(name, file);
+  }
+  return file;
+}
+
+async function fetchSound(name: SoundName, audioContext: AudioContext) {
+  const data = await loadSoundFile(name);
+  return audioContext.decodeAudioData(data.slice(0));
 }
 
 function loadSound(name: SoundName) {

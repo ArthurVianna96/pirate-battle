@@ -97,7 +97,10 @@ export function GameCanvas({
 
   return (
     <>
-      <div className="arena-stage" inert={paused || shouldPrompt}>
+      <div
+        className="arena-stage"
+        inert={status !== 'ready' || paused || shouldPrompt}
+      >
         <Hud
           score={score}
           health={health}
@@ -128,9 +131,13 @@ export function GameCanvas({
           onMainMenu={onMainMenu}
         />
       )}
-      {status === 'loading' && <p role="status">Loading arena...</p>}
+      {status === 'loading' && (
+        <div className="arena-loading" role="status">
+          <p>Loading arena...</p>
+        </div>
+      )}
       {status === 'error' && (
-        <div role="alert">
+        <div className="arena-loading" role="alert">
           <p>Unable to load game assets or start the arena. Try again.</p>
           <button onClick={retry}>Retry</button>
         </div>

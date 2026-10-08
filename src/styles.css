@@ -698,6 +698,20 @@ main.playing {
   aspect-ratio: auto;
 }
 
+.arena-loading {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 24px;
+  text-align: center;
+  background: #10242dee;
+}
+
 .pause-overlay {
   position: fixed;
   inset: 0;

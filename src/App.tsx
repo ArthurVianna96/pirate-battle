@@ -1,4 +1,11 @@
-import { useCallback, useRef, useState, type MouseEvent } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type MouseEvent,
+} from 'react';
+import { loadArenaAssets } from './game/arena/assets';
 import { GameCanvas } from './components/game/GameCanvas';
 import type { MatchResult } from './game/mechanics/match';
 import { MatchResultScreen } from './components/screens/MatchResultScreen';
@@ -9,7 +16,7 @@ import {
 } from './game/support/options';
 import { loadOptions, saveOptions } from './storage/options';
 import { MainMenu } from './components/screens/MainMenu';
-import { playInterfaceSound } from './game/support/audio';
+import { playInterfaceSound, preloadSounds } from './game/support/audio';
 import { saveLastResult } from './storage/result';
 import { loadPlayer } from './storage/player';
 import type { MatchRecord } from './api/contracts';
@@ -33,6 +40,11 @@ export function App() {
   );
   const registration = useRegisterMatch();
   const { submit: submitMatch } = registration;
+
+  useEffect(() => {
+    void loadArenaAssets().catch(() => {});
+    preloadSounds();
+  }, []);
 
   function leaveGame() {
     activeMatch.current = undefined;

@@ -1,5 +1,40 @@
 import { expect, test } from '@playwright/test';
 
+test('textures preload from the menu and slow loading stays visible', async ({
+  page,
+  context,
+}) => {
+  let releaseAsset!: () => void;
+  const assetBlocked = new Promise<void>((resolve) => {
+    releaseAsset = resolve;
+  });
+  let markRequested!: () => void;
+  const textureRequested = new Promise<void>((resolve) => {
+    markRequested = resolve;
+  });
+  await context.route('**/tiles_vector.svg*', async (route) => {
+    if (route.request().resourceType() === 'script') {
+      await route.continue();
+      return;
+    }
+    markRequested();
+    await assetBlocked;
+    await route.continue();
+  });
+  await page.goto('/');
+  await textureRequested;
+  await page.getByRole('button', { name: 'Play', exact: true }).click();
+  await expect(page.getByRole('status')).toHaveText('Loading arena...');
+  await expect(page.getByRole('status')).toBeInViewport();
+  await expect(page.locator('canvas')).toHaveCount(0);
+  await expect(
+    page.getByRole('button', { name: 'Pause', exact: true }),
+  ).toBeDisabled();
+  releaseAsset();
+  await expect(page.locator('canvas')).toHaveCount(1);
+  await expect(page.getByRole('status')).toHaveCount(0);
+});
+
 test('entering and leaving creates a single canvas without errors', async ({
   page,
 }) => {
