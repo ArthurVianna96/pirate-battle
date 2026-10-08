@@ -130,19 +130,6 @@ npm run profile:memory
 
 Profiler-only variables select a visible browser and spawn interval. They are not application environment variables. Reproducing the recorded run also requires the health configuration listed in the performance report; the shipped game uses 5/3 health. Fresh results go to `test-results/performance/`.
 
-## Deploy
-
-For Vercel, use build command `npm run build` and output directory `dist`. The build generates the MSW worker so production ranking, history, and registration run without a backend.
-
-With a signed-in Vercel CLI:
-
-```sh
-vercel login
-vercel deploy --prod --yes
-```
-
-Open the production URL, reload it, start a game, and check ranking/history. Verify `/mockServiceWorker.js` returns JavaScript. HTTPS or localhost is required for service workers. [Vercel deployment instructions](https://vercel.com/docs/cli/deploy).
-
 ## Known limits
 
 Enemy movement steers directly toward the player and has no obstacle pathfinding. Ship collision bounds are axis-aligned approximations of rotated ships. The playable world fills the viewport. A uniform scale based on a 960 × 540 reference keeps ships proportional; wider or taller screens add playable space. Resizing rebuilds island bounds and relocates ships while preserving the current match.
