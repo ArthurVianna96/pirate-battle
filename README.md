@@ -108,7 +108,9 @@ npm run test:e2e
 npx playwright show-report
 ```
 
-Playwright runs Chromium desktop and Pixel 7 touch emulation in landscape. Dedicated tests cover portrait and resizing. HTML reports go to `playwright-report/`; failure traces and other artifacts go to `test-results/`. These generated directories are ignored by Git. The delivered [HTML test report](reports/playwright/index.html) is versioned separately; open it with `npx playwright show-report reports/playwright`. Tests use isolated browser contexts, pure mechanics modules, keyboard/pointer input, and HTTP mocks. The game has no test-state bridge. Versioned visual snapshots are currently deferred.
+Playwright runs Chromium desktop and Pixel 7 touch emulation in landscape. Dedicated tests cover portrait and resizing. HTML reports go to `playwright-report/`; failure traces and other artifacts go to `test-results/`. These generated directories are ignored by Git. The delivered [HTML test report](reports/playwright/index.html) is versioned separately; open it with `npx playwright show-report reports/playwright`. Tests use isolated browser contexts, pure mechanics modules, keyboard/pointer input, and HTTP mocks. The game has no test-state bridge. Versioned screenshots in `tests/visualRegression.spec.ts-snapshots/` cover the main menu, stable arena, and completed match on desktop and mobile. The tests freeze the browser clock and wait for fonts, images, and match registration before capture.
+
+Compare screenshots with `npm run test:e2e -- tests/visualRegression.spec.ts`. After an intentional UI change, run `npm run test:e2e -- tests/visualRegression.spec.ts --update-snapshots`, inspect the changed PNGs, then commit them. Baselines were generated with Chromium on macOS; use the same browser version and operating system for comparisons. Other operating systems need separately reviewed baselines.
 
 For profiling, serve a production build on port 4173, then run:
 
@@ -143,4 +145,4 @@ Open the production URL, reload it, start a game, and check ranking/history. Ver
 
 Enemy movement steers directly toward the player and has no obstacle pathfinding. Ship collision bounds are axis-aligned approximations of rotated ships. The fixed 960 × 540 arena scales proportionally inside the viewport; ocean texture fills unused space.
 
-The recorded native-GPU workload averaged 59.95 FPS, with 17.60 ms frame-time p95. That run used 500/8 health to sustain the three-minute workload. Physical mobile performance and versioned visual baselines remain unverified.
+The recorded native-GPU workload averaged 59.95 FPS, with 17.60 ms frame-time p95. That run used 500/8 health to sustain the three-minute workload. Physical mobile performance remains unverified.
